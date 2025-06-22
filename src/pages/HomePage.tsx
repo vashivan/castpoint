@@ -3,8 +3,11 @@
 import CastpointLoader from '../components/ui/loader';
 import { useAuth } from '../context/AuthContext';
 import React, { useState } from 'react';
-import UserProfilePage from './ProfilePage';
 import MainLayout from '../layouts/MainLayout';
+
+import dynamic from 'next/dynamic';
+const UserProfilePage = dynamic(() => import('./ProfilePage'), { ssr: false });
+
 
 export default function HomePage() {
   const { user, isLogged, isLoading } = useAuth();
