@@ -1,9 +1,9 @@
 'use client'
 
-import CastpointLoader from '../components/ui/loader';
-import { useAuth } from '../context/AuthContext';
-import React, { useState } from 'react';
-import MainLayout from '../layouts/MainLayout';
+import CastpointLoader from '../ui/loader';
+import { useAuth } from '../../context/AuthContext';
+import React from 'react';
+import MainLayout from '../../layouts/MainLayout';
 
 import dynamic from 'next/dynamic';
 const UserProfilePage = dynamic(() => import('./ProfilePage'), { ssr: false });
