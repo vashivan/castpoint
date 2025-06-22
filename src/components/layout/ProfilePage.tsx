@@ -2,12 +2,12 @@
 
 import React, { useEffect } from "react";
 import { useState } from "react";
-import { useAuth } from "../context/AuthContext";
+import { useAuth } from "../../context/AuthContext";
 import { Check, Instagram, PencilLine, User, X } from "lucide-react";
-import CastpointLoader from "../components/ui/loader";
-import TextInput from "../components/ui/input";
-import TextArea from "../components/ui/textarea";
-import PictureUploader from "../components/PictureUpload/PictureUpload";
+import CastpointLoader from "../../components/ui/loader";
+import TextInput from "../../components/ui/input";
+import TextArea from "../../components/ui/textarea";
+import PictureUploader from "../../components/PictureUpload/PictureUpload";
 
 export default function UserProfilePage() {
   const { isLogged, user, updateUser } = useAuth();
