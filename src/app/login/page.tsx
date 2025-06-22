@@ -1,12 +1,12 @@
 'use client'
 
+import MainLayout from "../../layouts/MainLayout";
 import LoginPage from "../../pages/LoginPage";
-import ProvidersWrapper from "../ProvidersWrapper";
 
 export default function Page() {
   return (
-    <ProvidersWrapper>
+    <MainLayout>
       <LoginPage />
-    </ProvidersWrapper>
+    </MainLayout>
   )
 };

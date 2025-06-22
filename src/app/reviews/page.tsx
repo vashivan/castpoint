@@ -2,12 +2,12 @@
 
 import ReviewsPage from '../../pages/ReviewsPage';
 import React from 'react';
-import ProvidersWrapper from '../ProvidersWrapper';
+import MainLayout from '../../layouts/MainLayout';
 
 export default function Page() {
   return (
-   <ProvidersWrapper>
+   <MainLayout>
      <ReviewsPage />
-   </ProvidersWrapper>
+   </MainLayout>
   );
 }

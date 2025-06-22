@@ -2,12 +2,12 @@
 
 import VacanciesPage from '../../pages/VacanciesPage';
 import React from 'react';
-import ProvidersWrapper from '../ProvidersWrapper';
+import MainLayout from '../../layouts/MainLayout';
 
 export default function Page() {
   return (
-    <ProvidersWrapper>
+    <MainLayout>
       <VacanciesPage />
-    </ProvidersWrapper>
+    </MainLayout>
   );
 }

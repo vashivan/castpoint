@@ -18,10 +18,6 @@ export default function HomePage() {
 
   if (isLogged && user) {
     return (
-      // <div className="min-h-screen px-6 py-20 flex flex-col items-center justify-center text-center bg-gradient-to-tr from-purple-500 via-pink-400 to-orange-300">
-      //   Welcome, {user.name}
-      //   <img src={user?.pic_url} alt="" className="w-50 h-60 rounded-2xl" />
-      // </div>
       <UserProfilePage />
     )
   };

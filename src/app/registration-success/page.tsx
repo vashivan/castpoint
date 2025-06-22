@@ -1,14 +1,14 @@
 'use client'
 
+import MainLayout from '../../layouts/MainLayout';
 import RegistrationSuccessPage from '../../pages/RegistrationSuccessPage';
 import React from 'react';
-import ProvidersWrapper from '../ProvidersWrapper';
 
 export default function Page() {
   return (
-    <ProvidersWrapper>
+    <MainLayout>
       <RegistrationSuccessPage />
-    </ProvidersWrapper>
+    </MainLayout>
 
   );
 }

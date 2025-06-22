@@ -1,11 +1,10 @@
+import MainLayout from "../../layouts/MainLayout";
 import AgreementPage from "../../pages/AgreementPage";
-import ProvidersWrapper from "../ProvidersWrapper";
 
 export default function Page() {
   return (
-    <ProvidersWrapper>
+    <MainLayout>
       <AgreementPage />
-    </ProvidersWrapper>
-
+    </MainLayout>
   )
 }

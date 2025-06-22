@@ -1,12 +1,13 @@
 'use client'
 
+import MainLayout from '@/layouts/MainLayout';
 import HomePage from '../pages/HomePage';
 import ProvidersWrapper from './ProvidersWrapper';
 
 export default function Page() {
   return (
-    <ProvidersWrapper>
+    <MainLayout>
       <HomePage />
-    </ProvidersWrapper>
+    </MainLayout>
   )
 }

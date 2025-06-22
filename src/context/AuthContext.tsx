@@ -29,14 +29,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const updateUser = (updatedUserData: Partial<User>) => {
     setUser((prev) => prev ? { ...prev, ...updatedUserData } : null);
   };
-  
-
-  // Функція виходу
-  // const logout = async () => {
-  //   await fetch("/api/auth/logout", { method: "POST" });
-  //   setUser(null);
-  //   window.location.href = "/";
-  // };
 
   return (
     <AuthContext.Provider value={{ user, isLoading, isLogged, updateUser }}>
