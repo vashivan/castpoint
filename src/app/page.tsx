@@ -1,12 +1,12 @@
 'use client'
 
-import MainLayout from '@/layouts/MainLayout';
-import HomePage from '../pages/HomePage';
+import dynamic from 'next/dynamic';
+
+const HomePage = dynamic(() => import('../pages/HomePage'), { ssr: false }); // 
+
 
 export default function Page() {
   return (
-    <MainLayout>
       <HomePage />
-    </MainLayout>
   )
 }

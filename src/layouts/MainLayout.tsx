@@ -1,4 +1,3 @@
-// src/layouts/MainLayout.tsx
 'use client';
 
 import React, { useState } from 'react';
