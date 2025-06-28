@@ -7,8 +7,8 @@ type Props = {
   onChange: (val: { url: string; public_id: string }) => void;
 };
 
-const CLOUD_NAME = 'dkchysebn';
-const UPLOAD_PRESET = 'castpoint';
+const CLOUD_NAME = process.env.CLOUD_NAME;
+const UPLOAD_PRESET = process.env.UPLOAD_PRESET;
 
 export default function PictureUploader({ onChange, pic_url, pic_public_id }: Props) {
   const [imageUrl, setImageUrl] = useState(pic_url || '');
@@ -52,15 +52,27 @@ export default function PictureUploader({ onChange, pic_url, pic_public_id }: Pr
   
   const deletePreviousImage = async (publicId: string) => {
     try {
-      await fetch('/api/delete_image', {
+      const res = await fetch('/api/delete_image', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ public_id: publicId }),
       });
+  
+      const data = await res.json();
+  
+      if (res.ok) {
+        setImageUrl('');
+        setPublicId('');
+        onChange({ url: '', public_id: '' });
+  
+      } else {
+        console.error('Failed to delete image:', data.error);
+      }
     } catch (err) {
-      console.error('Error deleting previous image:', err);
+      console.error('Error deleting image:', err);
     }
   };
+  
 
   return (
     <div className="flex flex-col items-center gap-4">

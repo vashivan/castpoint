@@ -7,6 +7,6 @@ const HomePage = dynamic(() => import('../components/layout/HomePage'), { ssr: f
 
 export default function Page() {
   return (
-      <HomePage />
+    <HomePage />
   )
 }

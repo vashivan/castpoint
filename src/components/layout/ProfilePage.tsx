@@ -104,12 +104,12 @@ export default function UserProfilePage() {
   };
 
   return (
-    <section className="min-h-screen px-6 py-20 flex flex-col items-center justify-center bg-gradient-to-tr from-purple-500 via-pink-400 to-orange-300 text-white">
-      <div className="w-full max-w-4xl bg-white/10 backdrop-blur-md rounded-3xl p-8 shadow-2xl text-left border border-white/20">
-        <div className="flex flex-col items-center md:flex-row md:items-start gap-8 mb-10 px-1">
+    <section className="min-h-screen px-4 py-10 sm:px-6 sm:py-20 flex flex-col items-center justify-center bg-gradient-to-tr from-purple-500 via-pink-400 to-orange-300 text-white overflow-x-hidden">
+      <div className="w-full max-w-4xl bg-white/10 backdrop-blur-md rounded-3xl p-6 sm:p-8 shadow-2xl text-left border border-white/20">
+        <div className="flex flex-col items-center md:flex-row md:items-start gap-6 sm:gap-8 mb-10 px-1 w-full break-words">
 
           {/* Profile picture */}
-          <div>
+          <div className="w-full max-w-xs">
             {editingField === "profile_picture" ? (
               <div className="flex flex-col items-center">
                 <PictureUploader
@@ -152,45 +152,48 @@ export default function UserProfilePage() {
             )}
           </div>
 
-          <div className="flex flex-col space-y-1 text-s">
+          <div className="flex flex-col space-y-3 text-sm w-full">
             {/* Name */}
-            <h1 className="text-3xl flex space-x-1.5 font-bold h-10 w-100">
-              {editingField === "name" ? (
-                <>
-                  <TextInput
-                    type="text"
-                    name="name"
-                    value={editedData.name || ''}
-                    onChange={(val) => setEditedData({ ...editedData, name: val })}
-                  />
-                  <button
-                    className="cursor-pointer"
-                    onClick={() => handleSave("name")}
-                  >
-                    {isUpdated ? <CastpointLoader /> : <Check color="white" />}
-                  </button>
-                  <button
-                    className="cursor-pointer"
-                    onClick={handleCancel}
-                  >
-                    <X color="white" />
-                  </button>
-                </>
-              ) : (
-                <>
-                  <span className="mr-3">{user.name}</span>
-                  <button
-                    className="cursor-pointer"
-                    onClick={() => setEditingField("name")}
-                  >
-                    <PencilLine />
-                  </button>
-                </>
-              )}
-            </h1>
+            <div className="mb-1">
+              <h1 className="text-3xl space-x-1.5 font-bold w-full">
+                {editingField === "name" ? (
+                  <>
+                    <TextInput
+                      type="text"
+                      name="name"
+                      value={editedData.name || ''}
+                      onChange={(val) => setEditedData({ ...editedData, name: val })}
+                    />
+                    <button
+                      className="cursor-pointer"
+                      onClick={() => handleSave("name")}
+                    >
+                      {isUpdated ? <CastpointLoader /> : <Check color="white" />}
+                    </button>
+                    <button
+                      className="cursor-pointer"
+                      onClick={handleCancel}
+                    >
+                      <X color="white" />
+                    </button>
+                  </>
+                ) : (
+                  <>
+                    <span className="mr-3">{user.name}</span>
+                    <button
+                      className="cursor-pointer"
+                      onClick={() => setEditingField("name")}
+                    >
+                      <PencilLine />
+                    </button>
+                  </>
+                )}
+              </h1>
+            </div>
+
 
             {/* Country */}
-            <p className="text-lg text-white/80">{user.role} from {user.country}</p>
+            <p className="text-lg text-white/80 mt-2">{user.role} from {user.country}</p>
 
             {/* Date of birth */}
             <p className="text-white/60 mb-3">Born: {formattedDate}</p>
@@ -300,7 +303,7 @@ export default function UserProfilePage() {
               </div>
               {editingField === "height_weight" ? (
                 <div className="flex flex-col gap-2 mt-2">
-                  <div className="flex gap-1 w-100">
+                  <div className="flex gap-1 w-full">
                     <TextInput
                       type="text"
                       name="height"
@@ -321,7 +324,13 @@ export default function UserProfilePage() {
                     />
                   </div>
                   <div className="flex gap-1">
-                    <button className="cursor-pointer">
+                    <button
+                      className="cursor-pointer"
+                      onClick={() => {
+                        handleSave("height");
+                        handleSave("weight");
+                      }}
+                    >
                       {isUpdated ? <CastpointLoader /> : <Check color="white" />}
                     </button>
                     <button
@@ -343,7 +352,7 @@ export default function UserProfilePage() {
                 <h2 className="font-semibold mb-1">Socials:</h2>
                 <div className="flex gap-4">
                   {user.instagram && (
-                    <a href={`https://www.instagram.com/${trimFunction(user.instagram)}`} target="_blank" rel="noopener noreferrer" className="text-pink-200 hover:underline flex space-x-1">
+                    <a href={`https://www.instagram.com/${trimFunction(user.instagram)}`} target="_blank" rel="noopener noreferrer" className="text-pink-200 hover:underline flex space-x-1 items-end">
                       <Instagram />
                       <p>Instagram</p>
                     </a>
@@ -360,8 +369,8 @@ export default function UserProfilePage() {
         </div>
 
         {/* Biography */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 text-white/90 mt-10">
-          <div className="md:col-span-2">
+        <div className="flex flex-col space-y-2 text-sm w-full break-words">
+          <div className="md:col-span-2 mb-5">
             <div className="flex items-center">
               <h2 className="font-semibold">Biography</h2>
               {editingField !== "biography" && (
@@ -395,7 +404,7 @@ export default function UserProfilePage() {
                 </div>
               </div>
             ) : (
-              <p className="whitespace-pre-line mt-2 text-white/90">
+              <p className="whitespace-pre-line mt-2 text-xl text-white/90">
                 {user.biography}
               </p>
             )}
@@ -403,7 +412,7 @@ export default function UserProfilePage() {
 
 
           {/* Experience */}
-          <div className="md:col-span-2">
+          <div className="flex flex-col space-y-2 text-sm w-full break-words">
             <div className="flex items-center">
               <h2 className="font-semibold">Experience</h2>
               {editingField !== "experience" && (
@@ -444,20 +453,55 @@ export default function UserProfilePage() {
           </div>
 
           {/* Video */}
-          {user.video_url && (
-            <div className="md:col-span-2 mt-6">
-              <h2 className="font-semibold mb-2">Video:</h2>
-              <div className="aspect-video w-full">
-                <iframe
-                  src={`https://www.youtube.com/embed/${videoId}`}
-                  className="w-full h-full rounded-xl border-2 border-white/20"
-                  allow="autoplay; encrypted-media"
-                  allowFullScreen
-                  title="User Video"
-                />
-              </div>
+          <div className="md:col-span-2 mt-6">
+            <div className="flex items-center">
+              <h2 className="font-semibold">Video</h2>
+              {editingField !== "video_url" && (
+                <button
+                  className="cursor-pointer"
+                  onClick={() => setEditingField("video_url")}
+                >
+                  <PencilLine size={20} className="ml-1.5" />
+                </button>
+              )}
             </div>
-          )}
+
+            {editingField === "video_url" ? (
+              <div className="mt-2 space-y-2">
+                <TextInput
+                  type="text"
+                  value={editedData.video_url || ''}
+                  onChange={(val) =>
+                    setEditedData({ ...editedData, video_url: val })
+                  }
+                  placeholder="https://www.youtube.com/watch?v=..."
+                />
+                <div className="flex space-x-2">
+                  <button
+                    className="cursor-pointer"
+                    onClick={() => handleSave("video_url")}
+                  >
+                    {isUpdated ? <CastpointLoader /> : <Check color="white" />}
+                  </button>
+                  <button className="cursor-pointer" onClick={handleCancel}>
+                    <X color="white" />
+                  </button>
+                </div>
+              </div>
+            ) : (
+              videoId && (
+                <div className="aspect-video w-full mt-4">
+                  <iframe
+                    src={`https://www.youtube.com/embed/${videoId}`}
+                    className="w-full h-full rounded-xl border-2 border-white/20"
+                    allow="autoplay; encrypted-media"
+                    allowFullScreen
+                    title="User Video"
+                  />
+                </div>
+              )
+            )}
+          </div>
         </div>
       </div>
     </section >
