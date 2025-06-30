@@ -4,8 +4,8 @@ import React, { useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { motion } from "framer-motion";
-import { Home, Briefcase, MessageSquare, Edit3, UserCircle, LogIn, Menu, Sparkles, CircleX, LogOut, LogOutIcon } from "lucide-react";
-import { useAuth } from "@/context/AuthContext";
+import { Home, Briefcase, MessageSquare, Edit3, UserCircle, LogIn, Menu, Sparkles, CircleX, LogOut, LogOutIcon, User } from "lucide-react";
+import { useAuth } from "../../context/AuthContext";
 
 interface NavbarProps {
   onToggleSidebar: () => void;
@@ -15,6 +15,7 @@ interface NavbarProps {
 
 const navItems = [
   { path: "/", label: "Home", icon: Home },
+  { path: "/profile", label: "My profile", icon: User },
   { path: "/vacancies", label: "Vacancies", icon: Briefcase },
   { path: "/reviews", label: "Reviews", icon: MessageSquare },
   { path: "/blog", label: "Blog", icon: Edit3 },
@@ -23,6 +24,15 @@ const navItems = [
 const Navbar: React.FC<NavbarProps> = ({ onToggleSidebar, isOpen, handlerLogOut }) => {
   const pathname = usePathname();
   const { user } = useAuth();
+
+  const filteredNavItems = navItems.filter((item) => {
+    if (item.path === "/profile" && !user) {
+      return false;
+    }
+
+    return true;
+  })
+  
 
   return (
     <nav className="bg-pink-100/50 backdrop-blur-xs shadow-md fixed w-full top-0 z-50 border-primary/20">
@@ -36,7 +46,7 @@ const Navbar: React.FC<NavbarProps> = ({ onToggleSidebar, isOpen, handlerLogOut 
 
         {/* Desktop menu */}
         <div className="hidden md:flex space-x-2 ">
-          {navItems.map(({ path, label, icon: Icon }) => {
+          {filteredNavItems.map(({ path, label, icon: Icon }) => {
             const isActive = pathname === path;
             return (
               <Link key={path} href={path} className="flex items-center px-3 py-2 rounded-md text-sm font-semibold">

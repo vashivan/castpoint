@@ -25,7 +25,7 @@ export default function HomePage() {
   if (isLogged && user) {
     return (
       <MainLayout>
-        <UserProfilePage />
+        <div className="flex h-100"></div>
       </MainLayout>
     )
   };

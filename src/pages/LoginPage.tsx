@@ -5,10 +5,12 @@ import TextInput from "../components/ui/input"
 import { useState } from "react"
 import { motion } from 'framer-motion';
 import Link from "next/link";
-import CastpointLoader from "@/components/ui/loader";
+import CastpointLoader from "../components/ui/loader";
+import { useAuth } from "../context/AuthContext";
 
 
 export default function LoginPage() {
+  const { refreshUser } = useAuth();
   const router = useRouter();
   const [message, setMessage] = useState('');
   const [loading, setLoading] = useState(false);
@@ -31,12 +33,14 @@ export default function LoginPage() {
       const res = await fetch('/api/login', {
         method: "POST",
         headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
         body: JSON.stringify(form),
       });
   
       const data = await res.json(); // 👈 тут падає, якщо res body пусте
   
       if (res.ok) {
+        await refreshUser(); 
         router.push('/');
         console.log("Entered");
         setLoading(false);

@@ -21,6 +21,7 @@ interface User {
 interface AuthContextType {
   user: User | null;
   isLoading: boolean;
-  isLogged: boolean
+  isLogged: boolean;
   updateUser: (updatedUserData: Partial<User>) => void;
+  refreshUser: () => void;
 }

@@ -446,7 +446,7 @@ export default function UserProfilePage() {
                 </div>
               </div>
             ) : (
-              <p className="whitespace-pre-line mt-2 text-white/90">
+              <p className="whitespace-pre-line mt-2 text-xl text-white/90">
                 {user.experience}
               </p>
             )}
