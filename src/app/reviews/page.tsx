@@ -1,6 +1,6 @@
 'use client'
 
-import ReviewsPage from '../../pages/ReviewsPage';
+import ReviewsPage from '../../components/layout/ReviewsPage';
 import React from 'react';
 import MainLayout from '../../layouts/MainLayout';
 

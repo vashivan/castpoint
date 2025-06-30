@@ -3,12 +3,13 @@
 import React, { useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Home, Briefcase, MessageSquare, Edit3, UserCircle, LogIn, LogOutIcon } from "lucide-react";
+import { Home, Briefcase, MessageSquare, Edit3, UserCircle, LogIn, LogOutIcon, User } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
 // import { motion, scale } from "framer-motion";
 
 const navItems = [
   { path: "/", label: "Home", icon: Home },
+  { path: "/profile", label: "My profile", icon: User },
   { path: "/vacancies", label: "Vacancies", icon: Briefcase },
   { path: "/reviews", label: "Reviews", icon: MessageSquare },
   { path: "/blog", label: "Blog", icon: Edit3 },
@@ -18,6 +19,15 @@ const navItems = [
 export default function Sidebar({ isOpen, onClose, handlerLogOut }: { isOpen: boolean, onClose: () => void, handlerLogOut: () => void; }) {
   const { user } = useAuth();
   const pathname = usePathname();
+
+  const filteredNavItems = navItems.filter((item) => {
+    if (item.path === "/profile" && !user) {
+      return false;
+    }
+
+    return true;
+  })
+  
 
   return (
     <div className={`fixed top-16 left-0 h-full w-50 bg-gray-900 text-white transform ${isOpen ? 'translate-x-0' : '-translate-x-full'} transition-transform duration-300 z-40 bg-pink-100/50 backdrop-blur-xs shadow-md`}>
@@ -33,7 +43,7 @@ export default function Sidebar({ isOpen, onClose, handlerLogOut }: { isOpen: bo
             </div>
           </motion.button> */}
           <div className="mb-10">
-            {navItems.map(({ path, label, icon: Icon }) => {
+            {filteredNavItems.map(({ path, label, icon: Icon }) => {
               const isActive = pathname === path;
               return (
 

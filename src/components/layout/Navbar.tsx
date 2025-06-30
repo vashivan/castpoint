@@ -45,7 +45,7 @@ const Navbar: React.FC<NavbarProps> = ({ onToggleSidebar, isOpen, handlerLogOut 
         </Link>
 
         {/* Desktop menu */}
-        <div className="hidden md:flex space-x-2 ">
+        <div className="hidden md:flex space-x-2">
           {filteredNavItems.map(({ path, label, icon: Icon }) => {
             const isActive = pathname === path;
             return (

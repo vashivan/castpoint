@@ -105,7 +105,7 @@ export default function UserProfilePage() {
 
   return (
     <section className="min-h-screen px-4 py-10 sm:px-6 sm:py-20 flex flex-col items-center justify-center bg-gradient-to-tr from-purple-500 via-pink-400 to-orange-300 text-white overflow-x-hidden">
-      <div className="w-full max-w-4xl bg-white/10 backdrop-blur-md rounded-3xl p-6 sm:p-8 shadow-2xl text-left border border-white/20">
+      <div className="w-full max-w-4xl bg-white/10 backdrop-blur-md rounded-3xl p-6 sm:p-8 shadow-2xl text-left border border-white/20 mt-10">
         <div className="flex flex-col items-center md:flex-row md:items-start gap-6 sm:gap-8 mb-10 px-1 w-full break-words">
 
           {/* Profile picture */}

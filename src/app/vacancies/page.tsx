@@ -1,6 +1,6 @@
 'use client'
 
-import VacanciesPage from '../../pages/VacanciesPage';
+import VacanciesPage from '../../components/layout/VacanciesPage';
 import React from 'react';
 import MainLayout from '../../layouts/MainLayout';
 

@@ -4,15 +4,15 @@ import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import dynamic from 'next/dynamic';
 import { getNames } from 'country-list';
-import TextInput from '../components/ui/input';
+import TextInput from '../ui/input';
 import { AnimatePresence, motion, number } from 'framer-motion';
-import TextArea from '../components/ui/textarea';
-import PictureUploader from '../components/PictureUpload/PictureUpload';
+import TextArea from '../ui/textarea';
+import PictureUploader from '../PictureUpload/PictureUpload';
 import Link from 'next/link';
-import DateInput from '../components/ui/date_input';
-import CastpointLoader from '../components/ui/loader';
+import DateInput from '../ui/date_input';
+import CastpointLoader from '../ui/loader';
 
-const NoSSRSelector = dynamic(() => import('../components/ui/custom_select'), { ssr: false });
+const NoSSRSelector = dynamic(() => import('../ui/custom_select'), { ssr: false });
 
 const countries = getNames().map((country) => ({
   label: country,

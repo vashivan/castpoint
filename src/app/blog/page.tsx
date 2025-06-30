@@ -1,10 +1,13 @@
+'use client'
+
 import MainLayout from "../../layouts/MainLayout";
-import AgreementPage from "../../components/layout/AgreementPage";
+import React from 'react';
+import Blog from "../../components/layout/Blog";
 
 export default function Page() {
   return (
     <MainLayout>
-      <AgreementPage />
+      <Blog />
     </MainLayout>
   )
-}
+};

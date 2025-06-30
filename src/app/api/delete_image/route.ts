@@ -7,9 +7,9 @@ import { cookies } from "next/headers";
 
 
 cloudinary.config({
-  cloud_name: process.env.CLOUD_NAME!,
-  api_key: process.env.API_KEY!,
-  api_secret: process.env.API_SECRET!,
+  cloud_name: "dkchysebn",
+  api_key: "145289783927229",
+  api_secret: "7qoYAYHu6Pq__ssQSR7YoZt8goA",
 });
 
 
@@ -26,7 +26,7 @@ export async function POST(req: NextRequest) {
     const result = await cloudinary.uploader.destroy(trimmedPublicId);
     console.log('Cloudinary delete result:', result);
 
-    if (result.result !== 'ok') {
+    if (result.result !== 'ok' && result.result !== 'not found') {
       return NextResponse.json({ error: 'Failed to delete from Cloudinary' }, { status: 500 });
     }
 

@@ -7,8 +7,8 @@ type Props = {
   onChange: (val: { url: string; public_id: string }) => void;
 };
 
-const CLOUD_NAME = process.env.CLOUD_NAME;
-const UPLOAD_PRESET = process.env.UPLOAD_PRESET;
+const CLOUD_NAME = "dkchysebn";
+const UPLOAD_PRESET = "castpoint";
 
 export default function PictureUploader({ onChange, pic_url, pic_public_id }: Props) {
   const [imageUrl, setImageUrl] = useState(pic_url || '');
