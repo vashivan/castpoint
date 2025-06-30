@@ -1,12 +1,12 @@
 'use client'
 
 import { useRouter } from "next/navigation"
-import TextInput from "../components/ui/input"
+import TextInput from "../ui/input"
 import { useState } from "react"
 import { motion } from 'framer-motion';
 import Link from "next/link";
-import CastpointLoader from "../components/ui/loader";
-import { useAuth } from "../context/AuthContext";
+import CastpointLoader from "../ui/loader";
+import { useAuth } from "../../context/AuthContext";
 
 
 export default function LoginPage() {
