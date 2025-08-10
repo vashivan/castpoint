@@ -28,17 +28,17 @@ export default function WhyCastpoint() {
         {features.map(({ icon, text }, index) => (
           <div key={index} className={`${styles.main_icons_icon} relative flex flex-col items-center w-full`}>
             {/* Іконка поверх */}
-            <div className="absolute -top-10 left-1/2 -translate-x-1/2 z-10 bg-white p-3 rounded-full border border-orange-200 shadow-md">
-              <Image src={icon} alt="" width={55} height={65} className={styles.main_icons_icon_img} />
+            <div className="absolute -top-7 md:-top-10 left-1/2 -translate-x-1/2 z-10 bg-white p-3 rounded-full border border-orange-200 shadow-md">
+              <Image src={icon} alt="" width={35} height={30} className={styles.main_icons_icon_img} />
             </div>
 
 
             {/* Фонова підкладка (substract) */}
-            <div className="relative flex items-center justify-items-center">
+            <div className="relative flex items-center justify-items-center w-60 md:w-70">
               <img src="/images/icons/figures/subtract.svg" alt="" className="w-full z-0" />
 
               {/* Текст */}
-              <p className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-[5%] px-4 text-m  text-black text-center z-10 w-full">
+              <p className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-[5%] px-4 text-sm  text-black text-center z-10 w-full">
                 {text}
               </p>
             </div>

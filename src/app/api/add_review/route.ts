@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '../../../lib/db'; // Шлях до підключення бази (у тебе вже має бути)
 import { RowDataPacket } from 'mysql2';
+import 'mysql2';
 
 export async function POST(req: NextRequest) {
   try {

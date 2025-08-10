@@ -28,7 +28,7 @@ export default function ReviewsPage() {
       .then((data) => {
         const transformedReviews = data.map((u: any) => ({
           id: u.id,
-          artist_id: u.artist_id,
+          artist_id: u.artist_d,
           artist_name: u.artist_name,
           artist_instagram: u.artist_instagram,
           content: u.content,
