@@ -23,14 +23,14 @@ export default function CustomSelect({
 }: Props)  {
   return (
     <div className="z-50 relative">
-      <label className="block text-xl text-white mb-2">{label}</label>
+      <label className="block text-xl text-black mb-2">{label}</label>
       <Select
         options={options}
         menuPortalTarget={typeof window !== 'undefined' ? document.body : null}
         menuPosition="absolute"
         placeholder={placeholder}
         onChange={(selected) => selected && onChange(selected.value)}
-        className="text-white"
+        className="rounded-xl z-0 bg-white/20 text-black placeholder-black border border-black focus:outline-none focus:ring-2 focus:ring-orange-300 text-cente"
         styles={{
           control: (base, state) => ({
             ...base,
@@ -43,25 +43,25 @@ export default function CustomSelect({
           }),
           placeholder: (base) => ({
             ...base,
-            color: "rgba(255, 255, 255, 0.6)",
+            color: "black",
           }),
           singleValue: (base) => ({
             ...base,
-            color: "white",
+            color: "black",
           }),
           input: (base) => ({
             ...base,
-            color: "white",
+            color: "black",
           }),
           menuPortal: (base) => ({
             ...base,
-            zIndex: 9999,
+            zIndex: 100,
           }),
           menu: (base) => ({
             ...base,
             backgroundColor: "rgba(30,30,30, 0.95)",
             borderRadius: "0.5rem",
-            color: "white",
+            color: "black",
             textAlign: "center"
           }),
           option: (base, state) => ({

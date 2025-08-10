@@ -1,0 +1,23 @@
+.gradient_border {
+  border: 1px solid transparent;
+  border-radius: 35px;
+  border-image: linear-gradient(90deg, #AA0254 0%, #F5720D 100%);
+  border-image-slice: 1;
+  background-color: transparent;
+  overflow: hidden;
+}
+
+.reviews_container {
+  display: grid;
+  grid-template-columns: repeat(1, 1fr);
+  gap: 25px;
+
+    @media (min-width: 678px) {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+    @media (min-width: 1350px) {
+    grid-template-columns: repeat(4, 1fr);
+    padding-inline: 25px;
+  }
+}

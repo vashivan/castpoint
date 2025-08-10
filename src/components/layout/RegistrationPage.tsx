@@ -1,5 +1,6 @@
 'use client';
 
+import styles from '../../styles/Form.module.scss';
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import dynamic from 'next/dynamic';
@@ -142,14 +143,15 @@ export default function RegisterPage() {
   };
 
   return (
-    <section className="min-h-screen px-6 py-20 flex flex-col items-center justify-center text-center bg-gradient-to-tr from-purple-500 via-pink-400 to-orange-300">
-      <h1 className="text-5xl md:text-6xl font-bold bg-gradient-to-r from-pink-800 via-purple-400 to-orange-500 text-transparent bg-clip-text mb-10">
+    <section className="min-h-screen px-6 py-30 flex flex-col items-center justify-center text-center bg-transparent">
+      <h1 className="text-4xl md:text-4xl font-bol text-black uppercase bg-clip-text mb-10">
         Create Your Artist Account
       </h1>
 
+      <div className="w-full md:w-120 p-[2px] rounded-3xl bg-gradient-to-r from-[#AA0254] to-[#F5720D]">
       <form
         onSubmit={handleSubmit}
-        className="w-full max-w-md bg-white/10 backdrop-blur-md border border-white/20 rounded-3xl p-8 shadow-xl overflow-hidden relative"
+        className={`w-full bg-white rounded-3xl p-8 shadow-xl overflow-hidden relative`}
       >
         <AnimatePresence mode="wait">
 
@@ -257,6 +259,7 @@ export default function RegisterPage() {
               <TextArea
                 label="Biography"
                 value={form.biography}
+                rows={10}
                 placeholder="Do not be shy, use all oportunities to tell about you."
                 text="🎯 It’s time to get to know you better!
                 Tell us a bit more about yourself — not just the basics. Whether it's your favorite projects, hobbies you love, or what drives you every day — we’re all ears. Let’s go beyond the surface and see what makes you you. 💬"
@@ -282,6 +285,7 @@ export default function RegisterPage() {
             >
               <TextArea
                 label="Experience"
+                rows={15}
                 placeholder="Share your experience. For example: 'Cirque du Soleil (2019–2022)', 'Royal Caribbean (2017–2019)' etc."
                 value={form.experience}
                 text="Share a short summary of your work experience. Just a couple of sentences can give us a clear picture of your skills and background."
@@ -305,8 +309,8 @@ export default function RegisterPage() {
               transition={{ duration: 0.4 }}
               className="space-y-6"
             >
-              <p className="text-white text-xl">Almost done &#128553; <br /> Just two steps left</p>
-              <p className="text-white text-sm mb-3">Let’s keep in touch — drop your social media links here!</p>
+              <p className="text-black text-xl">Almost done &#128553; <br /> Just two steps left</p>
+              <p className="text-black text-sm mb-3">Let’s keep in touch — drop your social media links here!</p>
               <TextInput
                 label="Instagram"
                 name="instagram"
@@ -336,8 +340,8 @@ export default function RegisterPage() {
               transition={{ duration: 0.4 }}
               className="space-y-6"
             >
-              <p className="text-white text-xl">Last step &#128519;</p>
-              <p className="text-white text-sm mb-3">
+              <p className="text-black text-xl">Last step &#128519;</p>
+              <p className="text-balck text-sm mb-3">
                 Paste your promo video link (from any streaming service) and upload photo of yourself.
               </p>
 
@@ -390,7 +394,7 @@ export default function RegisterPage() {
             <button
               type="button"
               onClick={prevStep}
-              className="w-full py-2 rounded-xl bg-white/30 text-white hover:bg-white/40 cursor-pointer"
+              className="w-full py-2 rounded-xl border text-black hover:bg-gray-300 cursor-pointer"
             >
               Back
             </button>
@@ -432,6 +436,7 @@ export default function RegisterPage() {
           <p className="text-yellow-100 text-sm mt-4">{message}</p>
         )}
       </form>
+      </div>
     </section>
   );
 }

@@ -25,8 +25,8 @@ export default function DateInput({ label, name, value, onChange }: Props) {
   };
 
   return (
-    <div className="w-full">
-      <label className="block text-xl text-white mb-2">{label}</label>
+    <div className="flex flex-col w-full">
+      <label className="block text-xl text-black mb-2">{label}</label>
       <DatePicker
         selected={selectedDate}
         onChange={handleChange}
@@ -34,7 +34,7 @@ export default function DateInput({ label, name, value, onChange }: Props) {
         placeholderText="YYYY.MM.DD"
         locale={enGB}
         name={name}
-        className="w-100 px-4 py-3 rounded-xl bg-white/20 text-white placeholder-white/60 focus:outline-none focus:ring-2 focus:ring-orange-300 text-center"
+        className="w-full px-4 py-3 rounded-xl bg-white/20 text-black placeholder-black border border-black focus:outline-none focus:ring-2 focus:ring-orange-300 text-center"
         showYearDropdown
         scrollableYearDropdown
         yearDropdownItemNumber={100}

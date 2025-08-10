@@ -1,12 +1,22 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Navbar from '../components/layout/Navbar';
 import Sidebar from '../components/layout/Sidebar';
 import Footer from '../components/layout/Footer';
 
 export default function MainLayout({ children }: { children: React.ReactNode }) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [isScrolled, setIsScrolled] = useState(false);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      setIsScrolled(window.scrollY > 20); // при скролі >20px вмикається фон
+    };
+
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
 
   const handlerLogOut = async () => {
     try {
@@ -25,11 +35,14 @@ export default function MainLayout({ children }: { children: React.ReactNode }) 
         onToggleSidebar={() => setSidebarOpen(!sidebarOpen)}
         isOpen={sidebarOpen}
         handlerLogOut={handlerLogOut}
+        isScrolled={isScrolled}
+        sidebarOpen={sidebarOpen}
       />
       <Sidebar
         isOpen={sidebarOpen}
         onClose={() => setSidebarOpen(false)}
         handlerLogOut={handlerLogOut}
+        isScrolled={isScrolled}
       />
         <main>{children}</main>
       <Footer />

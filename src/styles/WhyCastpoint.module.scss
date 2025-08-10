@@ -1,0 +1,78 @@
+.main {
+  position: relative;
+  align-items: center;
+  justify-items: center;
+  justify-content: center;
+  background-color: white;
+  padding: 70px;
+
+  // Справжній бекграунд буде через псевдоелемент
+  &::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background-image:
+      url('/images/vectors/vector1.svg'),
+      url('/images/vectors/vector2.svg'),
+      url('/images/vectors/vector3.svg'),
+      url('/images/vectors/vector4.svg'),
+      url('/images/vectors/vector5.svg'),
+      url('/images/vectors/vector6.svg');
+    background-repeat: no-repeat, no-repeat, no-repeat, no-repeat, no-repeat, no-repeat;
+    background-position: top left, top right, center left, center right, bottom left, bottom right;
+    background-size: auto, auto, auto, auto, auto, auto;
+    opacity: 0.3; // ✅ контроль прозорості
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  // контент повинен бути над фоном
+  >* {
+    position: relative;
+    z-index: 1;
+  }
+
+  &_icons {
+    display: grid;
+    grid-template-columns: repeat(1, 1fr);
+    gap: 55px;
+
+    @media (min-width: 678px) {
+      grid-template-columns: repeat(2, 1fr);
+    }
+
+    @media (min-width: 1400px) {
+      grid-template-columns: repeat(4, 1fr);
+    }
+
+    &_icon {
+      &_img {
+        width: 45px;
+
+        @media (min-width: 515px) {
+          width: 65px;
+        }
+
+        @media (min-width: 678px) {
+          width: 45px;
+        }
+
+        @media (min-width: 800px) {
+          width: 60px;
+        }
+
+        @media (min-width: 900px) {
+          width: 65px;
+        }
+
+        @media (min-width: 100px) {
+          width: 70px;
+        }
+
+        @media (min-width: 1400px) {
+          width: 55px;
+        }
+      }
+    }
+  }
+}

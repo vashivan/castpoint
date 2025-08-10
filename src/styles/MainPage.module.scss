@@ -1,0 +1,109 @@
+.main {
+  position: relative;
+  display: flex;
+  background-color: white;
+  padding: 70px;
+
+  // Справжній бекграунд буде через псевдоелемент
+  &::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background-image:
+      url('/images/vectors/vector1.svg'),
+      url('/images/vectors/vector2.svg'),
+      url('/images/vectors/vector3.svg'),
+      url('/images/vectors/vector4.svg'),
+      url('/images/vectors/vector5.svg'),
+      url('/images/vectors/vector6.svg');
+    background-repeat: no-repeat, no-repeat, no-repeat, no-repeat, no-repeat, no-repeat;
+    background-position: top left, top right, center left, center right, bottom left, bottom right;
+    background-size: auto, auto, auto, auto, auto, auto;
+    opacity: 0.3; // ✅ контроль прозорості
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  // контент повинен бути над фоном
+  >* {
+    position: relative;
+    z-index: 1;
+  }
+
+  @media (min-width: 678px) {
+    padding-inline: 45px;
+    padding-top: 85px;
+    padding-bottom: 85px;
+  }
+
+  @media (min-width: 900px) {
+    padding-inline: 125px;
+    padding-top: 150px;
+  }
+
+  &_text {
+    display: grid;
+    grid-template-columns: repeat(1, fr);
+    row-gap: 55px;
+
+
+    font-size: 16px;
+    font-weight: 100;
+
+    @media (min-width: 678px) {
+      grid-template-columns: repeat(6, 1fr);
+      grid-template-rows: repeat(3, 1fr);
+
+      font-size: 18px;
+      font-weight: 100;
+      line-height: 100%;
+      letter-spacing: 0%;
+      text-align: right;
+
+      gap: 125px;
+    }
+
+    &_1 {
+      grid-column: 1/-1;
+      text-align: center;
+
+      @media (min-width: 678px) {
+        grid-column: 1/6;
+        text-align: left;
+      }
+
+      @media (min-width: 900px) {
+        grid-column: 1/5;
+        text-align: left;
+      }
+    }
+
+    &_2 {
+      grid-column: 1/-1;
+      text-align: center;
+
+      @media (min-width: 678px) {
+        text-align: right;
+        grid-column: 2/-1;
+        grid-row: 2;
+      }
+
+      @media (min-width: 900px) {
+        text-align: right;
+        grid-column: 3/-1;
+        grid-row: 2;
+      }
+    }
+
+
+    &_3 {
+      grid-column: 1/-1;
+      text-align: center;
+
+      @media (min-width: 678px) {
+        grid-column: 1/5;
+        text-align: left;
+      }
+    }
+  }
+}

@@ -59,8 +59,8 @@ export default function LoginPage() {
 
   return (
     <div>
-      <section className="min-h-screen px-6 py-20 flex flex-col items-center justify-center text-center bg-gradient-to-tr from-purple-500 via-pink-400 to-orange-300">
-        <h1 className="text-5xl md:text-6xl font-bold bg-gradient-to-r from-pink-800 via-purple-400 to-orange-500 text-transparent bg-clip-text mb-10 py-6">
+      <section className="min-h-screen px-6 py-20 flex flex-col items-center justify-center text-center bg-transparent">
+        <h1 className="text-5xl md:text-6xl  uppercase bg-clip-text mb-10 py-6">
           Log-in
         </h1>
 
@@ -113,7 +113,7 @@ export default function LoginPage() {
           <hr className="w-50 border-t border-white/40 mt-7" />
 
           <div className="px-3 py-3 flex flex-col items-center">
-            <p className="text-white/60 mb-6">or signup now  <br /> and become a part of Castpoint</p>
+            <p className="text-black mb-6">or signup now  <br /> and become a part of Castpoint</p>
             <Link
               href="/signup"
               className="bg-gradient-to-r from-yellow-400 via-orange-400 to-pink-500 text-white hover:from-yellow-500 hover:via-orange-500 hover:to-pink-600 font-semibold whitespace-nowrap shadow-md rounded-2xl px-2.5 py-2.5 cursor-pointer w-full"

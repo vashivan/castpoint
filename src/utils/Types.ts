@@ -25,3 +25,15 @@ interface AuthContextType {
   updateUser: (updatedUserData: Partial<User>) => void;
   refreshUser: () => void;
 }
+
+interface Review {
+  id: number;
+  artist_id: number;
+  artist_name: string;
+  artist_instagram: string;
+  company_name: string;
+  position: string;
+  place_of_work: string;
+  content: string;
+  created_at: string;
+};

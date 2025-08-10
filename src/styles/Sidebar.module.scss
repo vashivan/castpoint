@@ -1,0 +1,17 @@
+.sidebar {
+  &_link {
+    &_logo {
+      font-weight: 500;
+      font-style: Medium;
+      font-size: 22px;
+
+      @media (min-width: 768px) {
+        font-size: 46px;
+      }
+
+      @media (min-width: 980px) {
+        font-size: 64px;
+      }
+    }
+  }
+}

@@ -2,8 +2,8 @@
 export default function AgreementPage() {
   return (
 <div>
-  <section className="min-h-screen px-10 py-20 flex flex-col items-center justify-center text-center bg-gradient-to-tr from-purple-500 via-pink-400 to-orange-300">
-    <h1 className="text-5xl md:text-6xl font-bold bg-gradient-to-r from-pink-800 via-purple-400 to-orange-500 text-transparent bg-clip-text mb-10">
+  <section className="min-h-screen px-10 py-20 flex flex-col items-center justify-center text-center bg-transparent">
+    <h1 className="text-5xl md:text-6xl mb-5">
       CASTPOINT USER AGREEMENT
     </h1>
 

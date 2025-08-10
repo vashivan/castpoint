@@ -1,0 +1,105 @@
+.info {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  grid-template-rows: repeat(8, auto);
+  gap: 25px;
+
+  padding-top: 100px;
+  padding-inline: 25px;
+
+  @media (min-width: 678px) {
+    grid-template-columns: repeat(4, 1fr);
+    padding-inline: 35px;
+    padding-top: 100px;
+
+    row-gap: 15px;
+  }
+
+  @media (min-width: 1200px) {
+    padding-inline: 200px;
+    padding-top: 120px;
+  }
+
+  &_name {
+    grid-column: 1/-1;
+    grid-row: 2;
+
+    @media (min-width: 678px) {
+      grid-column: 1/3;
+      grid-row: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 15px;
+    }
+  }
+
+  &_email {
+    grid-row: 4;
+
+    @media (min-width: 678px) {
+      grid-column: 1/3;
+      grid-row: 3
+    }
+  }
+
+  &_picture {
+    grid-column: 1/-1;
+    grid-row: 1;
+
+    @media (min-width: 678px) {
+      grid-column: 3/-1;
+      grid-row: 1/5;
+    }
+  }
+
+  &_contact {
+    grid-column: 1/-1;
+    grid-row: 7;
+
+    @media (min-width: 678px) {
+      grid-column: 3/-1;
+      grid-row: 5;
+    }
+  }
+
+  &_password {
+    grid-column: 1/-1;
+    grid-row: 5;
+
+    @media (min-width: 678px) {
+      grid-column: 1/3;
+      grid-row: 4;
+    }
+  }
+
+  &_height {
+    grid-column: 1/-1;
+    grid-row: 6;
+
+    @media (min-width:  678px) {
+      grid-column: 1/4;
+      grid-row: 5;
+    }
+  }
+
+  &_promo {
+    grid-column: 1/-1;
+    grid-row: 8;
+    margin-bottom: 25px;
+
+    @media (min-width: 678px) {
+      grid-column: 1/-1;
+      margin-bottom: 35px;
+    }
+  }
+
+  &_gender {
+    grid-column: 1/-1;
+    grid-row: 3;
+
+    @media (min-width: 678px) {
+      grid-column: 1/2;
+      grid-row: 2;
+    }
+  }
+}
