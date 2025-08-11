@@ -1,8 +1,10 @@
 import styles from '../../styles/Footer.module.scss';
-import React from "react";
+import React, { useState } from "react";
 import Link from "next/link";
 
 const Footer = () => {
+  const [formEmail, setFormEmail] = useState("");
+
   return (
     <footer className={`${styles.footer} bg-transparent text-black px-4 sm:px-6 lg:px-8`}>
       <div className={styles.footer_border} />
@@ -29,11 +31,13 @@ const Footer = () => {
           <input
             type="email"
             placeholder="Your Email"
-            className="w-95 rounded-3xl flex-grow p-2.5 text-sm bg-white/10 text-black border border-black/20 focus:ring-orange-400 focus:border-orange-400 outline-none placeholder-gray-500 backdrop-blur-sm"
+            className="w-95  rounded-l-3xl rounded-r-3xl flex-grow p-2.5 text-sm bg-white/10 text-black border border-black/20 focus:ring-orange-400 focus:border-orange-400 outline-none placeholder-gray-500 backdrop-blur-sm"
+            value={formEmail}
+            onChange={(e) => setFormEmail(e.target.value)}
           />
           <button
             type="submit"
-            className="bg-gradient-to-r b-radius-3xl from-yellow-400 via-orange-400 to-pink-500 font-semibold px-4 py-2 shadow-md hover:from-yellow-500 hover:to-pink-600"
+            className="bg-gradient-to-r rounded-3xl from-yellow-400 via-orange-400 to-pink-500 font-semibold px-4 py-2 shadow-md hover:from-yellow-500 hover:to-pink-600 cursor-pointer"
           >
             Subscribe
           </button>

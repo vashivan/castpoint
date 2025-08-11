@@ -7,6 +7,8 @@ import { usePathname } from "next/navigation";
 import { motion } from "framer-motion";
 import { Home, Briefcase, MessageSquare, Edit3, UserCircle, LogIn, Menu, Sparkles, CircleX, LogOut, LogOutIcon, User } from "lucide-react";
 import { useAuth } from "../../context/AuthContext";
+import LoginPage from './LoginPage';
+import Modal from '../ui/Modal';
 
 interface NavbarProps {
   onToggleSidebar: () => void;
@@ -25,6 +27,8 @@ const navItems = [
 const Navbar: React.FC<NavbarProps> = ({ onToggleSidebar, isOpen, handlerLogOut, isScrolled, sidebarOpen }) => {
   const pathname = usePathname();
   const { user } = useAuth();
+
+  const [open, setOpen] = useState(false);
 
   const isHome = pathname === "/";
   const textColor = !isHome || user || isScrolled ? 'text-black' : 'text-white';
@@ -47,18 +51,16 @@ const Navbar: React.FC<NavbarProps> = ({ onToggleSidebar, isOpen, handlerLogOut,
       ${sidebarOpen ? `hidden` : ``}
     `}
     >
-      <div className="container mx-auto flex space-x-1 justify-between items-center h-16 px-2">
+      <div className="container mx-auto flex space-x-1 justify-between items-center h-16 px-3">
         <Link href="/" className={`
           ${styles.navbar_div_logo} 
           text-2xl uppercase font-extrabold flex items-center creative-gradient-text
           ${textColor}
         `}>
-          <motion.div whileHover={{ scale: 1.15, rotate: -10 }} className="mr-2">
-          </motion.div>
           Castpoint
         </Link>
 
-        <div className="hidden md:flex space-x-2">
+        <div className="hidden md:flex gap-5 space-x-2">
           {filteredNavItems.map(({ path, label }) => {
             const isActive = pathname === path;
 
@@ -78,14 +80,26 @@ const Navbar: React.FC<NavbarProps> = ({ onToggleSidebar, isOpen, handlerLogOut,
 
 
         {/* Desktop login/signup */}
-        {user && (
+        {user ? (
           <div className="hidden md:flex items-center space-x-6n">
             <button className="flex flex-col items-center text-primary/80 hover:text-primary transition cursor-pointer" onClick={handlerLogOut}>
               <LogOutIcon className="h-5 w-5 mb-1" />
-              <p className="text-xs" >Log out</p>
+              <p className="text-xs">Log out</p>
+            </button>
+          </div>
+        ) : (
+          <div className="hidden md:flex items-center space-x-6n">
+            <button className={`flex flex-col items-center text-primary/80 hover:text-primary transition cursor-pointer`} onClick={() => setOpen(!open)}>
+              <img src="/images/icons/person.svg" alt=""
+                className={`h-7 w-7 mb-1 ${textColor}`}
+              />
             </button>
           </div>
         )}
+
+        <Modal open={open} onClose={() => setOpen(false)} widthClass="max-w-lg">
+          <LoginPage onSuccess={() => setOpen(false)} />
+        </Modal>
 
         {/* Mobile hamburger */}
         <div className="md:hidden flex">
@@ -103,7 +117,6 @@ const Navbar: React.FC<NavbarProps> = ({ onToggleSidebar, isOpen, handlerLogOut,
               :
               <CircleX size={35} className="text-white cursor-pointer" />
             }
-
           </motion.button>
         </div>
       </div>
