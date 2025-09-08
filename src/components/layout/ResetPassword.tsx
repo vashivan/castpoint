@@ -1,14 +1,10 @@
-// app/reset-password/page.tsx
 'use client';
 
 import React, { useMemo, useState } from 'react';
-import { useRouter, useSearchParams } from 'next/navigation';
+import { useRouter } from 'next/navigation';
 
-export default function ResetPasswordPage() {
+export default function ResetPassword({ token }: { token: string }) {
   const router = useRouter();
-  const search = useSearchParams();
-  const token = search ? search.get('token') : null;
-
   const [password, setPassword] = useState('');
   const [password2, setPassword2] = useState('');
   const [show, setShow] = useState(false);
@@ -16,47 +12,37 @@ export default function ResetPasswordPage() {
   const [msg, setMsg] = useState<string | null>(null);
   const [ok, setOk] = useState(false);
 
-  const canSubmit = useMemo(() => {
-    return !loading && password.length >= 8 && password === password2 && !!token;
-  }, [loading, password, password2, token]);
+  const canSubmit = useMemo(
+    () => !loading && !!token && password.length >= 8 && password === password2,
+    [loading, password, password2, token]
+  );
 
   const onSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setMsg(null);
 
-    if (!token) {
-      setMsg('Invalid or missing token.');
-      return;
-    }
-    if (password.length < 8) {
-      setMsg('Password must be at least 8 characters.');
-      return;
-    }
-    if (password !== password2) {
-      setMsg('Passwords do not match.');
-      return;
-    }
+    if (!token) return setMsg('Invalid or missing token.');
+    if (password.length < 8) return setMsg('Password must be at least 8 characters.');
+    if (password !== password2) return setMsg('Passwords do not match.');
 
     try {
       setLoading(true);
+      // узгодь із бекендом: /api/password/reset або /api/reset_password
       const res = await fetch('/api/password/reset', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ token, password }),
       });
       const data = await res.json().catch(() => ({}));
-
-      if (!res.ok) {
-        throw new Error(data?.error || 'Reset failed. Try again.');
-      }
+      if (!res.ok) throw new Error(data?.error || 'Reset failed. Try again.');
 
       setOk(true);
       setMsg('Password updated successfully. You can log in now.');
-      // опційно: перенаправити через кілька секунд
+        setTimeout(() => router.push('/login'), 1500); 
+      // за бажанням:
       // setTimeout(() => router.push('/login'), 1500);
     } catch (err: unknown) {
-      const text = err instanceof Error ? err.message : 'Reset failed. Try again.';
-      setMsg(text);
+      setMsg(err instanceof Error ? err.message : 'Reset failed. Try again.');
     } finally {
       setLoading(false);
     }
@@ -78,10 +64,7 @@ export default function ResetPasswordPage() {
   return (
     <main className="min-h-screen flex items-center justify-center px-6 py-16">
       <div className="w-full max-w-md p-[2px] rounded-3xl bg-gradient-to-r from-[#AA0254] to-[#F5720D]">
-        <form
-          onSubmit={onSubmit}
-          className="rounded-3xl bg-white shadow-xl p-8"
-        >
+        <form onSubmit={onSubmit} className="rounded-3xl bg-white shadow-xl p-8">
           <h1 className="text-3xl font-semibold text-center mb-6">Reset password</h1>
 
           <div className="space-y-4">
@@ -134,16 +117,6 @@ export default function ResetPasswordPage() {
           >
             {loading ? 'Saving…' : 'Set new password'}
           </button>
-
-          <div className="mt-4 text-center">
-            <button
-              type="button"
-              className="text-sm text-gray-700 underline cursor-pointer"
-              onClick={() => router.push('/login')}
-            >
-              Back to login
-            </button>
-          </div>
         </form>
       </div>
     </main>
