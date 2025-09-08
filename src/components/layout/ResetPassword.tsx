@@ -28,7 +28,7 @@ export default function ResetPassword({ token }: { token: string }) {
     try {
       setLoading(true);
       // узгодь із бекендом: /api/password/reset або /api/reset_password
-      const res = await fetch('/api/password/reset', {
+      const res = await fetch('/api/reset_password', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ token, password }),

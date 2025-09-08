@@ -1,17 +1,18 @@
 import MainLayout from '../../layouts/MainLayout';
 import ResetPassword from '../../components/layout/ResetPassword';
 
-// Вимикаємо SSG/кеш і змушуємо рендеритись динамічно,
-// щоб білд не намагався пререндерити сторінку без токена
-export const dynamic = 'force-dynamic';
+export const dynamic = 'force-dynamic'; // щоб не пререндерити без токена
 // або: export const revalidate = 0;
 
-export default function Page({
+type SP = { token?: string };
+
+export default async function Page({
   searchParams,
 }: {
-  searchParams?: { token?: string };
+  searchParams?: Promise<SP>;
 }) {
-  const token = typeof searchParams?.token === 'string' ? searchParams.token : '';
+  const sp = await searchParams; // <-- важливо
+  const token = typeof sp?.token === 'string' ? sp.token : '';
 
   return (
     <MainLayout>
