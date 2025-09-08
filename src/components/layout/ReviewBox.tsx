@@ -1,5 +1,6 @@
 import Image from 'next/image';
 import styles from '../../styles/ReviewBox.module.scss';
+import { Review } from '../../utils/Types';
 
 type Props = {
   review: Review
