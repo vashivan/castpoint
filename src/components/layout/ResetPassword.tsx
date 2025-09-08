@@ -1,94 +1,149 @@
-// app/reset-password/reset-form.tsx
+// app/reset-password/page.tsx
 'use client';
 
-import { useState } from 'react';
+import React, { useMemo, useState } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
 
-export default function ResetForm({ token, email }: { token: string; email: string }) {
-  const [p1, setP1] = useState('');
-  const [p2, setP2] = useState('');
+export default function ResetPasswordPage() {
+  const router = useRouter();
+  const search = useSearchParams();
+  const token = search ? search.get('token') : null;
+
+  const [password, setPassword] = useState('');
+  const [password2, setPassword2] = useState('');
+  const [show, setShow] = useState(false);
+  const [loading, setLoading] = useState(false);
   const [msg, setMsg] = useState<string | null>(null);
   const [ok, setOk] = useState(false);
-  const [loading, setLoading] = useState(false);
 
-  const canSubmit =
-    !loading && token && p1.length >= 8 && p1 === p2;
+  const canSubmit = useMemo(() => {
+    return !loading && password.length >= 8 && password === password2 && !!token;
+  }, [loading, password, password2, token]);
 
-  const submit = async (e: React.FormEvent) => {
+  const onSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setMsg(null);
 
-    if (!token) return setMsg('Invalid or missing token.');
-    if (p1.length < 8) return setMsg('Password must be at least 8 characters.');
-    if (p1 !== p2) return setMsg('Passwords do not match.');
+    if (!token) {
+      setMsg('Invalid or missing token.');
+      return;
+    }
+    if (password.length < 8) {
+      setMsg('Password must be at least 8 characters.');
+      return;
+    }
+    if (password !== password2) {
+      setMsg('Passwords do not match.');
+      return;
+    }
 
     try {
       setLoading(true);
-      const res = await fetch('/api/reset_password', {
+      const res = await fetch('/api/password/reset', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ token, email, password: p1 }),
+        body: JSON.stringify({ token, password }),
       });
       const data = await res.json().catch(() => ({}));
-      if (!res.ok) throw new Error(data?.error || 'Reset failed. Try again.');
+
+      if (!res.ok) {
+        throw new Error(data?.error || 'Reset failed. Try again.');
+      }
+
       setOk(true);
-      setMsg('Password updated. You can log in now.');
+      setMsg('Password updated successfully. You can log in now.');
+      // опційно: перенаправити через кілька секунд
+      // setTimeout(() => router.push('/login'), 1500);
     } catch (err: unknown) {
-      setMsg(err instanceof Error ? err.message : 'Reset failed. Try again.');
+      const text = err instanceof Error ? err.message : 'Reset failed. Try again.';
+      setMsg(text);
     } finally {
       setLoading(false);
     }
   };
 
+  if (!token) {
+    return (
+      <main className="min-h-screen flex items-center justify-center px-4">
+        <div className="max-w-md w-full text-center">
+          <h1 className="text-3xl font-bold mb-4">Reset password</h1>
+          <p className="text-gray-700">
+            The reset link is invalid or missing a token. Please request a new password reset.
+          </p>
+        </div>
+      </main>
+    );
+  }
+
   return (
     <main className="min-h-screen flex items-center justify-center px-6 py-16">
       <div className="w-full max-w-md p-[2px] rounded-3xl bg-gradient-to-r from-[#AA0254] to-[#F5720D]">
-        <form onSubmit={submit} className="rounded-3xl bg-white shadow-xl p-8">
+        <form
+          onSubmit={onSubmit}
+          className="rounded-3xl bg-white shadow-xl p-8"
+        >
           <h1 className="text-3xl font-semibold text-center mb-6">Reset password</h1>
 
-          {!token ? (
-            <p className="text-red-600">Invalid or missing reset link.</p>
-          ) : (
-            <>
-              <label className="block mb-3">
-                <span className="block text-sm font-medium mb-1">New password</span>
+          <div className="space-y-4">
+            <label className="block">
+              <span className="block text-sm font-medium text-gray-900 mb-1">New password</span>
+              <div className="relative">
                 <input
-                  type="password"
-                  className="w-full rounded-xl border px-4 py-2"
-                  value={p1}
-                  onChange={(e) => setP1(e.target.value)}
-                  autoComplete="new-password"
+                  type={show ? 'text' : 'password'}
+                  className="w-full rounded-xl border border-gray-300 px-4 py-2 pr-12 focus:outline-none focus:ring-2 focus:ring-orange-500"
                   placeholder="••••••••"
-                />
-              </label>
-
-              <label className="block">
-                <span className="block text-sm font-medium mb-1">Repeat new password</span>
-                <input
-                  type="password"
-                  className="w-full rounded-xl border px-4 py-2"
-                  value={p2}
-                  onChange={(e) => setP2(e.target.value)}
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
                   autoComplete="new-password"
-                  placeholder="••••••••"
                 />
-              </label>
+                <button
+                  type="button"
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-sm text-gray-600 cursor-pointer"
+                  onClick={() => setShow((s) => !s)}
+                >
+                  {show ? 'Hide' : 'Show'}
+                </button>
+              </div>
+              <p className="mt-1 text-xs text-gray-500">At least 8 characters.</p>
+            </label>
 
-              {msg && (
-                <div className={`mt-4 text-sm ${ok ? 'text-green-600' : 'text-red-600'}`}>
-                  {msg}
-                </div>
-              )}
+            <label className="block">
+              <span className="block text-sm font-medium text-gray-900 mb-1">Repeat new password</span>
+              <input
+                type={show ? 'text' : 'password'}
+                className="w-full rounded-xl border border-gray-300 px-4 py-2 focus:outline-none focus:ring-2 focus:ring-orange-500"
+                placeholder="••••••••"
+                value={password2}
+                onChange={(e) => setPassword2(e.target.value)}
+                autoComplete="new-password"
+              />
+            </label>
+          </div>
 
-              <button
-                type="submit"
-                disabled={!canSubmit}
-                className={`mt-6 w-full py-2 rounded-xl text-white font-semibold cursor-pointer
-                  ${canSubmit ? 'bg-black' : 'bg-gray-400 cursor-not-allowed'}`}
-              >
-                {loading ? 'Saving…' : 'Set new password'}
-              </button>
-            </>
+          {msg && (
+            <div className={`mt-4 text-sm ${ok ? 'text-green-600' : 'text-red-600'}`}>
+              {msg}
+            </div>
           )}
+
+          <button
+            type="submit"
+            disabled={!canSubmit}
+            className={`mt-6 w-full py-2 rounded-xl text-white font-semibold transition cursor-pointer
+              ${canSubmit ? 'bg-gradient-to-r from-[#AA0254] to-[#F5720D] hover:opacity-90' : 'bg-gray-400 cursor-not-allowed'}`}
+          >
+            {loading ? 'Saving…' : 'Set new password'}
+          </button>
+
+          <div className="mt-4 text-center">
+            <button
+              type="button"
+              className="text-sm text-gray-700 underline cursor-pointer"
+              onClick={() => router.push('/login')}
+            >
+              Back to login
+            </button>
+          </div>
         </form>
       </div>
     </main>
