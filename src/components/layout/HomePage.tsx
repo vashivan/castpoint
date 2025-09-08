@@ -5,14 +5,14 @@ import CastpointLoader from '../ui/loader';
 import { useAuth } from '../../context/AuthContext';
 import React from 'react';
 import MainLayout from '../../layouts/MainLayout';
-
-import dynamic from 'next/dynamic';
+// import dynamic from 'next/dynamic';
 import AuthenticatedHome from './AuthenticatedHome';
 import Link from 'next/link';
 import AboutSection from './AboutSection';
 import WhyCastpoint from './WhyCastpoint';
+import ReviewsCarousel from './ReviewsCarousel';
 
-const UserProfilePage = dynamic(() => import('./ProfilePage'), { ssr: false });
+// const UserProfilePage = dynamic(() => import('./ProfilePage'), { ssr: false });
 
 
 export default function HomePage() {
@@ -53,6 +53,7 @@ export default function HomePage() {
           <div className={styles.couplepic}>
             <h1 className={styles.couplepic_text}>Let’s make the performing world more transparent, supportive, and empowering.</h1>
           </div>
+          <ReviewsCarousel />
         </>
       )}
     </MainLayout>

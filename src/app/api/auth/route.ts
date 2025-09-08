@@ -14,6 +14,8 @@ export async function GET(req: NextRequest) {
 
     const decoded = jwt.verify(token, process.env.JWT_SECRET!) as { 
       id: number,
+      first_name: string,
+      second_name: string,
       name: string,
       sex: string,
       country: string,
@@ -33,6 +35,7 @@ export async function GET(req: NextRequest) {
 
     return NextResponse.json({ user: decoded });
   } catch (error) {
+    console.log("Internal error", error);
     return NextResponse.json({ error: "Не авторизований" }, { status: 401 });
   }
 }

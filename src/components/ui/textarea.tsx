@@ -21,7 +21,7 @@ export default function TextArea({ label, value, placeholder, text, onChange, ro
         )}
       </div>
       <textarea
-        className="w-full px-4 py-3 rounded-xl bg-white/5 border border-orange-500 text-black placeholder-gray/50 focus:outline-none focus:ring-2 focus:ring-orange-300 text-justify mb-0 backdrop-blur-sm"
+        className="w-full px-4 py-3 rounded-xl bg-white/5 border border-black text-black placeholder-gray/50 focus:outline-none focus:ring-2 focus:ring-orange-300 text-justify mb-0 backdrop-blur-sm"
         name="bio"
         id="bio"
         cols={10}

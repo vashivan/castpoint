@@ -1,3 +1,4 @@
+import Image from 'next/image';
 import styles from '../../styles/ReviewBox.module.scss';
 
 type Props = {
@@ -11,7 +12,7 @@ export default function ReviewBox({ review }: Props) {
 
   return (
     <div className={`
-     bg-white p-4 rounded-2xl shadow-2xl mb-4 text-black 
+     bg-white p-4 rounded-2xl shadow-sm mb-4 text-black 
      ${styles.review_box}`
     }>
       <div className={`
@@ -24,7 +25,7 @@ export default function ReviewBox({ review }: Props) {
           rel="noopener noreferrer"
           className="text-pink-500 ml-1"
         >
-          <img src="/images/icons/instagram.svg" alt="" className="w-5 h-5" />
+          <Image width={0} height={0} src="/images/icons/instagram.svg" alt="" className="w-5 h-5" />
         </a>
         <span className="font-semibold">{review.artist_name}</span>
       </div>

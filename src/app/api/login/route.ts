@@ -1,5 +1,5 @@
 // 👇 для pages/api
-import { NextApiRequest, NextApiResponse } from "next";
+import 'mysql2';
 import { db } from "../../../lib/db";
 import bcrypt from "bcryptjs";
 import { serialize } from "cookie";
@@ -44,6 +44,11 @@ export async function POST(req: Request) {
       {
         id: user.id,
         name: user.name,
+        first_name: user.first_name,
+        second_name: user.second_name,
+        country_of_birth: user.country_of_birth,
+        nationality: user.nationality,
+        phone: user.phone,
         sex: user.sex,
         country: user.country,
         role: user.role,
@@ -53,8 +58,10 @@ export async function POST(req: Request) {
         video_url: user.video_url,
         pic_url: user.pic_url,
         pic_public_id: user.pic_public_id,
+        skills: user.skills,
         biography: user.biography,
         experience: user.experience,
+        resume_url: user.resume_url,
         email: user.email,
         instagram: user.instagram,
         facebook: user.facebook,

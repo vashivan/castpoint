@@ -3,7 +3,7 @@ import { Metadata } from 'next';
 import React from 'react';
 import { Montserrat } from 'next/font/google';
 import AuthContextProvider from '../context/AuthContextProvider';
-import RouteLoader from '@/components/ui/RouterLoader';
+import RouteLoader from '../components/ui/RouterLoader';
 
 const space = Montserrat({ subsets: ['latin'], weight: ['400', '700'] });
 

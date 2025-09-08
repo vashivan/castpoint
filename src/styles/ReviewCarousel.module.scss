@@ -1,0 +1,77 @@
+.wrapper {
+  position: relative;
+  padding: 15px 35px;
+  align-items: center;
+
+  &_navBtn {
+    position: absolute;
+    top: 50%;
+    z-index: 999;
+    width: 50px;
+    height: 50px;
+    display: grid;
+    place-items: center;
+    cursor: pointer;
+    color: rgb(175, 117, 9);
+    font-weight: 900;
+
+    &_left {
+      left: 0;
+    }
+
+    &_right {
+      right: 0;
+    }
+
+  }
+
+  .title {
+    margin-bottom: 1rem;
+    text-transform: uppercase;
+    text-align: center;
+    font-weight: 400;
+    font-size: clamp(24px, 4vw, 48px);
+  }
+
+
+  /* ——— Вʼюшка та трек ——— */
+  .viewport {
+    overflow: hidden;
+    position: relative;
+  }
+
+  .track {
+    display: flex;
+    width: 100%;
+    transition: transform .35s ease;
+  }
+
+  .page {
+    min-width: 100%;
+    display: grid;
+    gap: 12px;
+    /* грід під кількість елементів на сторінці */
+    grid-template-columns: 1fr;
+    /* мобільний: 1 */
+  }
+
+  @media (min-width: 678px) {
+    .page {
+      grid-template-columns: repeat(2, 1fr);
+    }
+
+    /* планшет: 2 */
+  }
+
+  @media (min-width: 980px) {
+    .page {
+      grid-template-columns: repeat(3, 1fr);
+    }
+
+    /* десктоп: 3 */
+  }
+
+  .cardWrap {
+    padding: 8px;
+  }
+}

@@ -13,7 +13,7 @@ type LoginPageProps = {
   onSuccess?: () => void; // ← якщо відкриваєш у модалці, закриємо її після успіху
 };
 
-export default function LoginPage({ onSuccess }: LoginPageProps) {
+export default function DesktopLogin({ onSuccess }: LoginPageProps) {
   const pathname = usePathname();
 
   const { refreshUser } = useAuth();
@@ -78,10 +78,10 @@ export default function LoginPage({ onSuccess }: LoginPageProps) {
   };
 
   return (
-    <div className={`flex flex-col items-center aling-text-center border border-white/20 rounded-3xl p-8 shadow-xl overflow-hidden justify-center
-    ${pathname === '/login' ? "bg-transparent" : "bg-white/10 backdrop-blur-md "}`}>
+    <div className={`flex flex-col w-120 items-center aling-text-center border border-white/20 rounded-3xl p-8 shadow-xl overflow-hidden justify-center
+    ${pathname === '/login' ? "bg-transparent" : "bg-white/30 backdrop-blur-md "}`}>
       {/* <section className="h-90 w-90 px-6 py-20 flex flex-col items-center justify-center text-center bg-transparent"> */}
-      <h1 className="text-5xl md:text-6xl uppercase bg-clip-text mb-10 py-6">
+      <h1 className="text-2xl md:text-3xl uppercase bg-clip-text mb-5 py-6">
         Log-in
       </h1>
 
@@ -95,7 +95,7 @@ export default function LoginPage({ onSuccess }: LoginPageProps) {
       >
         <form
           onSubmit={handleSubmit}
-          className="flex flex-col items-center w-full max-w-md space-y-6 relative"
+          className="flex flex-col items-center w-full max-w-md space-y-2 relative"
         >
           <TextInput
             label="Email"
@@ -127,7 +127,8 @@ export default function LoginPage({ onSuccess }: LoginPageProps) {
           {message && (
             <div className="flex flex-col items-center">
               <p className="px-3 py-3 flex flex-col items-center text-red-600 text-xl">{message}</p>
-              <button className="border p-2 rounded-xl cursor-pointer">Forgot password</button>
+              <button className="border p-2 rounded-xl cursor-pointer">
+                <Link href="/forgot-password">Forgot password</Link></button>
             </div>
           )}
         </form>

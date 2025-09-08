@@ -1,4 +1,3 @@
-import { useAuth } from '../../context/AuthContext';
 import React, { useState, useRef } from 'react';
 
 type Props = {

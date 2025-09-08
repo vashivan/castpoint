@@ -6,20 +6,24 @@ type Props = {
   name?: string;
   placeholder?: string;
   value: number | string;
-  onChange: (val: string) => void
+  onChange: (val: string) => void,
+  autoComplete?: string,
+  onBlur?: () => void
 }
 
-export default function TextInput({ type, label, name, placeholder, value, onChange, width}: Props) {
+export default function TextInput({ type, label, name, placeholder, value, onChange, width, autoComplete, onBlur}: Props) {
   return (
     <>
-      <label className="block text-xl text-black mb-2">{label}</label>
+      <label className="block text-m text-black mb-2">{label}</label>
       <input
         type={type}
         name={name}
         placeholder={placeholder}
         value={value}
         onChange={(e) => onChange(e.target.value)}
-        className={` ${!width ? `w-full` : 'w-80'} px-4 py-3 rounded-3xl bg-white/10 text-black placeholder-black border border-black  focus:outline-none focus:ring-2 focus:ring-orange-300 text-center backdrop-blur-sm`}
+        className={` ${!width ? `w-full` : 'w-80'} px-4 py-3 rounded-3xl bg-white/10 text-black placeholder-black border-b border-black  focus:outline-none focus:ring-2 focus:ring-orange-300 text-center backdrop-blur-sm`}
+        autoComplete={autoComplete}
+        onBlur={onBlur}
         required
       />
     </>

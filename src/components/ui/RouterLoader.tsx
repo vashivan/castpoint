@@ -3,12 +3,12 @@
 
 import { useEffect, useState } from 'react';
 import { usePathname } from 'next/navigation';
-import { useTransition } from 'react';
+// import { useTransition } from 'react';
 import CastpointLoader from './loader';
 
 export default function RouteLoader() {
   const pathname = usePathname();
-  const [isPending, startTransition] = useTransition();
+  // const [isPending, startTransition] = useTransition();
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {

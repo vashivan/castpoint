@@ -35,7 +35,7 @@ export default function WhyCastpoint() {
 
             {/* Фонова підкладка (substract) */}
             <div className="relative flex items-center justify-items-center w-60 md:w-70">
-              <img src="/images/icons/figures/subtract.svg" alt="" className="w-full z-0" />
+              <Image width={0} height={0} src="/images/icons/figures/subtract.svg" alt="" className="w-full z-0" />
 
               {/* Текст */}
               <p className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-[5%] px-4 text-sm  text-black text-center z-10 w-full">

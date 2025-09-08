@@ -1,14 +1,14 @@
 'use client';
 
 import styles from '../../styles/Navbar.module.scss';
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { motion } from "framer-motion";
-import { Home, Briefcase, MessageSquare, Edit3, UserCircle, LogIn, Menu, Sparkles, CircleX, LogOut, LogOutIcon, User } from "lucide-react";
+import { Briefcase, MessageSquare, Edit3, Menu, CircleX, LogOutIcon, User } from "lucide-react";
 import { useAuth } from "../../context/AuthContext";
-import LoginPage from './LoginPage';
 import Modal from '../ui/Modal';
+import DesktopLogin from './DesktopLogin';
 
 interface NavbarProps {
   onToggleSidebar: () => void;
@@ -31,7 +31,7 @@ const Navbar: React.FC<NavbarProps> = ({ onToggleSidebar, isOpen, handlerLogOut,
   const [open, setOpen] = useState(false);
 
   const isHome = pathname === "/";
-  const textColor = !isHome || user || isScrolled ? 'text-black' : 'text-white';
+  const textColor = !isHome || user || isScrolled ? 'black' : 'white';
 
   const filteredNavItems = navItems.filter((item) => {
     if (item.path === "/profile" && !user) {
@@ -40,7 +40,7 @@ const Navbar: React.FC<NavbarProps> = ({ onToggleSidebar, isOpen, handlerLogOut,
     return true;
   })
 
-  const baseColor = isScrolled ? "text-black" : textColor;
+  const baseColor = isScrolled ? "text-black" : `text-${textColor}`;
   const activeColor = "underline";
 
 
@@ -55,7 +55,7 @@ const Navbar: React.FC<NavbarProps> = ({ onToggleSidebar, isOpen, handlerLogOut,
         <Link href="/" className={`
           ${styles.navbar_div_logo} 
           text-2xl uppercase font-extrabold flex items-center creative-gradient-text
-          ${textColor}
+          text-${textColor}
         `}>
           Castpoint
         </Link>
@@ -90,15 +90,16 @@ const Navbar: React.FC<NavbarProps> = ({ onToggleSidebar, isOpen, handlerLogOut,
         ) : (
           <div className="hidden md:flex items-center space-x-6n">
             <button className={`flex flex-col items-center text-primary/80 hover:text-primary transition cursor-pointer`} onClick={() => setOpen(!open)}>
-              <img src="/images/icons/person.svg" alt=""
+              {/* <Image src="/images/icons/person.svg" width={0} height={0} alt=""
                 className={`h-7 w-7 mb-1 ${textColor}`}
-              />
+              /> */}
+              <User color={textColor} width={45} height={30}/>
             </button>
           </div>
         )}
 
         <Modal open={open} onClose={() => setOpen(false)} widthClass="max-w-lg">
-          <LoginPage onSuccess={() => setOpen(false)} />
+          <DesktopLogin onSuccess={() => setOpen(false)} />
         </Modal>
 
         {/* Mobile hamburger */}
@@ -111,7 +112,7 @@ const Navbar: React.FC<NavbarProps> = ({ onToggleSidebar, isOpen, handlerLogOut,
               <Menu
                 size={35}
                 className={`
-                ${textColor} 
+                ${baseColor} 
                 cursor-pointer
                 `} />
               :

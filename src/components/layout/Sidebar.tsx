@@ -1,10 +1,10 @@
 'use client';
 
 import styles from '../../styles/Sidebar.module.scss';
-import React, { useState, useEffect } from "react";
+import React from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Home, Briefcase, MessageSquare, Edit3, UserCircle, LogIn, LogOutIcon, User, Menu, CircleX } from "lucide-react";
+import { Briefcase, MessageSquare, Edit3, UserCircle, LogIn, LogOutIcon, User, Menu, CircleX } from "lucide-react";
 import { motion } from "framer-motion";
 import { useAuth } from "@/context/AuthContext";
 
@@ -17,7 +17,7 @@ const navItems = [
 ];
 
 
-export default function Sidebar({ isOpen, onClose, handlerLogOut, isScrolled }: { isOpen: boolean, onClose: () => void, handlerLogOut: () => void; isScrolled: boolean; }) {
+export default function Sidebar({ isOpen, onClose, handlerLogOut }: { isOpen: boolean, onClose: () => void, handlerLogOut: () => void; isScrolled: boolean; }) {
   const { user } = useAuth();
   const pathname = usePathname();
 
@@ -45,7 +45,7 @@ export default function Sidebar({ isOpen, onClose, handlerLogOut, isScrolled }: 
 
 
   return (
-    <div className={`fixed top-0 left-0 h-full w-full bg-gray-900 text-black transform ${isOpen ? 'translate-x-0 overflow-hidden overflow-x-hidden' : '-translate-x-full'} transition-transform duration-300 bg-white/5 backdrop-blur-xl shadow-md z-999`}>
+    <div className={`fixed top-0 left-0 h-full w-full bg-gray-900 text-black transform ${isOpen ? 'translate-x-0 overflow-hidden overflow-x-hidden' : '-translate-x-full'} transition-transform duration-300 bg-white/5 backdrop-blur-sm shadow-md z-999`}>
       <nav className="p-4">
         <div className="md:hidden space-x-5">
           <div className="mb-10 flex flex-col text-center items-center">
@@ -74,16 +74,20 @@ export default function Sidebar({ isOpen, onClose, handlerLogOut, isScrolled }: 
 
 
           {user ? (
-            <button
-              className="flex items-center px-3 py-2 rounded-md text-black/100 font-semibold mb-2.5 cursor-pointer"
-              onClick={() => {
-                handlerLogOut(),
-                  onClose()
-              }}
+            <div
+              className="mb-10 flex flex-col text-center items-center"
             >
-              <LogOutIcon className="mr-2" />
-              Log out
-            </button>
+              <button
+                className="flex items-center px-3 py-2 rounded-md text-black/100 font-semibold mb-2.5 cursor-pointer"
+                onClick={() => {
+                  handlerLogOut();
+                  onClose();
+                }}
+              >
+                <LogOutIcon className="mr-2" />
+                Log out
+              </button>
+            </div>
           ) : (
             <div
               className="mb-10 flex flex-col text-center items-center"
@@ -94,7 +98,7 @@ export default function Sidebar({ isOpen, onClose, handlerLogOut, isScrolled }: 
                 onClick={onClose}
               >
                 <LogIn className="mr-3 h-5 w-5" />
-                Login
+                Sing in
               </Link>
 
               <Link
@@ -103,7 +107,7 @@ export default function Sidebar({ isOpen, onClose, handlerLogOut, isScrolled }: 
                 onClick={onClose}
               >
                 <UserCircle className="mr-3 h-5 w-5" />
-                Sign in
+                Sign up
               </Link>
             </div>
           )}
@@ -124,7 +128,7 @@ export default function Sidebar({ isOpen, onClose, handlerLogOut, isScrolled }: 
 
           <div className="mt-12 pt-10 border-t border-gray text-center text-black text-m relative z-10">
             <p>&copy; {new Date().getFullYear()} Castpoint team. All rights reserved to shine.</p>
-            <p>Crafted with 💖 and 🤖 by Castpoint team for the world's artists.</p>
+            <p>Crafted with 💖 and 🤖 by Castpoint team for the world&apos;s artists.</p>
           </div>
         </div>
       </nav>

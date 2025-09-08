@@ -2,50 +2,88 @@
 
 import React from 'react';
 import DatePicker from 'react-datepicker';
-import { format } from 'date-fns';
-import { enGB } from 'date-fns/locale';
+import { parseISO, isValid, format } from 'date-fns';
+import 'react-datepicker/dist/react-datepicker.css';
 
 type Props = {
-  label: string;
-  name: string;
-  value: string;
-  onChange: (val: string) => void;
+  label?: string;
+  name?: string;
+  value?: string | Date | null;   // приймаємо рядок 'yyyy-MM-dd', Date або null
+  onChange: (val: string) => void; // віддаємо рядок 'yyyy-MM-dd' або '' якщо очищено
+  placeholder?: string;
+  min?: string | Date | null;
+  max?: string | Date | null;
+  className?: string;
 };
 
-export default function DateInput({ label, name, value, onChange }: Props) {
-  const selectedDate = value ? parseDate(value) : null;
+function normalizeIn(v: Props['value']): Date | null {
+  if (!v) return null;
 
-  const handleChange = (date: Date | null) => {
-    if (date) {
-      const formatted = format(date, 'yyyy-MM-dd');
-      onChange(formatted);
-    } else {
-      onChange('');
-    }
-  };
+  if (v instanceof Date) return isValid(v) ? v : null;
 
-  return (
-    <div className="flex flex-col w-full">
-      <label className="block text-xl text-black mb-2">{label}</label>
-      <DatePicker
-        selected={selectedDate}
-        onChange={handleChange}
-        dateFormat="yyyy-MM-dd"
-        placeholderText="YYYY.MM.DD"
-        locale={enGB}
-        name={name}
-        className="w-full px-4 py-3 rounded-xl bg-white/20 text-black placeholder-black border border-black focus:outline-none focus:ring-2 focus:ring-orange-300 text-center"
-        showYearDropdown
-        scrollableYearDropdown
-        yearDropdownItemNumber={100}
-      />
-    </div>
-  );
+  // рядок
+  const s = String(v).trim();
+  // MySQL "zero date" та порожнє
+  if (!s || s === '0000-00-00' || s.toLowerCase() === 'invalid date') return null;
+
+  // формат 'yyyy-MM-dd'
+  if (s.length === 10 && /^\d{4}-\d{2}-\d{2}$/.test(s)) {
+    const d = parseISO(s);               // парсимо безпечно
+    return isValid(d) ? d : null;
+  }
+
+  // інші формати пробуємо нативно
+  const d2 = new Date(s);
+  return isValid(d2) ? d2 : null;
 }
 
-// Допоміжна функція: парсить DD.MM.YYYY
-function parseDate(dateString: string): Date | null {
-  const [year, month, day] = dateString.split('-');
-  if (!year || !month || !day) return null;
-  return new Date(Number(year), Number(month) - 1, Number(day));
+function normalizeLimit(v: Props['min']): Date | undefined {
+  if (!v) return undefined;
+  if (v instanceof Date) return isValid(v) ? v : undefined;
+  const s = String(v).trim();
+  if (!s || s === '0000-00-00') return undefined;
+  if (s.length === 10 && /^\d{4}-\d{2}-\d{2}$/.test(s)) {
+    const d = parseISO(s);
+    return isValid(d) ? d : undefined;
+  }
+  const d2 = new Date(s);
+  return isValid(d2) ? d2 : undefined;
+}
+
+export default function DateInput({
+  label,
+  name,
+  value,
+  onChange,
+  placeholder = 'YYYY-MM-DD',
+  min,
+  max,
+  className = '',
+}: Props) {
+  const selectedDate = normalizeIn(value);
+
+  return (
+    <>
+      <div className={`flex flex-col w-full ${className}`}>
+        {label && (
+          <label htmlFor={name} className="block text-m text-black mb-2">
+            {label}
+          </label>
+        )}
+        <DatePicker
+          id={name}
+          selected={selectedDate || null}
+          onChange={(d: Date | null) => onChange(d ? format(d, 'yyyy-MM-dd') : '')}
+          dateFormat="yyyy-MM-dd"
+          placeholderText={placeholder}
+          showMonthDropdown
+          showYearDropdown
+          dropdownMode="select"
+          minDate={normalizeLimit(min)}
+          maxDate={normalizeLimit(max)}
+          className="w-full border-b rounded-3xl py-2 px-4 bg-white/70 focus:outline-none focus:ring-2 focus:ring-orange-500 text-center"
+        />
+      </div>
+    </>
+  );
 }
