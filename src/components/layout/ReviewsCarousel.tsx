@@ -5,6 +5,7 @@ import styles from '../../styles/ReviewCarousel.module.scss';
 import ReviewBox from './ReviewBox';
 import Image from 'next/image';
 import Link from 'next/link';
+import { Review } from '../../utils/Types';
 
 export default function ReviewsCarousel() {
   const [reviews, setReviews] = useState<Review[]>([]);
