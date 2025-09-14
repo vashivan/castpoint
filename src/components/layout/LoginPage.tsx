@@ -78,11 +78,11 @@ export default function LoginPage({ onSuccess }: LoginPageProps) {
   };
 
   return (
-    <div className={`flex flex-col items-center aling-text-center border border-white/20 rounded-3xl p-8 shadow-xl overflow-hidden justify-center
+    <div className={`flex flex-col items-center aling-text-center p-8 overflow-hidden justify-center
     ${pathname === '/login' ? "bg-transparent" : "bg-white/10 backdrop-blur-md "}`}>
       {/* <section className="h-90 w-90 px-6 py-20 flex flex-col items-center justify-center text-center bg-transparent"> */}
       <h1 className="text-5xl md:text-6xl uppercase bg-clip-text mb-10 py-6">
-        Log-in
+        Sign in
       </h1>
 
       <motion.div
@@ -127,30 +127,34 @@ export default function LoginPage({ onSuccess }: LoginPageProps) {
           {message && (
             <div className="flex flex-col items-center">
               <p className="px-3 py-3 flex flex-col items-center text-red-600 text-xl">{message}</p>
-              <button className="border p-2 rounded-xl cursor-pointer">Forgot password</button>
+              <button className="bg-gradient-to-r from-yellow-400 via-orange-400 to-pink-500 text-white 
+                         hover:from-yellow-500 hover:via-orange-500 hover:to-pink-600 
+                         font-semibold whitespace-nowrap shadow-md rounded-2xl px-2.5 py-2.5 
+                         cursor-pointer w-full flex justify-center">
+                <Link href="/forgot-password">Forgot password</Link></button>
             </div>
           )}
-        </form>
+      </form>
 
-        {/* w-50 → у Tailwind нема. Використай w-1/2 або точне значення w-[200px] */}
-        <hr className="w-1/2 border-t border-black mt-7" />
+      {/* w-50 → у Tailwind нема. Використай w-1/2 або точне значення w-[200px] */}
+      <hr className="w-1/2 border-t border-black mt-7" />
 
-        <div className="px-3 py-3 flex flex-col items-center justify-center text-justify">
-          <p className="flex items-center text-center text-black mb-6">
-            or signup now <br /> and become a part of Castpoint
-          </p>
-          <Link
-            href="/signup"
-            className="bg-gradient-to-r from-yellow-400 via-orange-400 to-pink-500 text-white 
+      <div className="px-3 py-3 flex flex-col items-center justify-center text-justify">
+        <p className="flex items-center text-center text-black mb-6">
+          or signup now <br /> and become a part of Castpoint
+        </p>
+        <Link
+          href="/signup"
+          className="bg-gradient-to-r from-yellow-400 via-orange-400 to-pink-500 text-white 
                          hover:from-yellow-500 hover:via-orange-500 hover:to-pink-600 
                          font-semibold whitespace-nowrap shadow-md rounded-2xl px-2.5 py-2.5 
                          cursor-pointer w-full flex justify-center"
-          >
-            Sign up
-          </Link>
-        </div>
-      </motion.div>
-      {/* </section> */}
-    </div>
+        >
+          Sign up
+        </Link>
+      </div>
+    </motion.div>
+      {/* </section> */ }
+    </div >
   );
 }

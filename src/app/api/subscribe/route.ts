@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '../../../lib/db'; // Шлях до підключення бази (у тебе вже має бути)
 import 'mysql2';
+import { subscribeEmail } from '../../../lib/subscribe';
 
 export async function POST(req: NextRequest) {
   try {
@@ -16,6 +17,8 @@ export async function POST(req: NextRequest) {
        VALUES (?)`,
       [email]
     );
+
+    await subscribeEmail(email);
 
     return NextResponse.json({ message: 'Review created successfully' }, { status: 201 });
   } catch (error) {

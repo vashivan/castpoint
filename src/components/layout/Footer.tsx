@@ -6,6 +6,38 @@ import TextInput from '../ui/input';
 
 const Footer = () => {
   const [formEmail, setFormEmail] = useState('');
+  const [msg, setMsg] = useState('');
+  const [loading, setLoading] = useState(false);
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!formEmail) {
+      setMsg('Please enter a valid email address.');
+      setTimeout((() => setMsg('')), 3000);
+    }
+
+    setLoading(true);
+    try {
+      const response = await fetch('api/subscribe', {
+        method: 'POST',
+        headers: {
+          'content-type': 'application/json',
+        },
+        body: JSON.stringify({ email: formEmail }),
+      });
+      if (response.ok) {
+        setFormEmail('');
+        setMsg('Thank you for subscribing!');
+      } else {
+        setMsg('Subscription failed. Please try again.');
+      }
+    } catch (error) {
+      console.error('Error submitting form:', error);
+      setMsg('An error occurred. Please try again later.');
+    };
+
+    setLoading(false);
+  };
 
   return (
     <footer className={`${styles.footer} bg-transparent text-black px-4 sm:px-6 lg:px-8 mt-5`}>
@@ -31,16 +63,19 @@ const Footer = () => {
         <p className="text-sm text-gray-600">One click and you are closer to your dream job!</p>
         <form className={styles.footer_subscribe_form}>
           <TextInput
+            type='email'
             name="email"
             placeholder="Your email here"
             value={formEmail}
             onChange={(val: string) => setFormEmail(val)}
           />
+          {msg && <p className='text-red text-xs m-0 p-o'>{msg}</p>}
           <button
             type="submit"
-            className="bg-gradient-to-r text-sm rounded-3xl from-yellow-400 via-orange-400 to-pink-500 font-semibold px-4 py-2 shadow-md hover:from-yellow-500 hover:to-pink-600 cursor-pointer"
+            onClick={handleSubmit}
+            className="w-50 bg-gradient-to-r text-sm rounded-3xl from-yellow-400 via-orange-400 to-pink-500 font-semibold px-4 py-2 shadow-md hover:from-yellow-500 hover:to-pink-600 cursor-pointer"
           >
-            Subscribe
+            {loading ? 'Submitting...' : 'Subscribe'}
           </button>
         </form>
       </div>
