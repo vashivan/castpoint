@@ -45,3 +45,15 @@ export interface Review {
   content: string;
   created_at: string;
 };
+
+export type Job = {
+  id: number;
+  title: string;
+  company_name: string;
+  location?: string;
+  contract_type?: 'short' | 'medium' | 'long';
+  salary_from?: number | null;
+  salary_to?: number | null;
+  currency?: string;
+  description?: string;
+};

@@ -1,10 +1,19 @@
 'use client'
 
-import { Loader } from 'lucide-react';
-import { Job } from '../../utils/Types';
 import React, { useEffect, useMemo, useState } from 'react';
-import { useAuth } from '../../context/AuthContext';
 
+// Types that match the expected /api/jobs response
+export type Job = {
+  id: number;
+  title: string;
+  company_name: string;
+  location?: string;
+  contract_type?: 'short' | 'medium' | 'long';
+  salary_from?: number | null;
+  salary_to?: number | null;
+  currency?: string;
+  description?: string;
+};
 
 export default function VacanciesPage() {
   const [jobs, setJobs] = useState<Job[]>([]);
@@ -32,8 +41,8 @@ export default function VacanciesPage() {
         if (!res.ok) throw new Error('Failed to load jobs');
         const data = await res.json();
         if (!cancelled) setJobs(data.jobs || []);
-      } catch (error) {
-        if (!cancelled) setError(error instanceof Error ? error.message : String(error));
+      } catch (e: any) {
+        if (!cancelled) setError(e.message || 'Unknown error');
       } finally {
         if (!cancelled) setLoading(false);
       }
@@ -61,37 +70,36 @@ export default function VacanciesPage() {
     return list;
   }, [jobs, search, contract, location]);
 
-
   return (
     <main className="min-h-screen px-6 py-16 sm:py-20 flex flex-col items-center bg-transparent">
       <section className="w-full max-w-6xl">
         <header className="mb-6 sm:mb-10">
-          <h1 className="text-2xl sm:text-3xl font-semibold tracking-tight">Vacancies</h1>
-          <p className="text-black/60 mt-2">Find your future job and apply in one click</p>
+          <h1 className="text-2xl sm:text-3xl font-semibold tracking-tight">Вакансії</h1>
+          <p className="text-black/60 mt-2">Знаходь контракти, відгукуйся в один клік, отримуй відповідь на email.</p>
         </header>
 
         {/* Filters */}
         <div className="grid gap-3 sm:gap-4 sm:grid-cols-12 mb-6 sm:mb-8">
-          <div className="sm:col-span-4">
+          <div className="sm:col-span-6">
             <input
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              placeholder="Find job by title, company, keywords…"
+              placeholder="Пошук за назвою, компанією, описом"
               className="w-full rounded-2xl border border-black/10 bg-white px-4 py-3 outline-none focus:ring-2 focus:ring-black/10"
             />
           </div>
 
-          <div className="sm:col-span-4">
+          <div className="sm:col-span-3">
             <input
               value={location}
               onChange={(e) => setLocation(e.target.value)}
-              placeholder="Location (city/country)"
+              placeholder="Локація (місто/країна)"
               className="w-full rounded-2xl border border-black/10 bg-white px-4 py-3 outline-none focus:ring-2 focus:ring-black/10"
             />
           </div>
 
-          <div className="sm:col-span-4 flex gap-2 w-full justify-around">
-            <ContractChip label="All" active={contract === 'all'} onClick={() => setContract('all')} />
+          <div className="sm:col-span-3 flex gap-2">
+            <ContractChip label="Всі" active={contract === 'all'} onClick={() => setContract('all')} />
             <ContractChip label="Short" active={contract === 'short'} onClick={() => setContract('short')} />
             <ContractChip label="Medium" active={contract === 'medium'} onClick={() => setContract('medium')} />
             <ContractChip label="Long" active={contract === 'long'} onClick={() => setContract('long')} />
@@ -100,7 +108,7 @@ export default function VacanciesPage() {
 
         {/* Content states */}
         {loading && (
-          <div className="flex items-center justify-center py-20 text-black/60"><Loader></Loader></div>
+          <div className="flex items-center justify-center py-20 text-black/60">Завантаження…</div>
         )}
         {!!error && !loading && (
           <div className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-red-700">{error}</div>
@@ -108,7 +116,7 @@ export default function VacanciesPage() {
 
         {!loading && !error && (
           filtered.length ? (
-            <div className="grid gap-4 sm:gap-6 grid-cols-1 md:grid-cols-2 w-full">
+            <div className="grid gap-4 sm:gap-6 grid-cols-1 md:grid-cols-2">
               {filtered.map((job) => (
                 <JobCard key={job.id} job={job} />
               ))}
@@ -137,16 +145,14 @@ function EmptyState() {
   return (
     <div className="flex flex-col items-center justify-center py-20 text-center rounded-2xl border border-black/10 bg-white">
       <div className="text-4xl">💼</div>
-      <h3 className="mt-2 text-lg font-semibold">No vacancies now</h3>
-      <p className="mt-1 text-black/60">Subscribe and stay tuned with CASTPOINT</p>
+      <h3 className="mt-2 text-lg font-semibold">Наразі вакансій немає</h3>
+      <p className="mt-1 text-black/60">Підпишись на оновлення або перевір пізніше.</p>
     </div>
   );
 }
 
 function JobCard({ job }: { job: Job }) {
-  const { user } = useAuth();
   const [open, setOpen] = useState(false);
-
   return (
     <div className="rounded-2xl border border-black/10 bg-white p-5">
       <div className="flex items-start justify-between gap-4">
@@ -168,7 +174,7 @@ function JobCard({ job }: { job: Job }) {
       )}
 
       <div className="mt-4 flex gap-2">
-        <button disabled={!user} onClick={() => setOpen(true)} className="px-4 py-2 rounded-xl bg-black text-white disabled:bg-gray-500">Apply</button>
+        <button onClick={() => setOpen(true)} className="px-4 py-2 rounded-xl bg-black text-white">Відгукнутись</button>
       </div>
 
       {open && <ApplyModal jobId={job.id} onClose={() => setOpen(false)} />}
@@ -182,8 +188,8 @@ function SalaryBadge({ from, to, currency }: { from?: number | null; to?: number
   const text = from != null && to != null
     ? `${from.toLocaleString()}–${to.toLocaleString()} ${cur}`
     : from != null
-      ? `from ${from.toLocaleString()} ${cur}`
-      : `up to ${to!.toLocaleString()} ${cur}`;
+    ? `from ${from.toLocaleString()} ${cur}`
+    : `up to ${to!.toLocaleString()} ${cur}`;
   return (
     <div className="inline-flex items-center rounded-xl border border-black/10 bg-gray-50 px-2.5 py-1 text-xs text-black/80">
       {text}
@@ -192,21 +198,17 @@ function SalaryBadge({ from, to, currency }: { from?: number | null; to?: number
 }
 
 function ApplyModal({ jobId, onClose }: { jobId: number; onClose: () => void }) {
-  const { user } = useAuth();
   const [form, setForm] = useState({
-    full_name: user?.name,
-    date_of_birth: user?.date_of_birth || '',
-    email: user?.email,
-    phone: user?.phone || '',
-    instagram: user?.instagram || '',
-    country: user?.country_of_birth || '',
+    full_name: '',
+    email: '',
+    phone: '',
+    instagram: '',
+    profile_url: '',
+    city: '',
+    country: '',
     cover_message: '',
-    weight: user?.weight || '',
-    height: user?.height || '',
-    experience: user?.experience || '',
-    biography: user?.biography || '',
-    cv_url: user?.resume_url || '',
-    promo_url: user?.video_url || '',
+    cv_url: '',
+    portfolio_url: '',
   });
   const [loading, setLoading] = useState(false);
   const [status, setStatus] = useState<'idle' | 'ok' | 'err'>('idle');
@@ -216,8 +218,6 @@ function ApplyModal({ jobId, onClose }: { jobId: number; onClose: () => void }) 
   ) => setForm((p) => ({ ...p, [e.target.name]: e.target.value }));
 
   const submit = async () => {
-    console.log('submit', form);
-
     try {
       setLoading(true);
       setStatus('idle');
@@ -228,52 +228,63 @@ function ApplyModal({ jobId, onClose }: { jobId: number; onClose: () => void }) 
           job_id: jobId,
           artist: {
             full_name: form.full_name,
-            date_of_birth: form.date_of_birth,
             email: form.email,
             phone: form.phone || undefined,
             instagram: form.instagram || undefined,
+            profile_url: form.profile_url || undefined,
+            city: form.city || undefined,
             country: form.country || undefined,
-            height: form.height || undefined,
-            weight: form.weight || undefined,
-            experience: form.experience || undefined,
-            biography: form.biography || undefined,
-            picture: user?.pic_url || undefined,
           },
           cover_message: form.cover_message,
           cv_url: form.cv_url || undefined,
-          promo_url: form.promo_url || undefined,
+          portfolio_url: form.portfolio_url || undefined,
         }),
       });
       const data = await res.json();
       if (!res.ok || data?.ok === false) throw new Error(data?.error || 'Failed');
       setStatus('ok');
-    } catch (error) {
-      setStatus(error instanceof Error ? 'err' : 'err');
+    } catch (e) {
+      setStatus('err');
     } finally {
       setLoading(false);
-      setTimeout(() => {
-        onClose();
-      }, 2000);
-    };
-  }
+    }
+  };
 
   return (
     <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/40 p-4">
-      <div className="flex flex-col gap-3 relative w-full max-w-xl rounded-2xl bg-white p-5">
+      <div className="relative w-full max-w-xl rounded-2xl bg-white p-5">
         <button onClick={onClose} className="absolute right-3 top-3 text-black/60">✕</button>
-        <h3 className="mb-3 text-lg font-semibold">Apply</h3>
-        <p>All your data will be send automaticaly by pressing the button bellow. You can leave some words, if you want. Or add some additional info.</p>
-        <textarea name="cover_message" placeholder="A few words...." className="input min-h-28 border-1 p-3 rounded-2xl" onChange={handle} />
-        <button disabled={loading} onClick={submit} className="mt-1 rounded-xl bg-black px-4 py-2 text-white">
-          {loading ? 'Applying' : 'Apply'}
-        </button>
-        {status === 'ok' && (
-          <p className="text-sm text-green-600">Done! Wish you luck and our team is waiting for your future job!</p>
-        )}
-        {status === 'err' && (
-          <p className="text-sm text-red-600">Something went wrong! Try again later.</p>
-        )}
+        <h3 className="mb-3 text-lg font-semibold">Відгук на вакансію</h3>
+        <div className="grid grid-cols-1 gap-3">
+          <input name="full_name" placeholder="Ім'я та прізвище" className="input" onChange={handle} />
+          <input name="email" placeholder="Email" className="input" onChange={handle} />
+          <input name="phone" placeholder="Телефон (необов'язково)" className="input" onChange={handle} />
+          <input name="instagram" placeholder="Instagram (необов'язково)" className="input" onChange={handle} />
+          <input name="profile_url" placeholder="Посилання на профіль Castpoint (необов'язково)" className="input" onChange={handle} />
+          <div className="grid grid-cols-2 gap-3">
+            <input name="city" placeholder="Місто" className="input" onChange={handle} />
+            <input name="country" placeholder="Країна" className="input" onChange={handle} />
+          </div>
+          <textarea name="cover_message" placeholder="Коротке повідомлення" className="input min-h-28" onChange={handle} />
+          <div className="grid grid-cols-2 gap-3">
+            <input name="cv_url" placeholder="Посилання на CV (необов'язково)" className="input" onChange={handle} />
+            <input name="portfolio_url" placeholder="Портфоліо (необов'язково)" className="input" onChange={handle} />
+          </div>
+          <button disabled={loading} onClick={submit} className="mt-1 rounded-xl bg-black px-4 py-2 text-white">
+            {loading ? 'Надсилання…' : 'Надіслати відгук'}
+          </button>
+          {status === 'ok' && (
+            <p className="text-sm text-green-600">Відгук надіслано! Перевір пошту — роботодавцю вже пішов лист.</p>
+          )}
+          {status === 'err' && (
+            <p className="text-sm text-red-600">Сталася помилка. Спробуй ще раз, будь ласка.</p>
+          )}
+        </div>
       </div>
     </div>
   );
 }
+
+// Minimal input styling via Tailwind utility class name "input".
+// Add this to your globals or tailwind layer if you don't have it already.
+// .input { @apply w-full rounded-2xl border border-black/10 bg-white px-4 py-3 outline-none focus:ring-2 focus:ring-black/10; }
