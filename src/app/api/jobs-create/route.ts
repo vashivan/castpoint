@@ -29,7 +29,7 @@ export async function POST(req: NextRequest) {
     const { employer, job } = schema.parse(body);
 
     // upsert employer
-    const [emp] = await db.query(
+    await db.query(
       `INSERT INTO employers (company_name, contact_name, email, phone, website)
        VALUES (?, ?, ?, ?, ?)
        ON DUPLICATE KEY UPDATE company_name=VALUES(company_name), contact_name=VALUES(contact_name),
@@ -38,11 +38,17 @@ export async function POST(req: NextRequest) {
     );
 
     // get employer id (insertId може бути 0 при DUPLICATE; беремо по email)
-    const [row] = await db.query(
+    interface EmployerRow {
+      id: number;
+    }
+    const [rows] = await db.query(
       `SELECT id FROM employers WHERE email = ? LIMIT 1`,
       [employer.email]
-    );
-    const employerId = row[0].id;
+    ) as [EmployerRow[], unknown];
+    const employerId = Array.isArray(rows) && rows.length > 0 ? rows[0].id : null;
+    if (!employerId) {
+      return NextResponse.json({ ok: false, error: 'Employer not found' }, { status: 400 });
+    }
 
     await db.query(
       `INSERT INTO jobs (employer_id, title, location, contract_type, salary_from, salary_to, currency, description, apply_email)
