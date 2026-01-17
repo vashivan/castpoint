@@ -81,9 +81,9 @@ export default function LoginPage({ onSuccess }: LoginPageProps) {
     <div className={`flex flex-col items-center aling-text-center p-8 overflow-hidden justify-center
     ${pathname === '/login' ? "bg-transparent" : "bg-white/10 backdrop-blur-md "}`}>
       {/* <section className="h-90 w-90 px-6 py-20 flex flex-col items-center justify-center text-center bg-transparent"> */}
-      <h1 className="text-5xl md:text-6xl uppercase bg-clip-text mb-10 py-6">
+      <h3 className="text-3xl md:text-4xl uppercase bg-clip-text mb-10 py-6 mt-15">
         Sign in
-      </h1>
+      </h3>
 
       <motion.div
         variants={stepVariants}

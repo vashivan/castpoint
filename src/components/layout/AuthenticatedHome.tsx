@@ -6,6 +6,7 @@ import Link from 'next/link';
 import ReviewBox from './ReviewBox';
 import JobBox from './JobBox';
 import { Review, Job } from '../../utils/Types';
+import MyApplication from './MyAplication';
 
 export default function AuthenticatedHome() {
   const { user } = useAuth();
@@ -36,36 +37,6 @@ export default function AuthenticatedHome() {
         alert(error);
       });
   }, []);
-
-  // === jobs fetch (аналогічно reviews) ===
-  // useEffect(() => {
-  //   setJobsLoading(true);
-  //   setJobsError(null);
-
-  //   fetch('/api/jobs')
-  //     .then((res) => {
-  //       if (!res.ok) throw new Error(`Jobs: ${res.status}`);
-  //       return res.json();
-  //     })
-  //     .then((data: Job[]) => {
-  //       // За потреби трансформуємо під ваш тип
-  //       const normalized = data.map((j: Job) => ({
-  //         id: j.id,
-  //         title: j.title,
-  //         company_name: j.company_name,
-  //         location: j.location,      // якщо є
-  //         description: j.description,
-  //         salary_from: (j as any).salary_from,
-  //         salary_to: (j as any).salary_to,
-  //         currency: (j as any).currency,
-  //         contract_type: (j as any).contract_type,
-  //       })) as Job[];
-  //       setJobs(normalized);
-  //     })
-  //     .catch((e) => setJobsError(e.message))
-  //     .finally(() => setJobsLoading(false));
-  // }, []);
-  // усередині AuthenticatedHome()
 
 useEffect(() => {
   (async () => {
@@ -146,7 +117,7 @@ useEffect(() => {
   }
 
   return (
-    <div className="min-h-screen px-15 py-20 bg-transparent text-black">
+    <div className="min-h-screen px-15 py-30 bg-transparent text-black">
       <h2 className="mb-10 text-center text-3xl">Welcome back, {user?.name} 👋</h2>
       <div className="grid grid-cols-4 md:grid-cols-6 gap-6">
 
@@ -231,8 +202,11 @@ useEffect(() => {
           </a>
         </div>
 
-        <div className="col-span-4 row-span-5 md:col-span-2 w-full rounded-2xl border border-orange-500 bg-white/70 p-6 text-black">
+        <div className="col-span-4 row-span-5 md:col-span-2 w-full max-h-120 overflow-scroll rounded-2xl border border-orange-500 bg-white p-6 text-black">
           <h3 className="mb-4 text-xl font-bold">My applications</h3>
+          <div>
+            <MyApplication />
+          </div>
         </div>
       </div>
     </div>

@@ -38,14 +38,14 @@ export default function JobBox({ job }: { job: Job }) {
         ) : null}
       </div>
 
-      <div className="mt-3 flex gap-2">
+      {/* <div className="mt-3 flex gap-2">
         <Link
           href={`/jobs/${job.id}`}
           className="w-full rounded-3xl bg-gradient-to-r from-orange-400 to-pink-500 px-4 py-2 text-center text-white"
         >
           View
         </Link>
-      </div>
+      </div> */}
     </li>
   );
 }
