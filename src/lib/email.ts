@@ -24,7 +24,7 @@ export const transporter = nodemailer.createTransport({
 
 export async function sendPasswordResetEmail(to: string, resetUrl: string) {
   await transporter.sendMail({
-    from: EMAIL_FROM || EMAIL_USER,           // домен from має збігатися з доменом пошти
+    from: EMAIL_USER,           // домен from має збігатися з доменом пошти
     to,
     subject: 'Reset your Castpoint password',
     html: `
