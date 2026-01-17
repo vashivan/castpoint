@@ -89,7 +89,7 @@ export async function sendEmployerEmail(params: {
   `;
 
   await transporter.sendMail({
-    from: process.env.EMAIL_FROM || process.env.EMAIL_USER,
+    from: process.env.EMAIL_USER,
     to,
     subject,
     html,
