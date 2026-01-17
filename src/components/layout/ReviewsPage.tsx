@@ -12,6 +12,16 @@ import { Review } from '../../utils/Types';
 
 const PAGE_SIZE = 12;
 
+function EmptyState() {
+  return (
+    <div className="flex flex-col items-center justify-center py-20 text-center rounded-2xl border border-black/10 bg-white">
+      <div className="text-4xl">💼</div>
+      <h3 className="mt-2 text-lg font-semibold">No reviews about it.</h3>
+      <p className="mt-1 text-black/60">You may be first who writes about it.</p>
+    </div>
+  );
+}
+
 export default function ReviewsPage() {
   const { user } = useAuth();
 
@@ -20,11 +30,18 @@ export default function ReviewsPage() {
   const [page, setPage] = useState(1);
 
   const [formData, setFormData] = useState({
+    name: user?.name,
+    instagram: user?.instagram,
     company_name: '',
     position: user?.role || '',
     place_of_work: '',
     content: '',
+    anonymous: false,
   });
+
+  const setAnonymous = (value: boolean) => {
+    setFormData((prev) => ({ ...prev, anonymous: value }));
+  };
 
   const [reviews, setReviews] = useState<Review[]>([]);
   const [search, setSearch] = useState('');
@@ -41,7 +58,6 @@ export default function ReviewsPage() {
 
         const transformed: Review[] = data.map((u: Review) => ({
           id: u.id,
-          artist_id: u.artist_id,
           artist_name: u.artist_name,
           artist_instagram: u.artist_instagram,
           content: u.content,
@@ -121,23 +137,24 @@ export default function ReviewsPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    console.log(formData);
+
     try {
       const res = await fetch('/api/add_review', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ ...formData, artist_id: user?.id }),
+        body: JSON.stringify({ ...formData }),
       });
 
       if (res.ok) {
         alert('Review submitted!');
-        setFormData({ company_name: '', position: user?.role || '', place_of_work: '', content: '' });
+        setFormData({ company_name: '', position: user?.role || '', place_of_work: '', content: '', name: user?.name, instagram: user?.instagram, anonymous: false });
 
         // перезавантажити список і знову застосувати ту саму трансформацію
         setLoading(true);
         const fresh = await fetch('/api/get_reviews').then(r => r.json());
         const transformed: Review[] = fresh.map((u: Review) => ({
           id: u.id,
-          artist_id: u.artist_id,
           artist_name: u.artist_name,
           artist_instagram: u.artist_instagram,
           content: u.content,
@@ -181,8 +198,8 @@ export default function ReviewsPage() {
   }
 
   return (
-    <main className="min-h-screen px-15 py-20 flex flex-col items-center justify-center text-center bg-transparent">
-      <h1 className="text-4xl font-bold mb-10">Reviews</h1>
+    <main className="min-h-screen px-15 py-20 flex flex-col items-center justify-center text-center bg-transparent pt-30">
+      <h1 className="text-4xl uppercase mb-10">Reviews</h1>
 
       {/* Перемикач вкладок */}
       <div className="w-full md:w-1/2 p-[2px] rounded-full bg-gradient-to-r from-[#AA0254] to-[#F5720D] mb-10">
@@ -221,7 +238,7 @@ export default function ReviewsPage() {
             type="text"
             aria-label="Search reviews"
             placeholder="Search reviews, companies, places…"
-            className="w-full border rounded-3xl py-2 pl-10 pr-10 bg-white/70 focus:outline-none focus:ring-2 focus:ring-orange-500"
+            className="w-full border rounded-3xl py-2 pl-10 pr-10 bg-white focus:outline-none focus:ring-2 focus:ring-orange-500"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
           />
@@ -229,7 +246,7 @@ export default function ReviewsPage() {
             <button
               type="button"
               onClick={() => setSearch('')}
-              className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 cursor-pointer"
               aria-label="Clear search"
             >
               ✕
@@ -257,10 +274,19 @@ export default function ReviewsPage() {
               animate="animate"
               exit="exit"
               transition={{ duration: 0.25 }}
-              className={`space-y-6 ${styles.reviews_container}`}
+              className={`${styles.reviews_container}`}
             >
               {pagedReviews.length === 0 ? (
-                <p className="text-gray-500">No reviews yet.</p>
+                <motion.div
+                  key="empty"
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -20 }}
+                  transition={{ duration: 0.25 }}
+                  className={styles.empty_state_wrapper}
+                >
+                  <EmptyState />
+                </motion.div>
               ) : (
                 pagedReviews.map((r) => <ReviewBox key={r.id} review={r} />)
               )}
@@ -341,20 +367,20 @@ export default function ReviewsPage() {
             <input
               name="company_name"
               placeholder="Company name"
-              className="w-full border rounded-3xl p-2 px-5 bg-white/70 focus:outline-none focus:ring-2 focus:ring-orange-500"
+              className="w-full border rounded-3xl p-2 px-5 bg-white focus:outline-none focus:ring-2 focus:ring-orange-500"
               value={formData.company_name}
               onChange={handleChange}
             />
             <input
               name="position"
-              className="w-full border p-2 capitalize rounded-3xl bg-white/70 focus:outline-none focus:ring-2 focus:ring-orange-500"
+              className="w-full border p-2 capitalize rounded-3xl bg-white focus:outline-none focus:ring-2 focus:ring-orange-500"
               value={formData.position}
               onChange={handleChange}
             />
             <input
               name="place_of_work"
               placeholder="Place of work"
-              className="w-full border p-2 px-5 rounded-3xl bg-white/70 focus:outline-none focus:ring-2 focus:ring-orange-500"
+              className="w-full border p-2 px-5 rounded-3xl bg-white focus:outline-none focus:ring-2 focus:ring-orange-500"
               value={formData.place_of_work}
               onChange={handleChange}
             />
@@ -362,11 +388,31 @@ export default function ReviewsPage() {
               name="content"
               placeholder="Write a text..."
               rows={5}
-              className="w-full border rounded-3xl p-5 bg-white/70 focus:outline-none focus:ring-2 focus:ring-orange-500"
+              className="w-full border rounded-3xl p-5 bg-white focus:outline-none focus:ring-2 focus:ring-orange-500"
               value={formData.content}
               onChange={handleChange}
             />
-            <Button type="submit" className="bg-gradient-to-r from-orange-400 to-pink-500 text-white px-6 py-2 rounded-3xl cursor-pointer uppercase">
+            <div className="flex items-center">
+              <input
+                type="checkbox"
+                checked={formData.anonymous}
+                onChange={(e) => setAnonymous(e.target.checked)}
+                name="anonymous"
+                className="mr-2 cursor-pointer"
+              />
+              <p>I want to leave this review anonymously.</p>
+            </div>
+
+            <div className="text-sm text-gray-600 text-left">
+              {formData.anonymous
+                ? "Your name and profile will not be shown."
+                : "Your name and profile will be visible."}
+            </div>
+            <Button
+              type="submit"
+              className="bg-gradient-to-r from-orange-400 to-pink-500 text-white px-6 py-2 rounded-3xl cursor-pointer uppercase"
+              disabled={loading || !formData.content.trim()}
+            >
               Leave Review
             </Button>
           </motion.form>

@@ -9,7 +9,7 @@ export async function POST(req: NextRequest) {
     const {email} = body;
 
     console.log('Received body:', body);
-
+    
     // SQL-запит
     await db.query(
       `INSERT INTO subscribe 

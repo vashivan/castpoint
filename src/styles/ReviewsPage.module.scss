@@ -11,6 +11,7 @@
   display: grid;
   grid-template-columns: repeat(1, 1fr);
   gap: 25px;
+  width: 100%;
 
     @media (min-width: 678px) {
     grid-template-columns: repeat(2, 1fr);
@@ -20,4 +21,11 @@
     grid-template-columns: repeat(4, 1fr);
     padding-inline: 25px;
   }
+}
+
+.empty_state_wrapper {
+  // display: flex;
+  // flex-direction: column;
+  // justify-content: center;
+  grid-column: 1/-1;
 }

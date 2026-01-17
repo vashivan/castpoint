@@ -6,30 +6,38 @@ export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
     const {
-      artist_id,
+      name,
+      instagram,
       company_name,
       position,
       place_of_work,
       content,
+      anonymous,
     } = body;
 
     console.log('Received body:', body);
     console.log('Received body:', body);
-    console.log('artist_id:', artist_id);
     console.log('content:', content);
 
-    // Валідація
-    if (!artist_id || !content) {
-      return NextResponse.json({ message: 'Missing required fields' }, { status: 400 });
-    }
 
-    // SQL-запит
-    await db.query(
-      `INSERT INTO reviews 
-        (artist_id, company_name, position, place_of_work, content) 
-       VALUES (?, ?, ?, ?, ?)`,
-      [artist_id, company_name, position, place_of_work, content]
-    );
+    if (anonymous === true) {
+      const name = 'Anonymous';
+      const instagram = 'Anonymous';
+
+      await db.query(
+        `INSERT INTO reviews 
+        (artist_name, company_name, position, place_of_work, content, artist_instagram) 
+       VALUES (?, ?, ?, ?, ?, ?)`,
+        [name, company_name, position, place_of_work, content, instagram]
+      );
+    } else {
+      await db.query(
+        `INSERT INTO reviews 
+        (artist_name, company_name, position, place_of_work, content, artist_instagram) 
+       VALUES (?, ?, ?, ?, ?, ?)`,
+        [name, company_name, position, place_of_work, content, instagram]
+      );
+    }
 
     return NextResponse.json({ message: 'Review created successfully' }, { status: 201 });
   } catch (error) {
