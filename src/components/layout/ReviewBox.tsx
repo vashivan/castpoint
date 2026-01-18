@@ -4,6 +4,7 @@ import Image from 'next/image';
 import styles from '../../styles/ReviewBox.module.scss';
 import { Review } from '../../utils/Types';
 import { AnimatePresence, motion } from 'framer-motion';
+import { useAuth } from '@/context/AuthContext';
 
 type Props = {
   review: Review
@@ -44,7 +45,9 @@ function ApplyModal({ review, onClose }: { review: Review; onClose: () => void }
               <Image src="/images/icons/instagram.svg" alt="" width={20} height={20} />
             </a>
           )}
-          <span>{review.artist_name || "Anonymous"}</span>
+          <span>
+            {review.artist_name || "Anonymous"}
+          </span>
         </div>
 
         <p className={`text-sm ${styles.review_box_position}`}>
@@ -59,7 +62,7 @@ function ApplyModal({ review, onClose }: { review: Review; onClose: () => void }
           <p className="mt-2 text-[16px]">{review.content}</p>
         </div>
 
-         <p className={`text-xs text-gray-400 mt-3`}>
+        <p className={`text-xs text-gray-400 mt-3`}>
           {new Date(review.created_at).toLocaleDateString()}
         </p>
       </motion.div>
@@ -69,6 +72,7 @@ function ApplyModal({ review, onClose }: { review: Review; onClose: () => void }
 
 
 export default function ReviewBox({ review }: Props) {
+  const { user } = useAuth();
   function cleanInstagramHandle(username: string): string {
     return username;
   }
@@ -92,7 +96,9 @@ export default function ReviewBox({ review }: Props) {
         >
           <Image width={0} height={0} src="/images/icons/instagram.svg" alt="" className="w-5 h-5" />
         </a>
-        <span>{review.artist_name}</span>
+        <span>
+          {!user ? "Anonymous" : review.artist_name || "Anonymous"}
+        </span>
       </div>
       <p className={`text-xs text-gray-400 mt-1 ${styles.review_box_date}`}>
         {new Date(review.created_at).toLocaleDateString()}
@@ -109,12 +115,17 @@ export default function ReviewBox({ review }: Props) {
         <button
           onClick={() => setOpen(true)}
           className="text-m text-orange-600 mt-1 cursor-pointer text-bold"
+          disabled={!user}
         >
-          Read more
+          {!user ?
+            <a href='/login'>
+              Login to read more
+            </a>
+            : "Read more"}
         </button>
       </div>
 
-     <AnimatePresence>
+      <AnimatePresence>
         {open && (
           <ApplyModal
             review={review}

@@ -154,7 +154,9 @@ function JobCard({ job }: { job: Job }) {
       <div className="flex items-start justify-between gap-4">
         <div>
           <h3 className="text-lg font-semibold">{job.title}</h3>
-          <p className="text-sm text-black/60">{job.company_name}{job.location ? ` · ${job.location}` : ''}</p>
+          <p className="text-sm text-black/60">
+            {job.company_name}{job.location ? ` · ${job.location}` : ''}
+          </p>
           {!!job.contract_type && (
             <div className="mt-2 inline-flex items-center rounded-full border border-black/10 px-2.5 py-1 text-xs uppercase tracking-wide">
               {job.contract_type}
@@ -171,25 +173,34 @@ function JobCard({ job }: { job: Job }) {
             {job.description}
           </p>
           <button
-            onClick={() => setExpanded(!expanded)}
-            className="text-m text-orange-600 mt-1 cursor-pointer text-bold"
+            type="button"
+            disabled={!user}
+            onClick={() => {
+              if (!user) return;
+              setExpanded((v) => !v);
+            }}
+            className={`mt-1 text-sm font-semibold ${user ? "text-orange-600 cursor-pointer" : "text-orange-400 cursor-not-allowed"
+              }`}
           >
-            {expanded ? 'Show less' : 'Read more'}
+            {!user ? <a href='/login'>Login to read more </a>: expanded ? "Show less" : "Read more"}
           </button>
+
         </div>
       )}
 
       <div className="mt-4 flex gap-2 align self-end">
-        <button disabled={!user} onClick={() => setOpen(true)} className="bg-gradient-to-r from-orange-500 to-pink-600 text-white px-6 py-2 rounded-3xl uppercase cursor-pointer">Apply</button>
+        <button disabled={!user} onClick={() => setOpen(true)} className="bg-gradient-to-r from-orange-500 to-pink-600 text-white px-6 py-2 rounded-3xl uppercase cursor-pointer">
+          {!user ? <a href='/login'>Login to Apply</a> : "Apply Now"}
+        </button>
       </div>
 
       <AnimatePresence>
-        {open && 
-          <ApplyModal 
-            jobId={job.id} 
+        {open &&
+          <ApplyModal
+            jobId={job.id}
             onClose={() => setOpen(false)}
             jobTitle={job.title}
-            />}
+          />}
       </AnimatePresence>
     </div>
   );
