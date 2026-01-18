@@ -19,7 +19,7 @@ function ApplyModal({ review, onClose }: { review: Review; onClose: () => void }
       exit={{ opacity: 0 }}
     >
       <motion.div
-        className={`relative flex w-full max-w-xl flex-col items-center gap-3 rounded-2xl bg-white p-10 ${styles.review_box}`}
+        className={`relative flex w-full max-w-xl flex-col items-center gap-3 rounded-2xl bg-white p-6 ${styles.review_box}`}
         initial={{ scale: 0.85, opacity: 0 }}
         animate={{ scale: 1, opacity: 1 }}
         exit={{ scale: 0.85, opacity: 0 }}
@@ -47,21 +47,21 @@ function ApplyModal({ review, onClose }: { review: Review; onClose: () => void }
           <span>{review.artist_name || "Anonymous"}</span>
         </div>
 
-        <p className={`text-xs text-gray-400 ${styles.review_box_date}`}>
-          {new Date(review.created_at).toLocaleDateString()}
-        </p>
-
-        <p className={`text-sm italic ${styles.review_box_position}`}>
+        <p className={`text-sm ${styles.review_box_position}`}>
           {review.position} at {review.place_of_work}
         </p>
 
-        <p className={styles.review_box_company}>
+        <p className={`${styles.review_box_company} text-sm`}>
           Company: {review.company_name}
         </p>
 
         <div className={styles.review_box_content}>
           <p className="mt-2 text-[16px]">{review.content}</p>
         </div>
+
+         <p className={`text-xs text-gray-400 mt-3`}>
+          {new Date(review.created_at).toLocaleDateString()}
+        </p>
       </motion.div>
     </motion.div>
   );
@@ -97,15 +97,15 @@ export default function ReviewBox({ review }: Props) {
       <p className={`text-xs text-gray-400 mt-1 ${styles.review_box_date}`}>
         {new Date(review.created_at).toLocaleDateString()}
       </p>
-      <p className={`text-sm italic ${styles.review_box_position}`}>
+      <p className={`text-sm ${styles.review_box_position}`}>
         {review.position} at {review.place_of_work}
       </p>
-      <p className={`${styles.review_box_company}`}>
+      <p className={`${styles.review_box_company} text-sm`}>
         Company:
         {` `}{review.company_name}
       </p>
       <div className={styles.review_box_content}>
-        <p className='mt-2 line-clamp-2 text-[14px]'>{review.content}</p>
+        <p className='mt-2 line-clamp-2 text-[16px]'>{review.content}</p>
         <button
           onClick={() => setOpen(true)}
           className="text-m text-orange-600 mt-1 cursor-pointer text-bold"

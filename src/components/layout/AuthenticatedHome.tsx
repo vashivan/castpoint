@@ -205,6 +205,7 @@ useEffect(() => {
         <div className="col-span-4 row-span-5 md:col-span-2 w-full max-h-120 overflow-scroll rounded-2xl border border-orange-500 bg-white p-6 text-black">
           <h3 className="mb-4 text-xl font-bold">My applications</h3>
           <div>
+            <p className='mb-4 text-justify'>If you have any questions regarding your application, feel free to contact us. Please include your application code in your message.</p>
             <MyApplication />
           </div>
         </div>

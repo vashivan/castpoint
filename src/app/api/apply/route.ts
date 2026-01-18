@@ -82,7 +82,7 @@ export async function POST(req: NextRequest) {
         return NextResponse.json({ ok: false, error: `File too large: ${f.name} (max 5MB)` }, { status: 400 });
       }
     }
-
+    
     // 3) job з jobs
     interface JobRow {
       id: number;
@@ -110,9 +110,9 @@ export async function POST(req: NextRequest) {
 
     const [res] = await db.execute(
       `INSERT INTO applications 
-   (job_id, artist_email, sent_email_status, sent_email_error, created_at)
-   VALUES (?, ?, 'pending', NULL, NOW())`,
-      [job_id, artist.email]
+   (job_id, artist_email, sent_email_status, sent_email_error, created_at, application_title)
+   VALUES (?, ?, 'pending', NULL, NOW(), ?)`,
+      [job_id, artist.email, job.title]
     );
 
     const numericId = (res as any).insertId as number;   // реальний id заявки
@@ -135,6 +135,7 @@ export async function POST(req: NextRequest) {
         weight: artist.weight,
         experience: artist.experience,
         biography: artist.biography,
+        picture: artist.picture,
       },
       cover_message,
       promo_url: promoFinal,
@@ -156,7 +157,7 @@ export async function POST(req: NextRequest) {
 
     await db.execute(
       `UPDATE applications
-     SET sent_email_status='sent',
+     SET sent_email_status='under review',
          sent_email_error=NULL,
          application_code=?
      WHERE id=?`,

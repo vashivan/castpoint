@@ -257,7 +257,7 @@ export async function buildArtistProfilePdf(opts: {
     const iw = img.width * ratio;
     const ih = img.height * ratio;
 
-    const ix = rightX + (boxW - iw) / 2;
+    const ix = rightX;;
     const iy = (yr - boxH) + (boxH - ih) / 2;
 
     page.drawImage(img, { x: ix, y: iy, width: iw, height: ih });
