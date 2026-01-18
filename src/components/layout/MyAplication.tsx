@@ -32,7 +32,7 @@ export default function MyApplication() {
   if (loading) return <div>Loading...</div>;
 
   return (
-    <div cn>
+    <div>
       {apps.length === 0 ? (
         <p className="text-sm text-black/60">No applications yet.</p>
       ) : (
