@@ -6,6 +6,43 @@ import React, { useEffect, useMemo, useState } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import { AnimatePresence, motion } from 'framer-motion';
 
+// lib/cloudinaryUpload.ts
+export type UploadedImage = {
+  secure_url: string;
+  public_id: string;
+  bytes: number;
+  width?: number;
+  height?: number;
+  format?: string;
+};
+
+const CLOUDINARY_CLOUD_NAME = process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME;
+const CLOUDINARY_UPLOAD_PRESET_TEMP = process.env.NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET_TEMP;
+
+export async function uploadToCloudinary(file: File): Promise<UploadedImage> {
+  const url = `https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD_NAME}/image/upload`;
+
+  const form = new FormData();
+  form.append("file", file);
+  form.append("upload_preset", `${CLOUDINARY_UPLOAD_PRESET_TEMP}`);
+  form.append("folder", "temp");
+  // form.append("tags", "castpoint_temp"); // optional
+
+  const res = await fetch(url, { method: "POST", body: form });
+  if (!res.ok) throw new Error("Cloudinary upload failed");
+
+  const data = await res.json();
+  return {
+    secure_url: data.secure_url,
+    public_id: data.public_id,
+    bytes: data.bytes,
+    width: data.width,
+    height: data.height,
+    format: data.format,
+  };
+}
+
+
 
 export default function VacanciesPage() {
   const [jobs, setJobs] = useState<Job[]>([]);
@@ -383,53 +420,110 @@ function ApplyModal({ jobId, onClose, jobTitle }: { jobId: number; onClose: () =
     setPhotos((prev) => prev.filter((_, i) => i !== idx));
   };
 
+  // const submit = async () => {
+  //   try {
+  //     setLoading(true);
+  //     setStatus("idle");
+
+  //     const fd = new FormData();
+  //     fd.append("job_id", String(jobId));
+
+  //     // artist fields
+  //     fd.append("artist_full_name", form.full_name);
+  //     fd.append("artist_email", form.email);
+  //     if (form.date_of_birth) fd.append("artist_date_of_birth", form.date_of_birth);
+  //     if (form.phone) fd.append("artist_phone", form.phone);
+  //     if (form.instagram) fd.append("artist_instagram", form.instagram);
+  //     if (form.country) fd.append("artist_country", form.country);
+  //     if (form.height) fd.append("artist_height", String(form.height));
+  //     if (form.weight) fd.append("artist_weight", String(form.weight));
+  //     if (form.experience) fd.append("artist_experience", form.experience);
+  //     if (form.biography) fd.append("artist_biography", form.biography);
+  //     if (user?.pic_url) fd.append("artist_picture", user.pic_url);
+
+  //     // other
+  //     fd.append("cover_message", form.cover_message || "");
+  //     if (form.promo_url) fd.append("promo_url", form.promo_url);
+
+  //     // photos (up to 5)
+  //     photos.forEach((file) => {
+  //       fd.append("photos", file); // same key -> array on backend
+  //     });
+
+  //     const res = await fetch("/api/apply", {
+  //       method: "POST",
+  //       body: fd, // IMPORTANT: no Content-Type header
+  //     });
+
+  //     const data = await res.json();
+  //     if (!res.ok || data?.ok === false) throw new Error(data?.error || "Failed");
+
+  //     setStatus("ok");
+  //     setFinallyMsg("Done! Wish you luck and our team is waiting for your future job!");
+  //     setTimeout(() => onClose(), 5000);
+  //   } catch (error) {
+  //     setStatus(error instanceof Error ? "err" : "err");
+  //   } finally {
+  //     setLoading(false);
+  //   }
+  // };
+
   const submit = async () => {
-    try {
-      setLoading(true);
-      setStatus("idle");
+  try {
+    setLoading(true);
+    setStatus("idle");
 
-      const fd = new FormData();
-      fd.append("job_id", String(jobId));
-
-      // artist fields
-      fd.append("artist_full_name", form.full_name);
-      fd.append("artist_email", form.email);
-      if (form.date_of_birth) fd.append("artist_date_of_birth", form.date_of_birth);
-      if (form.phone) fd.append("artist_phone", form.phone);
-      if (form.instagram) fd.append("artist_instagram", form.instagram);
-      if (form.country) fd.append("artist_country", form.country);
-      if (form.height) fd.append("artist_height", String(form.height));
-      if (form.weight) fd.append("artist_weight", String(form.weight));
-      if (form.experience) fd.append("artist_experience", form.experience);
-      if (form.biography) fd.append("artist_biography", form.biography);
-      if (user?.pic_url) fd.append("artist_picture", user.pic_url);
-
-      // other
-      fd.append("cover_message", form.cover_message || "");
-      if (form.promo_url) fd.append("promo_url", form.promo_url);
-
-      // photos (up to 5)
-      photos.forEach((file) => {
-        fd.append("photos", file); // same key -> array on backend
-      });
-
-      const res = await fetch("/api/apply", {
-        method: "POST",
-        body: fd, // IMPORTANT: no Content-Type header
-      });
-
-      const data = await res.json();
-      if (!res.ok || data?.ok === false) throw new Error(data?.error || "Failed");
-
-      setStatus("ok");
-      setFinallyMsg("Done! Wish you luck and our team is waiting for your future job!");
-      setTimeout(() => onClose(), 5000);
-    } catch (error) {
-      setStatus(error instanceof Error ? "err" : "err");
-    } finally {
-      setLoading(false);
+    // 1) upload photos to Cloudinary (if any)
+    let uploaded: UploadedImage[] = [];
+    if (photos.length) {
+      uploaded = await Promise.all(photos.slice(0, 5).map(uploadToCloudinary));
     }
-  };
+
+    // 2) build FormData (text only + images JSON)
+    const fd = new FormData();
+    fd.append("job_id", String(jobId));
+
+    fd.append("artist_full_name", form.full_name);
+    fd.append("artist_email", form.email);
+    if (form.date_of_birth) fd.append("artist_date_of_birth", form.date_of_birth);
+    if (form.phone) fd.append("artist_phone", form.phone);
+    if (form.instagram) fd.append("artist_instagram", form.instagram);
+    if (form.country) fd.append("artist_country", form.country);
+    if (form.height) fd.append("artist_height", String(form.height));
+    if (form.weight) fd.append("artist_weight", String(form.weight));
+    if (form.experience) fd.append("artist_experience", form.experience);
+    if (form.biography) fd.append("artist_biography", form.biography);
+    if (user?.pic_url) fd.append("artist_picture", user.pic_url);
+
+    fd.append("cover_message", form.cover_message || "");
+    if (form.promo_url) fd.append("promo_url", form.promo_url);
+
+    // ✅ key point: send Cloudinary images as JSON
+    if (uploaded.length) {
+      fd.append("images", JSON.stringify(uploaded));
+    }
+
+    // ❌ remove this old logic:
+    // photos.forEach((file) => fd.append("photos", file));
+
+    const res = await fetch("/api/apply", {
+      method: "POST",
+      body: fd,
+    });
+
+    const data = await res.json();
+    if (!res.ok || data?.ok === false) throw new Error(data?.error || "Failed");
+
+    setStatus("ok");
+    setFinallyMsg("Done! Wish you luck and our team is waiting for your future job!");
+    setTimeout(() => onClose(), 5000);
+  } catch (error) {
+    console.error(error);
+    setStatus("err");
+  } finally {
+    setLoading(false);
+  }
+};
 
   const remaining = 5 - photos.length;
 

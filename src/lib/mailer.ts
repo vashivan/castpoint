@@ -1,14 +1,19 @@
 // lib/mailer.ts
 import nodemailer from "nodemailer";
+type MailAttachment = {
+  filename: string;
+  content: Buffer;
+  contentType?: string;
+};
 
 export async function sendEmployerEmail(params: {
   to: string;
-  job: { id: number; title: string; company_name?: string | null };
+  job: any;
   artist_public: { full_name: string };
   artist_promo_url?: string;
-  photos?: File[];
   cover_message?: string;
   pdf: { filename: string; content: Buffer };
+  attachments?: MailAttachment[]; // ✅ додали
 }) {
   const transporter = nodemailer.createTransport({
     host: process.env.EMAIL_HOST,
@@ -17,9 +22,10 @@ export async function sendEmployerEmail(params: {
     auth: { user: process.env.EMAIL_USER, pass: process.env.EMAIL_PASS },
   });
 
-  const { to, job, artist_public, artist_promo_url, pdf } = params;
+  const { to, job, artist_public, artist_promo_url, pdf, attachments } = params;
 
   const subject = `CASTPOINT · Application — ${job.title}`;
+  const from = process.env.EMAIL_USER;
 
   const safe = (v: any) =>
     String(v ?? "")
@@ -30,10 +36,10 @@ export async function sendEmployerEmail(params: {
       .replace(/'/g, "&#039;");
 
   const html = `
-  <div style="margin:0;padding:0;background:#f6f7fb;">
-    <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="padding:24px 12px;">
+  <div style="margin:0;padding:0;background:#fff;">
+    <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0">
       <tr><td align="center">
-        <table role="presentation" width="640" style="max-width:640px;width:100%;background:#fff;border-radius:22px;overflow:hidden;box-shadow:0 10px 30px rgba(0,0,0,0.07);">
+        <table role="presentation" width="100%" background:#fff;overflow:hidden;box-shadow:0 10px 30px rgba(0,0,0,0.07);">
           <tr><td>
             <div style="background:linear-gradient(90deg,#F5720D 0%,#AA0254 100%);padding:18px 22px;color:#fff;font-family:Arial,sans-serif;font-weight:800;letter-spacing:.12em;text-transform:uppercase;">
               CASTPOINT
@@ -47,11 +53,11 @@ export async function sendEmployerEmail(params: {
               ${job.company_name ? ` · ${safe(job.company_name)}` : ""}
             </p>
 
-            <div style="margin-top:14px;border:1px solid rgba(17,24,39,0.08);border-radius:18px;padding:14px;background:#ffffff;">
+            <div style="margin-top:14px;background:#ffffff;">
               <div style="font-size:12px;letter-spacing:0.12em;text-transform:uppercase;color:#6b7280;font-weight:700;margin-bottom:10px;">
                 Candidate:
               </div>
-              <div style="font-size:16px;font-weight:800;color:#111827;">
+              <div style="font-size:16px;font-weight:800;color:#111827;margin-bottom:6px;">
                 ${safe(artist_public.full_name)}
               </div>
               <div style="font-size:14px;font-weight:600;color:#111827;">
@@ -69,10 +75,10 @@ export async function sendEmployerEmail(params: {
               </p>
             </div>
 
-            <div style="margin-top:14px;border:1px dashed rgba(17,24,39,0.18);border-radius:18px;padding:14px;background:#fbfbfd;">
+            <div style="margin-top:14px;border:1px dashed rgba(17,24,39,0.18);padding:14px;background:#fbfbfd;">
               <b>Attached:</b> Castpoint Artist Profile (PDF)
               <br/>
-              <b>Attached:</b> Photos: (${params.photos ? params.photos.length : 0})
+              <b>Attached:</b> Photos: (${params.attachments ? params.attachments.length : 0})
             </div>
           </td></tr>
 
@@ -88,47 +94,22 @@ export async function sendEmployerEmail(params: {
   </div>
   `;
 
-  await transporter.sendMail({
-    from: process.env.EMAIL_USER,
-    to,
-    subject,
+    await transporter.sendMail({
+    from: from,
+    to: to,
+    subject: subject,
     html,
     attachments: [
       {
         filename: pdf.filename,
-        content: pdf.content,
+        content: params.pdf.content,
         contentType: "application/pdf",
       },
-      {
-        // add photos as attachments if any
-        filename: `${artist_public.full_name}_1.jpg`,
-        content: params.photos && params.photos[0] ? Buffer.from(await params.photos[0].arrayBuffer()) : undefined,
-        contentType: "image/jpeg",
-      },
-      {
-        // add second photo if any
-        filename: `${artist_public.full_name}_2.jpg`,
-        content: params.photos && params.photos[1] ? Buffer.from(await params.photos[1].arrayBuffer()) : undefined,
-        contentType: "image/jpeg",
-      },
-      {
-        // add third photo if any
-        filename: `${artist_public.full_name}_3.jpg`,
-        content: params.photos && params.photos[2] ? Buffer.from(await params.photos[2].arrayBuffer()) : undefined,
-        contentType: "image/jpeg",
-      },
-      {
-        // add fourth photo if any
-        filename: `${artist_public.full_name}_4.jpg`,
-        content: params.photos && params.photos[3] ? Buffer.from(await params.photos[3].arrayBuffer()) : undefined,
-        contentType: "image/jpeg",
-      },
-      {
-        // add fifth photo if any
-        filename: `${artist_public.full_name}_5.jpg`,
-        content: params.photos && params.photos[4] ? Buffer.from(await params.photos[4].arrayBuffer()) : undefined,
-        contentType: "image/jpeg",
-      }
+      ...(attachments ?? []).map((a) => ({
+        filename: a.filename,
+        content: a.content,
+        contentType: a.contentType,
+      })),
     ],
   });
 }
