@@ -6,7 +6,6 @@ const {
   EMAIL_SECURE = 'true',
   EMAIL_USER,
   EMAIL_PASS,
-  EMAIL_FROM,
 } = process.env;
 
 export const transporter = nodemailer.createTransport({
@@ -24,7 +23,7 @@ export const transporter = nodemailer.createTransport({
 
 export async function subscribeEmail(to: string,) {
   await transporter.sendMail({
-  from: EMAIL_FROM || EMAIL_USER,
+  from: EMAIL_USER,
   to,
   subject: "Welcome to Castpoint — thanks for subscribing",
   text: `Hi there!
