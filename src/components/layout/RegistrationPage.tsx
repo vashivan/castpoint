@@ -1,19 +1,18 @@
-'use client';
+"use client";
 
-// import styles from '../../styles/Form.module.scss';
-import React, { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
-import dynamic from 'next/dynamic';
-import { getNames } from 'country-list';
-import TextInput from '../ui/input';
-import { AnimatePresence, motion } from 'framer-motion';
-import TextArea from '../ui/textarea';
-import PictureUploader from '../PictureUpload/PictureUpload';
-import Link from 'next/link';
-import DateInput from '../ui/date_input';
-import CastpointLoader from '../ui/loader';
+import React, { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
+import dynamic from "next/dynamic";
+import { getNames } from "country-list";
+import TextInput from "../ui/input";
+import { AnimatePresence, motion } from "framer-motion";
+import TextArea from "../ui/textarea";
+import PictureUploader from "../PictureUpload/PictureUpload";
+import Link from "next/link";
+import DateInput from "../ui/date_input";
+import CastpointLoader from "../ui/loader";
 
-const NoSSRSelector = dynamic(() => import('../ui/custom_select'), { ssr: false });
+const NoSSRSelector = dynamic(() => import("../ui/custom_select"), { ssr: false });
 
 const countries = getNames().map((country) => ({
   label: country,
@@ -21,79 +20,208 @@ const countries = getNames().map((country) => ({
 }));
 
 const roles = [
-  { value: 'dancer', label: 'Dancer' },
-  { value: 'circus', label: 'Circus Artist' },
-  { value: 'singer', label: 'Singer' },
-  { value: 'actor', label: 'Actor' },
-  { value: 'musician', label: 'Musician' },
-  { value: 'acrobat', label: 'Acrobat' },
-  { value: 'stunt', label: 'Stunt Performer' },
-  { value: 'model', label: 'Model' },
-  { value: 'magician', label: 'Magician' },
-  { value: 'aerialist', label: 'Aerialist' },
-  { value: 'drag', label: 'Drag Performer' },
-  { value: 'choreographer', label: 'Choreographer' },
-  { value: 'host', label: 'Host / MC' },
-  { value: 'dj', label: 'DJ' },
-  { value: 'crew', label: 'Tech Crew / Stagehand' },
-  { value: 'puppeteer', label: 'Puppeteer' },
-  { value: 'fire', label: 'Fire Performer' },
-  { value: 'clown', label: 'Clown' },
-  { value: 'comedian', label: 'Comedian' },
-  { value: 'other', label: 'Other' },
+  { value: "dancer", label: "Dancer" },
+  { value: "circus", label: "Circus Artist" },
+  { value: "singer", label: "Singer" },
+  { value: "actor", label: "Actor" },
+  { value: "musician", label: "Musician" },
+  { value: "acrobat", label: "Acrobat" },
+  { value: "stunt", label: "Stunt Performer" },
+  { value: "model", label: "Model" },
+  { value: "magician", label: "Magician" },
+  { value: "aerialist", label: "Aerialist" },
+  { value: "drag", label: "Drag Performer" },
+  { value: "choreographer", label: "Choreographer" },
+  { value: "host", label: "Host / MC" },
+  { value: "dj", label: "DJ" },
+  { value: "crew", label: "Tech Crew / Stagehand" },
+  { value: "puppeteer", label: "Puppeteer" },
+  { value: "fire", label: "Fire Performer" },
+  { value: "clown", label: "Clown" },
+  { value: "comedian", label: "Comedian" },
+  { value: "other", label: "Other" },
 ];
+
+// --------------------
+// Normalizers
+// --------------------
+function normalizeInstagram(input?: string) {
+  const raw = (input || "").trim();
+  if (!raw) return "";
+
+  let s = raw.replace(/\s+/g, "");
+
+  // allow "www.instagram.com/..." without protocol
+  if (s.startsWith("www.")) s = `https://${s}`;
+
+  // @username
+  if (s.startsWith("@")) s = s.slice(1);
+
+  // url cases
+  const isUrl = /^https?:\/\//i.test(s);
+  if (isUrl) {
+    try {
+      const u = new URL(s);
+      const host = u.hostname.replace(/^m\./, "").toLowerCase();
+
+      if (!host.includes("instagram.com")) return ""; // not instagram
+      const parts = u.pathname.split("/").filter(Boolean);
+      const first = parts[0] || "";
+
+      // ignore post/reel/story links etc.
+      const banned = new Set(["p", "reel", "tv", "stories", "explore", "accounts", "about"]);
+      if (!first || banned.has(first.toLowerCase())) return "";
+
+      const username = first.replace(/^@/, "");
+      if (!/^[A-Za-z0-9._]{1,30}$/.test(username)) return "";
+      return `${username}`;
+    } catch {
+      return "";
+    }
+  }
+
+  // "instagram.com/username" without protocol
+  if (/^(?:m\.)?instagram\.com\//i.test(s)) {
+    return normalizeInstagram(`https://${s}`);
+  }
+
+  // username only
+  const username = s.replace(/^@/, "");
+  if (!/^[A-Za-z0-9._]{1,30}$/.test(username)) return "";
+  return `${username}`;
+}
+
+// optional, light facebook normalize
+function normalizeFacebook(input?: string) {
+  const raw = (input || "").trim();
+  if (!raw) return "";
+
+  let s = raw.replace(/\s+/g, "");
+  if (s.startsWith("www.")) s = `https://${s}`;
+
+  // already url
+  if (/^https?:\/\//i.test(s)) {
+    try {
+      const u = new URL(s);
+      const host = u.hostname.replace(/^m\./, "").toLowerCase();
+      if (!host.includes("facebook.com") && !host.includes("fb.com")) return "";
+      // keep clean canonical
+      const path = u.pathname.replace(/\/+$/, "");
+      return `https://facebook.com${path}`;
+    } catch {
+      return "";
+    }
+  }
+
+  // "facebook.com/xxx" without protocol
+  if (/^(?:m\.)?(?:facebook\.com|fb\.com)\//i.test(s)) {
+    return normalizeFacebook(`https://${s}`);
+  }
+
+  // username-ish => turn into url
+  // (fb usernames can be more permissive, keep it simple)
+  return `https://facebook.com/${s.replace(/^@/, "")}`;
+}
 
 export default function RegisterPage() {
   const router = useRouter();
   const [step, setStep] = useState(0);
+
   const [form, setForm] = useState({
-    name: '',
-    first_name: '',
-    second_name: '',
-    nationality: '',
-    phone: '',
-    skills: '',
-    resume_url: '',
-    country: '',
-    country_of_birth: '',
-    sex: '',
-    role: '',
-    date_of_birth: Date(),
-    height: '',
-    weight: '',
-    video_url: '',
-    pic_url: '',
-    pic_public_id: '',
-    biography: '',
-    experience: '',
-    email: '',
-    password: '',
-    password2: '',
-    instagram: '',
-    facebook: '',
+    name: "",
+    first_name: "",
+    second_name: "",
+    nationality: "",
+    phone: "",
+    skills: "",
+    resume_url: "",
+    country: "",
+    country_of_birth: "",
+    sex: "",
+    role: "",
+    date_of_birth: Date(), // leave as-is in your project (but ideally should be "" or new Date())
+    height: "",
+    weight: "",
+    video_url: "",
+    pic_url: "",
+    pic_public_id: "",
+    biography: "",
+    experience: "",
+    email: "",
+    password: "",
+    password2: "",
+    instagram: "",
+    facebook: "",
   });
 
-  const [message, setMessage] = useState('');
+  const [message, setMessage] = useState("");
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     console.log(form);
-  }, [form])
+  }, [form]);
 
   const nextStep = () => setStep((prev) => Math.min(prev + 1, 4));
   const prevStep = () => setStep((prev) => Math.max(prev - 1, 0));
 
-  const trimFunction = (val: string) => {
-    return val.trim();
+  const trimFunction = (val: string) => val.trim();
+
+  const stepVariants = {
+    initial: { opacity: 0, x: 50 },
+    animate: { opacity: 1, x: 0 },
+    exit: { opacity: 0, x: -50 },
+  };
+
+  const isStepValid = () => {
+    if (step === 0) {
+      return (
+        form.first_name &&
+        form.second_name &&
+        form.country &&
+        form.date_of_birth &&
+        form.sex &&
+        form.height &&
+        form.weight &&
+        form.role &&
+        form.email &&
+        form.password
+      );
+    }
+    if (step === 1) return true;
+    if (step === 2) return true;
+    if (step === 3) return form.instagram || form.facebook;
+    if (step === 4) return form.video_url && form.pic_url;
+    return false;
+  };
+
+  const stringToNum = (val: string) => {
+    const num = +val;
+    return num;
+  };
+
+  const checkPassword = () => {
+    if (!form.password && !form.password2) {
+      setMessage("");
+      return;
+    }
+    if (form.password.length < 8) setMessage("Password must be at least 8 characters");
+    else if (form.password !== form.password2) setMessage("Passwords do not match");
+    else setMessage("");
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setMessage('');
+    setMessage("");
+
     if (form.password !== form.password2) {
-      setMessage('Passwords do not match');
+      setMessage("Passwords do not match");
       return;
     }
+
+    // Normalize socials one last time before sending
+    const ig = normalizeInstagram(form.instagram);
+    const fb = normalizeFacebook(form.facebook);
+
     setLoading(true);
 
     const payload = {
@@ -118,64 +246,29 @@ export default function RegisterPage() {
       experience: form.experience,
       email: form.email,
       password: form.password,
-      instagram: form.instagram,
-      facebook: form.facebook,
+
+      // normalized
+      instagram: ig, // store as "@username"
+      facebook: fb,  // store as canonical url
     };
 
-
     try {
-      const res = await fetch('/api/registration', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+      const res = await fetch("/api/registration", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
       });
+
       const data = await res.json();
-      if (!res.ok) throw new Error(data?.error || 'Registration failed');
-      router.push('/registration-success');
+      if (!res.ok) throw new Error(data?.error || "Registration failed");
+
+      router.push("/registration-success");
     } catch (err) {
       console.error(err);
-      setMessage('Registration failed');
+      setMessage("Registration failed");
     } finally {
       setLoading(false);
     }
-  };
-
-  const stepVariants = {
-    initial: { opacity: 0, x: 50 },
-    animate: { opacity: 1, x: 0 },
-    exit: { opacity: 0, x: -50 },
-  };
-
-  const isStepValid = () => {
-    if (step === 0) {
-      return form.first_name && form.second_name && form.country && form.date_of_birth
-        && form.sex && form.height && form.weight && form.role
-        && form.email && form.password;
-    } if (step === 1) {
-      return true;
-    } if (step === 2) {
-      return true;
-    } if (step === 3) {
-      return form.instagram || form.facebook;
-    } if (step === 4) {
-      return form.video_url && form.pic_url;
-    } else {
-      return false;
-    }
-  };
-
-  const stringToNum = (val: string) => {
-    const string = val;
-    const num = +string;
-
-    return num;
-  };
-
-  const checkPassword = () => {
-    if (!form.password && !form.password2) { setMessage(""); return; }
-    if (form.password.length < 8) setMessage("Password must be at least 8 characters");
-    else if (form.password !== form.password2) setMessage("Passwords do not match");
-    else setMessage("");
   };
 
   return (
@@ -187,10 +280,9 @@ export default function RegisterPage() {
       <div className="w-full md:w-120 p-[2px] rounded-3xl bg-gradient-to-r from-[#AA0254] to-[#F5720D]">
         <form
           onSubmit={handleSubmit}
-          className={`w-full bg-white rounded-3xl p-8 shadow-xl overflow-hidden relative`}
+          className="w-full bg-white rounded-3xl p-8 shadow-xl overflow-hidden relative"
         >
           <AnimatePresence mode="wait">
-
             {/* Basic info */}
             {step === 0 && (
               <motion.div
@@ -223,7 +315,7 @@ export default function RegisterPage() {
                 <DateInput
                   label="Date of Birth"
                   name="date_of_birth"
-                  placeholder='YYYY-MM-DD'
+                  placeholder="YYYY-MM-DD"
                   value={form.date_of_birth}
                   onChange={(val) => setForm({ ...form, date_of_birth: val })}
                 />
@@ -263,8 +355,8 @@ export default function RegisterPage() {
                   label="Sex"
                   placeholder="Choose your gender"
                   options={[
-                    { value: 'm', label: 'Male' },
-                    { value: 'f', label: 'Female' },
+                    { value: "m", label: "Male" },
+                    { value: "f", label: "Female" },
                   ]}
                   onChange={(val) => setForm({ ...form, sex: val })}
                 />
@@ -300,7 +392,6 @@ export default function RegisterPage() {
                   onChange={(val) => setForm({ ...form, weight: val })}
                   placeholder="kg"
                 />
-
               </motion.div>
             )}
 
@@ -320,14 +411,12 @@ export default function RegisterPage() {
                   value={form.biography}
                   rows={10}
                   placeholder="Do not be shy, use all oportunities to tell about you."
-                  text="🎯 It’s time to get to know you better!
-                Tell us a bit more about yourself — not just the basics. Whether it's your favorite projects, hobbies you love, or what drives you every day — we’re all ears. Let’s go beyond the surface and see what makes you you. 💬"
+                  text={`🎯 It’s time to get to know you better!
+Tell us a bit more about yourself — not just the basics. Whether it's your favorite projects, hobbies you love, or what drives you every day — we’re all ears. Let’s go beyond the surface and see what makes you you. 💬`}
                   onChange={(val) => setForm({ ...form, biography: val })}
                 />
 
-                <p className="text-white text-sm">
-                  * you can skip this step and add this info later
-                </p>
+                <p className="text-white text-sm">* you can skip this step and add this info later</p>
               </motion.div>
             )}
 
@@ -351,9 +440,7 @@ export default function RegisterPage() {
                   onChange={(val) => setForm({ ...form, experience: val })}
                 />
 
-                <p className="text-white text-sm">
-                  * you can skip this step and add this info later
-                </p>
+                <p className="text-white text-sm">* you can skip this step and add this info later</p>
               </motion.div>
             )}
 
@@ -368,22 +455,51 @@ export default function RegisterPage() {
                 transition={{ duration: 0.4 }}
                 className="space-y-6"
               >
-                <p className="text-black text-xl">Almost done &#128553; <br /> Just two steps left</p>
-                <p className="text-black text-sm mb-3">Let’s keep in touch — drop your social media links here!</p>
+                <p className="text-black text-xl">
+                  Almost done &#128553; <br /> Just two steps left
+                </p>
+                <p className="text-black text-sm mb-3">
+                  Let’s keep in touch — drop your social media links here!
+                </p>
+
                 <TextInput
                   label="Instagram"
                   name="instagram"
-                  placeholder="Instagram id here"
+                  placeholder="@nickname or link"
                   value={form.instagram}
                   onChange={(val) => setForm({ ...form, instagram: val })}
+                  onBlur={() => {
+                    const normalized = normalizeInstagram(form.instagram);
+                    // якщо юзер вставив крінж-лінк на пост/рілс — краще показати message
+                    if (form.instagram.trim() && !normalized) {
+                      setMessage("Instagram: please paste your profile (@username or profile link)");
+                      return;
+                    }
+                    setMessage("");
+                    setForm((prev) => ({ ...prev, instagram: normalized }));
+                  }}
                 />
+                {!!form.instagram && (
+                  <p className="text-xs text-gray-500">
+                    Saved as: <span className="font-semibold">{form.instagram}</span>
+                  </p>
+                )}
 
                 <TextInput
                   label="Facebook"
                   name="facebook"
-                  placeholder="Facebook id here"
+                  placeholder="Facebook profile link"
                   value={form.facebook}
                   onChange={(val) => setForm({ ...form, facebook: val })}
+                  onBlur={() => {
+                    const normalized = normalizeFacebook(form.facebook);
+                    if (form.facebook.trim() && !normalized) {
+                      setMessage("Facebook: please paste your profile link or username");
+                      return;
+                    }
+                    setMessage("");
+                    setForm((prev) => ({ ...prev, facebook: normalized }));
+                  }}
                 />
               </motion.div>
             )}
@@ -404,7 +520,6 @@ export default function RegisterPage() {
                   Paste your promo video link (from any streaming service) and upload photo of yourself.
                 </p>
 
-
                 <TextInput
                   label="Promo-video"
                   name="video_url"
@@ -421,7 +536,7 @@ export default function RegisterPage() {
                   onChange={(val) => setForm({ ...form, resume_url: val })}
                 />
 
-                <div className='border rounded-2xl border-black pb-4 flex flex-col items-center min-h-100'>
+                <div className="border rounded-2xl border-black pb-4 flex flex-col items-center min-h-100">
                   <PictureUploader
                     pic_url={form.pic_url}
                     pic_public_id={form.pic_public_id}
@@ -436,20 +551,10 @@ export default function RegisterPage() {
                 </div>
 
                 <div className="flex items-center gap-2 text-sm mt-4 w-100">
-                  <input
-                    type="checkbox"
-                    id="agreement"
-                    className="accent-pink-600 w-4 h-4"
-
-                    required
-                  />
+                  <input type="checkbox" id="agreement" className="accent-pink-600 w-4 h-4" required />
                   <label htmlFor="agreement" className="text-gray-700">
                     I agree to the{" "}
-                    <Link
-                      href="/agreement"
-                      target="_blank"
-                      className="font-semibold text-pink-800 underline"
-                    >
+                    <Link href="/agreement" target="_blank" className="font-semibold text-pink-800 underline">
                       terms and conditions
                     </Link>
                   </label>
@@ -458,7 +563,7 @@ export default function RegisterPage() {
             )}
           </AnimatePresence>
 
-          {/* Кнопки навігації */}
+          {/* Buttons */}
           <div className="flex justify-between gap-4 mt-8">
             {step > 0 && (
               <button
@@ -469,16 +574,18 @@ export default function RegisterPage() {
                 Back
               </button>
             )}
+
             {step < 4 ? (
               <button
                 type="button"
                 onClick={nextStep}
                 disabled={!isStepValid()}
                 className={`w-full py-2 text-white font-semibold rounded-xl transition
-              ${!isStepValid()
-                    ? 'bg-gray-500 cursor-not-allowed'
-                    : 'bg-gradient-to-r from-orange-400 to-pink-500 hover:opacity-90 cursor-pointer'}
-            `}
+                  ${
+                    !isStepValid()
+                      ? "bg-gray-500 cursor-not-allowed"
+                      : "bg-gradient-to-r from-orange-400 to-pink-500 hover:opacity-90 cursor-pointer"
+                  }`}
               >
                 Next
               </button>
@@ -487,24 +594,18 @@ export default function RegisterPage() {
                 type="submit"
                 disabled={!isStepValid()}
                 className={`w-full py-2 text-white font-semibold rounded-xl transition
-              ${!isStepValid()
-                    ? 'bg-gray-500 cursor-not-allowed'
-                    : 'bg-gradient-to-r from-green-500 to-yellow-300 hover:opacity-90 cursor-pointer'}
-              
-            `}
+                  ${
+                    !isStepValid()
+                      ? "bg-gray-500 cursor-not-allowed"
+                      : "bg-gradient-to-r from-green-500 to-yellow-300 hover:opacity-90 cursor-pointer"
+                  }`}
               >
-                {loading ? (
-                  <CastpointLoader />
-                ) : (
-                  <p>Finish</p>
-                )}
+                {loading ? <CastpointLoader /> : <p>Finish</p>}
               </button>
             )}
           </div>
 
-          {message && (
-            <p className="text-yellow-100 text-sm mt-4">{message}</p>
-          )}
+          {message && <p className="text-yellow-100 text-sm mt-4">{message}</p>}
         </form>
       </div>
     </section>

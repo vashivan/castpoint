@@ -51,7 +51,7 @@ const Footer = () => {
         <a href="https://www.facebook.com/profile.php?id=61581139737398" aria-label="Facebook">
           <Image width={0} height={0} className="w-10 h-10 transition-transform duration-300 hover:scale-110" src="/images/icons/facebook.svg" alt="Facebook" />
         </a>
-        <a href="https://www.instagram.com/castpoint.art" aria-label="Instagram">
+        <a href="https://www.instagram.com/castpoint" aria-label="Instagram">
           <Image width={0} height={0} className="w-10 h-10 transition-transform duration-300 hover:scale-110" src="/images/icons/instagram.svg" alt="Instagram" />
         </a>
       </div>
