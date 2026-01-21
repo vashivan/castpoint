@@ -60,7 +60,7 @@ const Footer = () => {
         <Link href="/vacancies" className={`${styles.footer_links_link} text-black hover:text-orange-500 transition-colors text-2xl`}>Vacancies</Link>
         <Link href="/reviews" className={`${styles.footer_links_link} text-black hover:text-orange-500 transition-colors text-2xl`}>Reviews</Link>
         <Link href="/blog" className={` ${styles.footer_links_link} text-black hover:text-orange-500 transition-colors text-2xl`}>Blog</Link>
-        <Link href="/contact" className={`${styles.footer_links_link} text-black hover:text-orange-500 transition-colors text-2xl`}>Contact us</Link>
+        {/* <Link href="/contact" className={`${styles.footer_links_link} text-black hover:text-orange-500 transition-colors text-2xl`}>Contact us</Link> */}
       </div>
 
 

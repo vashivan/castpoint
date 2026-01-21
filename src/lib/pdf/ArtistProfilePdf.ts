@@ -7,50 +7,65 @@ import { createRequire } from "module";
 const require = createRequire(import.meta.url);
 const fontkit = require("fontkit");
 
+/* ---------- BRAND + LAYOUT ---------- */
+
 const BRAND = {
-  bg: rgb(0xff / 255, 0xf7 / 255, 0xfb / 255),
-  primary: rgb(0, 0, 0),
-  accent: rgb(0xf5 / 255, 0x72 / 255, 0x0d / 255), // orange
-  accent2: rgb(0xaa / 255, 0x02 / 255, 0x54 / 255), // pink
+  bg: rgb(0xff / 255, 0xf7 / 255, 0xfb / 255), // light pink
+  primary: rgb(0x11 / 255, 0x18 / 255, 0x27 / 255), // #111827
+  accent: rgb(0xec / 255, 0x4a / 255, 0x93 / 255), // pink-magenta
   muted: rgb(0x6b / 255, 0x72 / 255, 0x80 / 255),
   white: rgb(1, 1, 1),
 };
 
 const A4: [number, number] = [595.28, 841.89];
-const M = { top: 56, bottom: 48, left: 48, right: 48 };
+const MARGIN = { top: 60, bottom: 50, left: 48, right: 48 };
 
-const H1 = 20;
-const H2 = 12;
 const BODY = 10;
-const LH = (s: number) => s * 1.35;
+const H1 = 22;
+const H2 = 12;
+const LINE_H = (size: number) => size * 1.35;
 
-function safe(v: unknown) {
-  return (typeof v === "string" ? v : "") || "";
+type TableRow = [string, string];
+
+/* ---------- SAFE + FORMAT HELPERS ---------- */
+
+function safeStr(v: unknown): string {
+  if (v == null) return "";
+  if (typeof v === "string") return v;
+  if (typeof v === "number") return String(v);
+  return "";
 }
+
+function safeText(v: unknown): string {
+  const s = safeStr(v).trim();
+  return s ? s : "—";
+}
+
+// 172.00 -> 172, 58.0 -> 58, "" -> "—"
+function fmtIntLike(v: unknown): string {
+  const s = safeStr(v).trim();
+  if (!s) return "—";
+  const n = Number(s.replace(",", "."));
+  if (Number.isFinite(n)) return String(Math.round(n));
+  return s || "—";
+}
+
+function normalizeDateToYMD(dateStr: string): string {
+  const s = safeStr(dateStr).trim();
+  if (!s) return "—";
+  const d = new Date(s);
+  if (isNaN(d.getTime())) return s; // keep original if it's not a valid date
+  const y = d.getFullYear();
+  const m = String(d.getMonth() + 1).padStart(2, "0");
+  const day = String(d.getDate()).padStart(2, "0");
+  return `${y}-${m}-${day}`;
+}
+
+/* ---------- IO HELPERS ---------- */
 
 async function readPublic(relPath: string): Promise<Uint8Array> {
   const abs = path.join(process.cwd(), "public", relPath);
   return await fs.promises.readFile(abs);
-}
-
-function wrapText(text: string, maxWidth: number, font: any, fontSize: number) {
-  const t = (text || "—").replace(/\s+/g, " ").trim();
-  const words = t ? t.split(" ") : ["—"];
-  const lines: string[] = [];
-  let line = "";
-
-  for (const w of words) {
-    const test = line ? `${line} ${w}` : w;
-    const width = font.widthOfTextAtSize(test, fontSize);
-    if (width <= maxWidth) line = test;
-    else {
-      if (line) lines.push(line);
-      line = w;
-    }
-  }
-
-  if (line) lines.push(line);
-  return lines.length ? lines : ["—"];
 }
 
 function isHttpUrl(s: string) {
@@ -77,15 +92,6 @@ async function loadImageBytes(src: string): Promise<Uint8Array | null> {
   }
 }
 
-function normalizeDateString(dateStr: string): string {
-  const d = new Date(dateStr);
-  if (isNaN(d.getTime())) return dateStr;
-  const day = String(d.getDate()).padStart(2, "0");
-  const month = String(d.getMonth() + 1).padStart(2, "0");
-  const year = d.getFullYear();
-  return `${day}/${month}/${year}`;
-}
-
 async function normalizeToJpeg(bytes: Uint8Array): Promise<Uint8Array | null> {
   try {
     const fixed = await sharp(bytes).rotate().jpeg({ quality: 88 }).toBuffer();
@@ -95,66 +101,115 @@ async function normalizeToJpeg(bytes: Uint8Array): Promise<Uint8Array | null> {
   }
 }
 
-function drawHeader(opts: {
+/* ---------- WRAP + TABLE ---------- */
+
+function wrapText(text: string, maxWidth: number, font: any, fontSize: number) {
+  const t = (text || "—").replace(/\s+/g, " ").trim();
+  const words = t ? t.split(" ") : ["—"];
+  const lines: string[] = [];
+  let line = "";
+
+  for (const w of words) {
+    const test = line ? `${line} ${w}` : w;
+    const width = font.widthOfTextAtSize(test, fontSize);
+    if (width <= maxWidth) line = test;
+    else {
+      if (line) lines.push(line);
+      line = w;
+    }
+  }
+
+  if (line) lines.push(line);
+  return lines.length ? lines : ["—"];
+}
+
+function drawTwoColTable(opts: {
   page: PDFPage;
-  width: number;
-  height: number;
-  fontBold: PDFFont;
+  x: number;
+  y: number; // top y
+  w: number;
+  leftRatio: number;
+  rows: TableRow[];
+  font: PDFFont;
+  fontSize: number;
+  rowPad: number;
 }) {
-  const { page, width, height, fontBold } = opts;
+  const { page, x, y, w, leftRatio, rows, font, fontSize, rowPad } = opts;
+  const leftW = w * leftRatio;
+  const rightW = w - leftW;
+  let cy = y;
 
-  // Header band (2 rectangles)
-  page.drawRectangle({ x: 0, y: height - 92, width, height: 92, color: BRAND.accent });
-  page.drawRectangle({
-    x: width * 0.55,
-    y: height - 92,
-    width: width * 0.45,
-    height: 92,
-    color: BRAND.accent2,
-  });
+  for (const [k, v] of rows) {
+    const kLines = wrapText(k || "—", leftW, font, fontSize);
+    const vLines = wrapText(v || "—", rightW, font, fontSize);
+    const lines = Math.max(kLines.length, vLines.length);
+    const rowH = lines * LINE_H(fontSize) + rowPad * 2;
 
-  page.drawText("CASTPOINT", {
-    x: M.left,
-    y: height - 54,
-    size: 18,
-    font: fontBold,
-    color: BRAND.white,
-  });
+    // left label
+    for (let li = 0; li < kLines.length; li++) {
+      page.drawText(kLines[li], {
+        x,
+        y: cy + rowH - rowPad - (li + 1) * LINE_H(fontSize),
+        size: fontSize,
+        font,
+        color: BRAND.muted,
+      });
+    }
 
-  page.drawText("Profile", {
-    x: M.left,
-    y: height - 74,
-    size: 16,
-    font: fontBold,
-    color: BRAND.white,
-  });
+    // right value
+    for (let li = 0; li < vLines.length; li++) {
+      page.drawText(vLines[li], {
+        x: x + leftW + 8,
+        y: cy + rowH - rowPad - (li + 1) * LINE_H(fontSize),
+        size: fontSize,
+        font,
+        color: BRAND.primary,
+      });
+    }
+
+    cy += rowH;
+  }
+
+  return cy; // lower y
 }
 
-function drawFooter(opts: { page: PDFPage; fontRegular: PDFFont }) {
-  const { page, fontRegular } = opts;
-  page.drawText("Generated by CASTPOINT platform", {
-    x: M.left,
-    y: M.bottom - 18,
-    size: 8,
-    font: fontRegular,
-    color: BRAND.muted,
-  });
+/* ---------- JUSTIFY HELPERS ---------- */
+
+function wrapWords(text: string) {
+  return (text || "")
+    .replace(/\s+/g, " ")
+    .trim()
+    .split(" ")
+    .filter(Boolean);
 }
 
-function drawSectionTitle(page: PDFPage, title: string, x: number, y: number, font: PDFFont) {
-  page.drawText(title, { x, y, size: H2, font, color: BRAND.accent2 });
-  return y - 16;
+function wrapLinesByWidth(words: string[], maxWidth: number, font: any, fontSize: number) {
+  const lines: string[][] = [];
+  let line: string[] = [];
+
+  for (const w of words) {
+    const test = line.length ? [...line, w].join(" ") : w;
+    const width = font.widthOfTextAtSize(test, fontSize);
+
+    if (width <= maxWidth) line.push(w);
+    else {
+      if (line.length) lines.push(line);
+      line = [w];
+    }
+  }
+
+  if (line.length) lines.push(line);
+  return lines.length ? lines : [["—"]];
 }
 
-function drawWrappedBlock(opts: {
+function drawJustifiedParagraph(opts: {
   page: PDFPage;
   text: string;
   x: number;
-  y: number;
+  y: number; // baseline y
   width: number;
   font: PDFFont;
   fontSize: number;
-  maxLines?: number;
   lineHeight?: number;
   color?: any;
 }) {
@@ -166,57 +221,87 @@ function drawWrappedBlock(opts: {
     width,
     font,
     fontSize,
-    maxLines = 9999,
-    lineHeight = LH(fontSize),
+    lineHeight = fontSize * 1.35,
     color = BRAND.primary,
   } = opts;
 
-  const lines = wrapText(text || "—", width, font, fontSize).slice(0, maxLines);
-  let yy = y;
-  for (const ln of lines) {
-    page.drawText(ln, { x, y: yy, size: fontSize, font, color });
-    yy -= lineHeight;
-  }
-  return yy;
-}
-
-function splitBullets(text: string) {
   const t = (text || "").trim();
-  if (!t) return [];
-  // підтримка: нові рядки або " • " або "- "
-  const byLines = t.split(/\r?\n+/).map((s) => s.trim()).filter(Boolean);
-  if (byLines.length > 1) return byLines;
+  const words = wrapWords(t || "—");
+  const lines = wrapLinesByWidth(words, width, font, fontSize);
 
-  // якщо все в один рядок з маркерами
-  const byBullets = t
-    .split(/(?:\s*•\s*|\s*-\s+)/g)
-    .map((s) => s.trim())
-    .filter(Boolean);
+  let cy = y;
 
-  return byBullets.length > 1 ? byBullets : [t];
+  for (let i = 0; i < lines.length; i++) {
+    const lineWords = lines[i];
+    const isLastLine = i === lines.length - 1;
+
+    // last line or single word -> normal
+    if (isLastLine || lineWords.length === 1) {
+      page.drawText(lineWords.join(" "), { x, y: cy, size: fontSize, font, color });
+      cy -= lineHeight;
+      continue;
+    }
+
+    // justify
+    const wordsWidth = lineWords.reduce(
+      (acc: number, w: string) => acc + font.widthOfTextAtSize(w, fontSize),
+      0
+    );
+
+    const gaps = lineWords.length - 1;
+    const extra = width - wordsWidth;
+    const gapSize = extra / gaps;
+
+    let cx = x;
+    for (let wi = 0; wi < lineWords.length; wi++) {
+      const w = lineWords[wi];
+      page.drawText(w, { x: cx, y: cy, size: fontSize, font, color });
+      cx += font.widthOfTextAtSize(w, fontSize);
+      if (wi < lineWords.length - 1) cx += gapSize;
+    }
+
+    cy -= lineHeight;
+  }
+
+  return cy;
 }
+
+/* ---------- EXPORT ---------- */
 
 export async function buildArtistProfilePdf(opts: {
   jobTitle: string;
   companyName?: string | null;
   artist: {
     full_name: string;
-    country?: string;
-    date_of_birth: string;
-    height?: string;
-    weight?: string;
-    experience?: string;
-    biography?: string;
-    picture?: string;
+    position?: string | null;
+
+    country?: string | null;
+    date_of_birth?: string;
+
+    height?: string | number | null;
+    weight?: string | number | null;
+
+    bust?: string | number | null;
+    waist?: string | number | null;
+    hips?: string | number | null;
+
+    experience?: string | null;
+    education?: string | null;
+    additional?: string | null;
+
+    biography?: string | null;
+    picture?: string | null;
   };
+
   cover_message?: string;
   promo_url?: string;
-  photos?: File[]; // up to 5 (поки не використовуємо тут)
+  photos?: File[];
 }) {
-  const { jobTitle, companyName, artist, cover_message } = opts;
+  const { jobTitle, artist, cover_message } = opts;
 
   // Fonts
-  const fontRegularBytes = await readPublic("fonts/Montserrat-VariableFont_wght.ttf");
+  // Keep your fonts; change if needed
+  const fontRegularBytes = await readPublic("fonts/montserrat-latin-400-italic.ttf");
   const fontBoldBytes = await readPublic("fonts/Montserrat-Bold.ttf");
 
   const pdfDoc = await PDFDocument.create();
@@ -225,203 +310,197 @@ export async function buildArtistProfilePdf(opts: {
   const fontRegular = await pdfDoc.embedFont(fontRegularBytes);
   const fontBold = await pdfDoc.embedFont(fontBoldBytes);
 
-  const createPage = () => {
-    const page = pdfDoc.addPage(A4);
-    const { width, height } = page.getSize();
+  const page = pdfDoc.addPage(A4);
+  const { width, height } = page.getSize();
 
-    page.drawRectangle({ x: 0, y: 0, width, height, color: BRAND.white });
-    drawHeader({ page, width, height, fontBold });
-    drawFooter({ page, fontRegular });
+  // Background
+  page.drawRectangle({ x: 0, y: 0, width, height, color: BRAND.bg });
 
-    return { page, width, height };
-  };
+  /* ---------- HEADER ---------- */
+  let cursorY = height - MARGIN.top;
 
-  let { page, width, height } = createPage();
+  page.drawText("Artist Application", {
+    x: MARGIN.left,
+    y: cursorY,
+    size: H1,
+    font: fontBold,
+    color: BRAND.primary,
+  });
 
-  const ensureSpace = (y: number, needed: number) => {
-    const minY = M.bottom + 40; // safe area above footer
-    if (y - needed >= minY) return { page, width, height, y };
+  cursorY -= H1 + 4;
 
-    // new page
-    ({ page, width, height } = createPage());
-    // content top start (below header + title area)
-    const freshY = height - 120;
-    return { page, width, height, y: freshY };
-  };
+  // Band text
+  const bandX = MARGIN.left;
+  const bandH = 30;
+  const bandY = cursorY - bandH;
 
-  // Title block
-  let y = height - 120;
+  const bandText = [safeText(jobTitle), safeText(artist.full_name)].filter(Boolean).join("   •   ");
 
-  page.drawText("Application for", { x: M.left, y, size: 10, font: fontBold, color: BRAND.muted });
-  y -= 22;
+  page.drawText(bandText, {
+    x: bandX,
+    y: bandY + 10,
+    size: BODY,
+    font: fontBold,
+    color: BRAND.primary,
+  });
 
-  page.drawText(jobTitle || "—", { x: M.left, y, size: 16, font: fontRegular, color: BRAND.primary });
-  y -= 22;
+  /* ---------- MAIN COLUMNS ---------- */
+  const colGap = 24;
+  const leftW = (width - MARGIN.left - MARGIN.right - colGap) * 0.60;
+  const rightW = (width - MARGIN.left - MARGIN.right - colGap) * 0.40;
+  const leftX = MARGIN.left;
+  const rightX = leftX + leftW + colGap;
 
-  if (companyName) {
-    page.drawText(companyName, { x: M.left, y, size: 10, font: fontRegular, color: BRAND.muted });
-    y -= 28;
-  }
+  let cursorLeftY = bandY - 28;
+  let cursorRightY = bandY - 28;
 
-  // Two columns (Profile details + Photo)
-  const gap = 18;
-  const leftW = (width - M.left - M.right - gap) * 0.58;
-  const rightW = (width - M.left - M.right - gap) * 0.42;
-  const leftX = M.left;
-  const rightX = leftX + leftW + gap;
+  // LEFT title
+  page.drawText("Contact & Basics", {
+    x: leftX,
+    y: cursorLeftY,
+    size: H2,
+    font: fontBold,
+    color: BRAND.accent,
+  });
 
-  let yl = y;
-  let yr = y;
+  // IMPORTANT: don't use huge magic numbers; keep it tight
+  cursorLeftY -= H2 + 185;
 
-  // Left: Profile details only
-  page.drawText("Profile", { x: leftX, y: yl, size: H2, font: fontBold, color: BRAND.accent2 });
-  yl -= 16;
+  const rows: TableRow[] = [
+    ["Nationality:", safeText(artist.country)],
+    ["Date of Birth:", safeText(artist.date_of_birth)],
 
-  const rows: Array<[string, string]> = [
-    ["Full name", safe(artist.full_name) || "—"],
-    ["Country", safe(artist.country) || "—"],
-    ["Date of birth", safe(normalizeDateString(artist.date_of_birth)) || "—"],
-    ["Height (cm)", safe(artist.height) || "—"],
-    ["Weight (kg)", safe(artist.weight) || "—"],
+    ["Height (cm):", fmtIntLike(artist.height)],
+    ["Weight (kg):", fmtIntLike(artist.weight)],
+
+    ["Bust (cm):", fmtIntLike(artist.bust)],
+    ["Waist (cm):", fmtIntLike(artist.waist)],
+    ["Hips (cm):", fmtIntLike(artist.hips)],
   ];
 
-  for (const [k, v] of rows) {
-    page.drawText(k, { x: leftX, y: yl, size: 9, font: fontBold, color: BRAND.muted });
-    yl -= 14;
+  cursorLeftY = drawTwoColTable({
+    page,
+    x: leftX,
+    y: cursorLeftY,
+    w: leftW,
+    leftRatio: 0.32,
+    rows,
+    font: fontRegular,
+    fontSize: BODY,
+    rowPad: 6,
+  });
 
-    const lines = wrapText(v || "—", leftW, fontRegular, 11);
-    for (const ln of lines) {
-      page.drawText(ln, { x: leftX, y: yl, size: 11, font: fontRegular, color: BRAND.primary });
-      yl -= LH(11);
-    }
-    yl -= 10;
-  }
+  // RIGHT: Photo
+  page.drawText("Photo", {
+    x: rightX,
+    y: cursorRightY,
+    size: H2,
+    font: fontBold,
+    color: BRAND.accent,
+  });
 
-  // Right: profile photo only
-  page.drawText("Photo", { x: rightX, y: yr, size: H2, font: fontBold, color: BRAND.accent2 });
-  yr -= 16;
+  cursorRightY -= H2 + 8;
 
-  const boxW = rightW;
-  const boxH = 220;
+  const photoW = rightW;
+  const photoH = 240;
 
-  const rawProfileBytes = artist.picture ? await loadImageBytes(artist.picture) : null;
+  const rawProfileBytes = artist.picture ? await loadImageBytes(String(artist.picture)) : null;
   const profileBytes = rawProfileBytes ? (await normalizeToJpeg(rawProfileBytes)) ?? rawProfileBytes : null;
 
   if (profileBytes?.length) {
     const img = await pdfDoc.embedJpg(profileBytes);
-
-    const pad = 8;
-    const availW = boxW - pad * 2;
-    const availH = boxH - pad * 2;
-
-    const ratio = Math.min(availW / img.width, availH / img.height);
+    const ratio = Math.min(photoW / img.width, photoH / img.height);
     const iw = img.width * ratio;
     const ih = img.height * ratio;
 
-    const ix = rightX;
-    const iy = (yr - boxH) + (boxH - ih) / 2;
+    // center-ish inside right column
+    const ix = rightX + (photoW - iw) / 2;
+    const iy = cursorRightY - ih;
 
     page.drawImage(img, { x: ix, y: iy, width: iw, height: ih });
+    cursorRightY -= photoH + 12;
   } else {
-    page.drawText("No profile photo", {
-      x: rightX + 12,
-      y: yr - 20,
+    page.drawText("No photo attached", {
+      x: rightX,
+      y: cursorRightY - 14,
       size: 9,
       font: fontRegular,
       color: BRAND.muted,
     });
+    cursorRightY -= photoH+12;
   }
 
-  yr -= boxH + 18;
+  /* ---------- BOTTOM STACK (FULL WIDTH) ---------- */
+  let stackY = Math.min(cursorLeftY, cursorRightY) - 32;
+  if (stackY < 160) stackY = 160;
 
-  // ===== Full-width content (Experience / Biography / Message) =====
-  const fullX = M.left;
-  const fullW = width - M.left - M.right;
+  const fullW = width - MARGIN.left - MARGIN.right;
 
-  // start below the lower column
-  let yFull = Math.min(yl, yr) - 8;
+  const drawTextBlockJustified = (opts2: { title: string; text: string; fontSize?: number }) => {
+    const { title, text, fontSize = BODY } = opts2;
 
-  // subtle divider
-  ({ page, width, height, y: yFull } = ensureSpace(yFull, 30));
-  page.drawRectangle({ x: fullX, y: yFull, width: fullW, height: 1, color: BRAND.bg });
-  yFull -= 18;
+    // title
+    page.drawText(title, {
+      x: MARGIN.left,
+      y: stackY,
+      size: H2,
+      font: fontBold,
+      color: BRAND.accent,
+    });
 
-  // Experience (full width) — як список, якщо є маркери/нові рядки
-  ({ page, width, height, y: yFull } = ensureSpace(yFull, 60));
-  yFull = drawSectionTitle(page, "Experience", fullX, yFull, fontBold);
+    stackY -= H2 + 6;
 
-  const expItems = splitBullets(safe(artist.experience));
-  if (expItems.length > 1) {
-    for (const item of expItems) {
-      // оцінка простору на 2 рядки
-      ({ page, width, height, y: yFull } = ensureSpace(yFull, LH(BODY) * 2 + 6));
-      yFull = drawWrappedBlock({
+    // keep paragraph breaks
+    const raw = (text || "—").trim() || "—";
+    const paragraphs = raw.split(/\n\s*\n+/).map((p) => p.trim()).filter(Boolean);
+
+    for (let pi = 0; pi < paragraphs.length; pi++) {
+      stackY = drawJustifiedParagraph({
         page,
-        text: `• ${item}`,
-        x: fullX,
-        y: yFull,
+        text: paragraphs[pi],
+        x: MARGIN.left,
+        y: stackY,
         width: fullW,
         font: fontRegular,
-        fontSize: BODY,
-        lineHeight: LH(BODY),
+        fontSize,
+        lineHeight: LINE_H(fontSize),
+        color: BRAND.primary,
       });
-      yFull -= 4;
+
+      if (pi < paragraphs.length - 1) stackY -= 8;
     }
-  } else {
-    ({ page, width, height, y: yFull } = ensureSpace(yFull, 120));
-    yFull = drawWrappedBlock({
-      page,
-      text: safe(artist.experience) || "—",
-      x: fullX,
-      y: yFull,
-      width: fullW,
-      font: fontRegular,
-      fontSize: BODY,
-      lineHeight: LH(BODY),
-    });
-  }
 
-  yFull -= 14;
+    stackY -= 22;
+  };
 
-  // Biography (full width)
-  if ((artist.biography || "").trim()) {
-    ({ page, width, height, y: yFull } = ensureSpace(yFull, 60));
-    yFull = drawSectionTitle(page, "Biography", fullX, yFull, fontBold);
+  // Experience (justified)
+  drawTextBlockJustified({
+    title: "Experience",
+    text: safeStr(artist.experience) || "—",
+    fontSize: BODY,
+  });
 
-    // для довгих біографій краще щільніше міжряддя
-    ({ page, width, height, y: yFull } = ensureSpace(yFull, 120));
-    yFull = drawWrappedBlock({
-      page,
-      text: safe(artist.biography) || "—",
-      x: fullX,
-      y: yFull,
-      width: fullW,
-      font: fontRegular,
-      fontSize: BODY,
-      lineHeight: LH(BODY),
-    });
+  // Education (justified)
+  drawTextBlockJustified({
+    title: "Education",
+    text: safeStr(artist.education) || "—",
+    fontSize: 9,
+  });
 
-    yFull -= 14;
-  }
+  // Additional (justified)
+  drawTextBlockJustified({
+    title: "Additional",
+    text: safeStr(artist.additional) || safeStr(artist.biography) || "—",
+    fontSize: 9,
+  });
 
-  // Message (full width)
+  // Message (justified)
   if (cover_message && cover_message.trim()) {
-    ({ page, width, height, y: yFull } = ensureSpace(yFull, 60));
-    yFull = drawSectionTitle(page, "Message", fullX, yFull, fontBold);
-
-    ({ page, width, height, y: yFull } = ensureSpace(yFull, 120));
-    yFull = drawWrappedBlock({
-      page,
+    drawTextBlockJustified({
+      title: "Message",
       text: cover_message.trim(),
-      x: fullX,
-      y: yFull,
-      width: fullW,
-      font: fontRegular,
       fontSize: 9,
-      lineHeight: LH(9),
     });
-
-    yFull -= 10;
   }
 
   const bytes = await pdfDoc.save();

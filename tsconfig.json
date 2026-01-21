@@ -37,7 +37,7 @@
     "src/lib/db.js",
     "next.config.mjs",
     ".next/dev/types/**/*.ts"
-  ],
+, "src/lib/mailing/send.js"  ],
   "exclude": [
     "node_modules"
   ]

@@ -118,34 +118,41 @@ function normalizeFacebook(input?: string) {
 export default function RegistrationDesktop() {
   const router = useRouter();
 
-  const [form, setForm] = useState({
+ const [form, setForm] = useState({
+    name: "",
     first_name: "",
     second_name: "",
-    date_of_birth: "",
-    sex: "",
-    country_of_birth: "",
     nationality: "",
-    country: "",
     phone: "",
-    email: "",
-    instagram: "",
-    facebook: "",
+    skills: "",
+    resume_url: "",
+    country: "",
+    country_of_birth: "",
+    sex: "",
     role: "",
+    date_of_birth: Date(), // leave as-is in your project (but ideally should be "" or new Date())
     height: "",
     weight: "",
-    skills: "",
+    bust: "",
+    waist: "",
+    hips: "",
     video_url: "",
-    resume_url: "",
     pic_url: "",
     pic_public_id: "",
-    password: "",
-    password2: "",
     biography: "",
     experience: "",
+    email: "",
+    password: "",
+    password2: "",
+    instagram: "",
+    facebook: "",
   });
+
 
   const [loading, setLoading] = useState(false);
   const [msg, setMsg] = useState("");
+
+   const onlyDigits = (v: string) => v.replace(/[^\d]/g, "");
 
   const checkPassword = () => {
     if (!form.password && !form.password2) {
@@ -184,19 +191,23 @@ export default function RegistrationDesktop() {
 
     setLoading(true);
 
+
     const payload = {
       name: `${form.first_name} ${form.second_name}`.trim(),
       first_name: form.first_name,
       second_name: form.second_name,
       sex: form.sex,
       country: form.country,
-      country_of_birth: form.country_of_birth,
-      nationality: form.nationality,
+      // country_of_birth: form.country_of_birth,
+      // nationality: form.nationality,
       phone: form.phone,
       role: form.role,
       date_of_birth: form.date_of_birth,
       height: form.height,
       weight: form.weight,
+      bust: form.bust,
+      waist: form.waist,
+      hips: form.hips,
       skills: form.skills,
       video_url: form.video_url,
       resume_url: form.resume_url,
@@ -207,9 +218,9 @@ export default function RegistrationDesktop() {
       email: form.email,
       password: form.password,
 
-      // normalized values
-      instagram: ig,
-      facebook: fb,
+      // normalized
+      instagram: ig, // store as "@username"
+      facebook: fb,  // store as canonical url
     };
 
     try {
@@ -235,7 +246,7 @@ export default function RegistrationDesktop() {
         Create Your Artist Account
       </h1>
 
-      <div className="max-w-6xl mx-auto p-[2px] rounded-3xl bg-gradient-to-r from-[#AA0254] to-[#F5720D]">
+      <div className="max-w-6xl mx-auto p-0.5 rounded-3xl">
         <form onSubmit={handleSubmit} className="rounded-3xl bg-white shadow-xl p-10">
           <div className="grid grid-cols-12 gap-8">
             {/* LEFT TOP — Personal */}
@@ -284,22 +295,6 @@ export default function RegistrationDesktop() {
                 <div className="col-span-4">
                   <NoSSRSelector
                     label="Country of birth"
-                    placeholder="Select"
-                    options={countries}
-                    onChange={(v) => setForm({ ...form, country_of_birth: v })}
-                  />
-                </div>
-                <div className="col-span-4">
-                  <NoSSRSelector
-                    label="Nationality"
-                    placeholder="Select"
-                    options={countries}
-                    onChange={(v) => setForm({ ...form, nationality: v })}
-                  />
-                </div>
-                <div className="col-span-4">
-                  <NoSSRSelector
-                    label="Country of residence"
                     placeholder="Select"
                     options={countries}
                     onChange={(v) => setForm({ ...form, country: v })}
@@ -409,7 +404,7 @@ export default function RegistrationDesktop() {
                     label="Height (cm)"
                     name="height"
                     value={form.height}
-                    onChange={(v) => setForm({ ...form, height: v })}
+                    onChange={(v) => setForm({ ...form, height: onlyDigits(v) })}
                     placeholder="e.g. 178"
                   />
                 </div>
@@ -419,8 +414,38 @@ export default function RegistrationDesktop() {
                     label="Weight (kg)"
                     name="weight"
                     value={form.weight}
-                    onChange={(v) => setForm({ ...form, weight: v })}
+                    onChange={(v) => setForm({ ...form, weight: onlyDigits(v) })}
                     placeholder="e.g. 70"
+                  />
+                </div>
+
+                <div className="col-span-4">
+                  <TextInput 
+                    label="Bust (cm)"
+                    name="bust"
+                    value={form.bust}
+                    onChange={(v) => setForm({ ...form, bust: onlyDigits(v) })}
+                    placeholder="e.g. 90"
+                  />
+                </div>
+
+                <div className="col-span-4">
+                  <TextInput
+                    label="Waist (cm)"
+                    name="waist"
+                    value={form.waist}
+                    onChange={(v) => setForm({ ...form, waist: onlyDigits(v) })}
+                    placeholder="e.g. 60"
+                  />
+                </div>
+
+                <div className="col-span-4">
+                  <TextInput
+                    label="Hips (cm)"
+                    name="hips"
+                    value={form.hips}
+                    onChange={(v) => setForm({ ...form, hips: onlyDigits(v) })}
+                    placeholder="e.g. 90"
                   />
                 </div>
 

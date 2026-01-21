@@ -9,7 +9,7 @@ import { cookies } from "next/headers";
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
-    const { first_name, second_name, nationality, name, sex, country, country_of_birth, role, skills, date_of_birth, height, weight, video_url, pic_url, pic_public_id, biography, experience, email, phone, password, instagram, facebook } = body;
+    const { first_name, second_name, name, sex, country, role, skills, date_of_birth, height, weight, bust, waist, hips, video_url, pic_url, pic_public_id, biography, experience, email, phone, password, instagram, facebook } = body;
 
     const cookieStore = await cookies();
     const token = cookieStore.get("auth")?.value;
@@ -31,10 +31,11 @@ export async function POST(req: NextRequest) {
     if (name) { updates.push("name = ?"); values.push(name); }
     if (first_name) { updates.push("first_name = ?"); values.push(first_name); }
     if (second_name) { updates.push("second_name = ?"); values.push(second_name); }
-    if (nationality) { updates.push("nationality = ?"); values.push(nationality); }
+    if (bust) { updates.push("bust = ?"); values.push(bust); }
+    if (waist) { updates.push("waist = ?"); values.push(waist); }
+    if (hips) { updates.push("hips = ?"); values.push(hips); }
     if (sex) { updates.push("sex = ?"); values.push(sex); }
     if (country) { updates.push("country = ?"); values.push(country); }
-    if (country_of_birth) { updates.push("country_of_birth = ?"); values.push(country_of_birth); }
     if (date_of_birth) { updates.push("date_of_birth = ?"); values.push(date_of_birth); }
     if (role) {updates.push("role = ?"); values.push(role); }
     if (height) { updates.push("height = ?"); values.push(height); }

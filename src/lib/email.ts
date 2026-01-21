@@ -6,7 +6,6 @@ const {
   EMAIL_SECURE = 'true',
   EMAIL_USER,
   EMAIL_PASS,
-  EMAIL_FROM,
 } = process.env;
 
 export const transporter = nodemailer.createTransport({

@@ -69,9 +69,10 @@ export async function sendEmployerEmail(params: {
               <div style="font-size:16px;font-weight:800;color:#111827;">
                 ${safe(artist_promo_url ?? "")}
               </div>
-              <p style="margin:10px 0 0 0;font-size:12px;color:#6b7280;line-height:1.5;">
+              <p style="margin:10px 0 0 0;font-size:16px;color:#6b7280;line-height:1.5;">
                 Candidate contact details are managed by Castpoint.  
                 If you want to proceed, reply to this email — our manager will connect you with the artist.
+                Just reply to this email or contact us at <a href="mailto:castpoint_team@castpoint.art" style="color:#6b7280;">throw this <strong>e-mail</strong></a>
               </p>
             </div>
 

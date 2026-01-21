@@ -142,6 +142,9 @@ export default function RegisterPage() {
     date_of_birth: Date(), // leave as-is in your project (but ideally should be "" or new Date())
     height: "",
     weight: "",
+    bust: "",
+    waist: "",
+    hips: "",
     video_url: "",
     pic_url: "",
     pic_public_id: "",
@@ -173,18 +176,23 @@ export default function RegisterPage() {
   };
 
   const isStepValid = () => {
+    const hasValue = (v: string) => v.trim().length > 0;
+
     if (step === 0) {
       return (
-        form.first_name &&
-        form.second_name &&
-        form.country &&
-        form.date_of_birth &&
-        form.sex &&
-        form.height &&
-        form.weight &&
-        form.role &&
-        form.email &&
-        form.password
+        hasValue(form.first_name) &&
+        hasValue(form.second_name) &&
+        hasValue(form.country) &&
+        hasValue(form.date_of_birth) &&
+        hasValue(form.sex) &&
+        hasValue(form.height) &&
+        hasValue(form.weight) &&
+        hasValue(form.bust) &&
+        hasValue(form.waist) &&
+        hasValue(form.hips) &&
+        hasValue(form.role) &&
+        hasValue(form.email) &&
+        hasValue(form.password)
       );
     }
     if (step === 1) return true;
@@ -194,10 +202,7 @@ export default function RegisterPage() {
     return false;
   };
 
-  const stringToNum = (val: string) => {
-    const num = +val;
-    return num;
-  };
+  const onlyDigits = (v: string) => v.replace(/[^\d]/g, "");
 
   const checkPassword = () => {
     if (!form.password && !form.password2) {
@@ -237,6 +242,9 @@ export default function RegisterPage() {
       date_of_birth: form.date_of_birth,
       height: form.height,
       weight: form.weight,
+      bust: form.bust,
+      waist: form.waist,
+      hips: form.hips,
       skills: form.skills,
       video_url: form.video_url,
       resume_url: form.resume_url,
@@ -277,7 +285,7 @@ export default function RegisterPage() {
         Create Your Artist Account
       </h1>
 
-      <div className="w-full md:w-120 p-[2px] rounded-3xl bg-gradient-to-r from-[#AA0254] to-[#F5720D]">
+      <div className="w-full md:w-120 p-0.5 rounded-3xl">
         <form
           onSubmit={handleSubmit}
           className="w-full bg-white rounded-3xl p-8 shadow-xl overflow-hidden relative"
@@ -376,21 +384,48 @@ export default function RegisterPage() {
                 />
 
                 <TextInput
-                  type="text"
+                  type="number"
                   label="Height"
                   name="height"
-                  value={stringToNum(form.height)}
-                  onChange={(val) => setForm({ ...form, height: val })}
+                  value={form.height}
+                  onChange={(val) => setForm({ ...form, height: onlyDigits(val)})}
                   placeholder="cm"
                 />
 
                 <TextInput
-                  type="text"
+                  type="number"
                   label="Weight"
                   name="weight"
-                  value={stringToNum(form.weight)}
-                  onChange={(val) => setForm({ ...form, weight: val })}
+                  value={form.weight}
+                  onChange={(val) => setForm({ ...form, weight: onlyDigits(val) })}
                   placeholder="kg"
+                />
+
+                <TextInput
+                  type="number"
+                  label="Bust"
+                  name="bust"
+                  value={form.bust}
+                  onChange={(val) => setForm({ ...form, bust: onlyDigits(val) })}
+                  placeholder="cm"
+                />
+
+                <TextInput
+                  type="nubmer"
+                  label="Waist"
+                  name="waist"
+                  value={form.waist}
+                  onChange={(val) => setForm({ ...form, waist: onlyDigits(val) })}
+                  placeholder="cm"
+                />
+
+                <TextInput
+                  type="number"
+                  label="Hips"
+                  name="hips"
+                  value={form.hips}
+                  onChange={(val) => setForm({ ...form, hips: onlyDigits(val) })}
+                  placeholder="cm"
                 />
               </motion.div>
             )}
@@ -581,10 +616,9 @@ Tell us a bit more about yourself — not just the basics. Whether it's your fav
                 onClick={nextStep}
                 disabled={!isStepValid()}
                 className={`w-full py-2 text-white font-semibold rounded-xl transition
-                  ${
-                    !isStepValid()
-                      ? "bg-gray-500 cursor-not-allowed"
-                      : "bg-gradient-to-r from-orange-400 to-pink-500 hover:opacity-90 cursor-pointer"
+                  ${!isStepValid()
+                    ? "bg-gray-500 cursor-not-allowed"
+                    : "bg-gradient-to-r from-orange-400 to-pink-500 hover:opacity-90 cursor-pointer"
                   }`}
               >
                 Next
@@ -594,10 +628,9 @@ Tell us a bit more about yourself — not just the basics. Whether it's your fav
                 type="submit"
                 disabled={!isStepValid()}
                 className={`w-full py-2 text-white font-semibold rounded-xl transition
-                  ${
-                    !isStepValid()
-                      ? "bg-gray-500 cursor-not-allowed"
-                      : "bg-gradient-to-r from-green-500 to-yellow-300 hover:opacity-90 cursor-pointer"
+                  ${!isStepValid()
+                    ? "bg-gray-500 cursor-not-allowed"
+                    : "bg-gradient-to-r from-green-500 to-yellow-300 hover:opacity-90 cursor-pointer"
                   }`}
               >
                 {loading ? <CastpointLoader /> : <p>Finish</p>}

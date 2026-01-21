@@ -71,8 +71,6 @@ export default function DesktopProfilePage() {
       second_name: user?.second_name ?? '',
       date_of_birth: user?.date_of_birth ?? '',
       sex: user?.sex ?? '',
-      country_of_birth: user?.country_of_birth ?? '',
-      nationality: user?.nationality ?? '',
       country: user?.country ?? '',
       phone: user?.phone ?? '',
       // контакт/соц
@@ -83,6 +81,9 @@ export default function DesktopProfilePage() {
       role: user?.role ?? '',
       height: user?.height ?? '',
       weight: user?.weight ?? '',
+      bust: user?.bust ?? '',
+      waist: user?.waist ?? '',
+      hips: user?.hips ?? '',
       skills: user?.skills ?? '',
       video_url: user?.video_url ?? '',
       resume_url: user?.resume_url ?? '',
@@ -99,12 +100,6 @@ export default function DesktopProfilePage() {
   );
 
   const [form, setForm] = useState<User>(initial);
-
-
-  //   const videoId = useMemo(() => {
-  //   const m = (form.video_url || '').match(/[?&]v=([^&]+)/);
-  //   return m ? m[1] : null;
-  // }, [form.video_url]);
 
   if (!isLogged || !user) return null;
 
@@ -160,8 +155,6 @@ export default function DesktopProfilePage() {
           'second_name',
           'date_of_birth',
           'sex',
-          'country_of_birth',
-          'nationality',
           'country',
         ]);
         if (Object.keys(payload).length) await postUpdate(payload);
@@ -177,6 +170,9 @@ export default function DesktopProfilePage() {
           'role',
           'height',
           'weight',
+          'bust',
+          'waist',
+          'hips',
           'skills',
           'video_url',
           'resume_url',
@@ -232,7 +228,7 @@ export default function DesktopProfilePage() {
         Profile
       </h1>
 
-      <div className="max-w-6xl mx-auto p-[2px] rounded-3xl bg-gradient-to-r from-[#AA0254] to-[#F5720D]">
+      <div className="max-w-6xl mx-auto p-0.5 rounded-3xl">
         <div className="rounded-3xl bg-white shadow-xl p-10">
           <div className="grid grid-cols-12 gap-8">
             {/* Personal (left) */}
@@ -272,14 +268,6 @@ export default function DesktopProfilePage() {
                   <div className="col-span-6">
                     <p><b>Gender:</b></p>
                     <p>{user.sex}</p>
-                  </div>
-                  <div className="col-span-4">
-                    <p><b>Country of birth:</b></p>
-                    <p>{user.country_of_birth}</p>
-                  </div>
-                  <div className="col-span-4">
-                    <p><b>Nationality:</b></p>
-                    <p>{user.nationality}</p>
                   </div>
                   <div className="col-span-4">
                     <p><b>Country:</b></p>
@@ -439,9 +427,12 @@ export default function DesktopProfilePage() {
 
               {!editing.professional ? (
                 <div className="grid grid-cols-12 gap-10 text-black">
-                  <div className="col-span-6"><p><b>Role:</b> {user.role}</p></div>
-                  <div className="col-span-3"><p><b>Height:</b> {user.height} cm</p></div>
-                  <div className="col-span-3"><p><b>Weight:</b> {user.weight} kg</p></div>
+                  <div className="col-span-12"><p><b>Role:</b> {user.role}</p></div>
+                  <div className="col-span-4"><p><b>Height:</b> {user.height} cm</p></div>
+                  <div className="col-span-4"><p><b>Weight:</b> {user.weight} kg</p></div>
+                  <div className="col-span-4"><p><b>Bust:</b> {user.bust} cm</p></div>
+                  <div className="col-span-4"><p><b>Waist:</b> {user.waist} cm</p></div>
+                  <div className="col-span-4"><p><b>Hips:</b> {user.hips} cm</p></div>
                   <div className="col-span-12"><p><b>Skills:</b> {user.skills}</p></div>
                   <div className="col-span-6">
                     <p><b className='mr-2'>Promo video:</b>{user.video_url ? <a className="text-pink-700 underline" href={user.video_url} target="_blank">open</a> : '—'}</p>
@@ -474,17 +465,29 @@ export default function DesktopProfilePage() {
                 </div>
               ) : (
                 <div className="grid grid-cols-12 gap-4">
-                  <div className="col-span-6">
+                  <div className="col-span-12">
                     <NoSSRSelector label="Role" placeholder="Choose your role" options={roles}
                       onChange={(v) => setForm((f) => ({ ...f, role: v }))} />
                   </div>
-                  <div className="col-span-3">
+                  <div className="col-span-4">
                     <TextInput label="Height (cm)" value={form.height}
                       onChange={(v) => setForm((f) => ({ ...f, height: v }))} />
                   </div>
-                  <div className="col-span-3">
+                  <div className="col-span-4">
                     <TextInput label="Weight (kg)" value={String(form.weight ?? '')}
                       onChange={(v) => setForm((f) => ({ ...f, weight: v }))} />
+                  </div>
+                  <div className="col-span-4">
+                    <TextInput label="Bust (cm)" value={String(form.bust ?? '')}
+                      onChange={(v) => setForm((f) => ({ ...f, bust: v }))} />
+                  </div>
+                  <div className="col-span-4">
+                    <TextInput label="Waist (cm)" value={String(form.waist?? '')}
+                      onChange={(v) => setForm((f) => ({ ...f, waist: v }))} />
+                  </div>
+                  <div className="col-span-4">
+                    <TextInput label="Hips (cm)" value={String(form.hips ?? '')}
+                      onChange={(v) => setForm((f) => ({ ...f, hips: v }))} />
                   </div>
                   <div className="col-span-12">
                     <TextInput label="Skills (comma separated)" value={form.skills ?? ''}

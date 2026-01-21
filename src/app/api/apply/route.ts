@@ -23,6 +23,9 @@ const uploadedImageSchema = z.object({
   bytes: z.number().int().nonnegative().optional(),
   width: z.number().int().positive().optional(),
   height: z.number().int().positive().optional(),
+  bust: z.number().int().positive().optional(),
+  waist: z.number().int().positive().optional(),
+  hips: z.number().int().positive().optional(),
   format: z.string().optional(),
 });
 
@@ -32,18 +35,21 @@ const schema = z.object({
   artist: z.object({
     full_name: z.string().min(2),
     email: z.string().email(), // ⚠️ зберігаємо для менеджера/логів, але НЕ показуємо роботодавцю
-    date_of_birth: z.string(),
+    date_of_birth: z.string().optional(),
     phone: z.string().optional(),
     instagram: z.string().optional(),
     country: z.string().optional(),
     weight: z.string().optional(),
     height: z.string().optional(),
+    bust: z.string().optional(),
+    waist: z.string().optional(),
+    hips: z.string().optional(),
     experience: z.string().optional(),
     biography: z.string().optional(),
     picture: asOptionalUrlOrPath,
   }),
   cover_message: z.string().max(2000).optional().default(""),
-  promo_url: asOptionalUrlOrPath,
+  promo_url: asOptionalUrlOrPath || undefined,
 
   // images як JSON string у FormData
   images: z.preprocess((v) => {
@@ -65,6 +71,31 @@ type MailAttachment = {
   content: Buffer;
   contentType?: string;
 };
+
+async function sendToTelegram(text: string) {
+  const token = process.env.TELEGRAM_BOT_TOKEN;
+  const chatId = process.env.TELEGRAM_CHAT_ID;
+
+  if (!token) throw new Error("Missing TELEGRAM_BOT_TOKEN");
+  if (!chatId) throw new Error("Missing TELEGRAM_CHAT_ID");
+
+  const res = await fetch(`https://api.telegram.org/bot${token}/sendMessage`, {
+    method: "POST",
+    headers: { "content-type": "application/json" },
+    body: JSON.stringify({
+      chat_id: chatId,
+      text,
+      parse_mode: "HTML",
+      disable_web_page_preview: true,
+    }),
+  });
+
+  const data = await res.json().catch(() => null);
+  if (!res.ok) {
+    throw new Error(`Telegram sendMessage failed (${res.status}): ${JSON.stringify(data)}`);
+  }
+}
+
 
 function extFromContentType(ct?: string | null) {
   if (!ct) return "jpg";
@@ -107,12 +138,15 @@ export async function POST(req: NextRequest) {
       artist: {
         full_name: fd.get("artist_full_name"),
         email: fd.get("artist_email"),
-        date_of_birth: fd.get("artist_date_of_birth"),
+        date_of_birth: fd.get("artist_date_of_birth") ?? undefined,
         phone: fd.get("artist_phone") ?? undefined,
         instagram: fd.get("artist_instagram") ?? undefined,
         country: fd.get("artist_country") ?? undefined,
         weight: fd.get("artist_weight") ?? undefined,
         height: fd.get("artist_height") ?? undefined,
+        bust: fd.get("artist_bust") ?? undefined,
+        waist: fd.get("artist_waist") ?? undefined,
+        hips: fd.get("artist_hips") ?? undefined,
         experience: fd.get("artist_experience") ?? undefined,
         biography: fd.get("artist_biography") ?? undefined,
         picture: fd.get("artist_picture") ?? undefined,
@@ -174,6 +208,9 @@ export async function POST(req: NextRequest) {
         date_of_birth: artist.date_of_birth,
         height: artist.height,
         weight: artist.weight,
+        bust: artist.bust,
+        waist: artist.waist,
+        hips: artist.hips,
         experience: artist.experience,
         biography: artist.biography,
         picture: artist.picture,
@@ -230,6 +267,21 @@ export async function POST(req: NextRequest) {
       artist_email: artist.email,
       images: imgList.length,
     });
+
+      const captions = [
+      "New Artist Application",
+      `Name: ${artist.full_name || "—"}`,
+      `Email: ${artist.email || "—"}`,
+      `Phone: ${artist.phone || "—"}`,
+      `Code: ${applicationCode}`,
+      `Title: ${job.title}`
+    ]
+      .filter(Boolean)
+      .join("\n");
+
+    await sendToTelegram(
+      captions
+    );
 
     return NextResponse.json({ ok: true });
   } catch (error) {

@@ -1,44 +1,3 @@
-// import { NextResponse } from 'next/server';
-// import bcrypt from "bcryptjs";
-// import { db } from "../../../lib/db"; // шляхи можуть відрізнятись у твоєму проєкті
-// import { RowDataPacket } from "mysql2";
-// import "mysql2";
-
-// export async function POST(req: Request) {
-//   const body = await req.json();
-//   const { name, sex, country, role, date_of_birth, height, weight, video_url, pic_url, pic_public_id, biography, experience, email, password, instagram, facebook } = body;
-
-//   const secret = process.env.JWT_SECRET;
-//   if (!secret) {
-//     console.error("No JWT_SECRET in .env");
-//     return NextResponse.json({ error: "Server error" }, { status: 500 });
-//   }
-
-//   try {
-//     const [existingUsers] = await db.query<RowDataPacket[]>(
-//       "SELECT id FROM profiles WHERE email = ?",
-//       [email]
-//     );
-
-//     if (existingUsers.length > 0) {
-//       return NextResponse.json({ error: "Profile with same Email is already exist" }, { status: 400 });
-//     }
-
-//     const hashedPassword = await bcrypt.hash(password, 10);
-
-//     await db.query(
-//       `INSERT INTO profiles (name, sex, country, role, date_of_birth, height, weight, video_url, pic_url, pic_public_id, biography, experience, email, password, instagram, facebook)
-//        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-//       [name, sex, country, role, date_of_birth, height, weight, video_url, pic_url, pic_public_id, biography, experience, email, hashedPassword, instagram, facebook]
-//     );
-
-//     return NextResponse.json({ message: "User registered successfully" }, { status: 201 });
-
-//   } catch (err) {
-//     console.error(err);
-//     return NextResponse.json({ error: "Database error" }, { status: 500 });
-//   }
-// }
 // app/api/registration/route.ts
 import { NextResponse } from 'next/server';
 import bcrypt from 'bcryptjs';
@@ -78,13 +37,14 @@ export async function POST(req: Request) {
 
     const sex              = toStr(body.sex);
     const country          = toStr(body.country);            // residence
-    const country_of_birth = toStr(body.country_of_birth);
-    const nationality      = toStr(body.nationality);
     const phone            = toStr(body.phone);
 
     const role             = toStr(body.role);
     const height           = toNullInt(body.height);
     const weight           = toNullInt(body.weight);
+    const bust             = toNullInt(body.bust);
+    const waist            = toNullInt(body.waist);
+    const hips             = toNullInt(body.hips);
     const skills           = toNullStr(body.skills);
 
     const date_of_birth    = toNullDateISO(body.date_of_birth);
@@ -134,24 +94,26 @@ export async function POST(req: Request) {
       (
         name, first_name, second_name,
         sex, date_of_birth,
-        country_of_birth, nationality, country, phone,
+        country, phone,
         role, height, weight, skills,
         video_url, resume_url,
         pic_url, pic_public_id,
         biography, experience,
         email, password, instagram, facebook,
+        bust, waist, hips,
         created_at
       )
       VALUES
       (
         ?, ?, ?,
         ?, ?,
-        ?, ?, ?, ?,
+        ?, ?, 
         ?, ?, ?, ?,
         ?, ?,
         ?, ?,
         ?, ?,
         ?, ?, ?, ?,
+        ?, ?, ?,
         NOW()
       )
     `;
@@ -159,12 +121,13 @@ export async function POST(req: Request) {
     const params = [
       name || null, first_name || null, second_name || null,
       sex || null, date_of_birth,
-      country_of_birth || null, nationality || null, country || null, phone || null,
+      country || null, phone || null,
       role || null, height, weight, skills,
       video_url, resume_url,
       pic_url, pic_public_id,
       biography, experience,
       email, hashedPassword, instagram, facebook,
+      bust, waist, hips,
     ];
 
     const [result] = await db.query<ResultSetHeader>(sql, params);

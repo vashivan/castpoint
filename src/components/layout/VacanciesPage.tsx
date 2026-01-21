@@ -368,10 +368,13 @@ function ApplyModal({ jobId, onClose, jobTitle }: { jobId: number; onClose: () =
     email: user?.email || "",
     phone: user?.phone || "",
     instagram: user?.instagram || "",
-    country: user?.country_of_birth || "",
+    country: user?.country || "",
     cover_message: "",
     weight: user?.weight || "",
     height: user?.height || "",
+    bust: user?.bust || "",
+    waist: user?.waist || "",
+    hips: user?.hips || "",
     experience: user?.experience || "",
     biography: user?.biography || "",
     promo_url: user?.video_url || "",
@@ -472,6 +475,7 @@ function ApplyModal({ jobId, onClose, jobTitle }: { jobId: number; onClose: () =
   try {
     setLoading(true);
     setStatus("idle");
+    console.log(form);
 
     // 1) upload photos to Cloudinary (if any)
     let uploaded: UploadedImage[] = [];
@@ -491,6 +495,9 @@ function ApplyModal({ jobId, onClose, jobTitle }: { jobId: number; onClose: () =
     if (form.country) fd.append("artist_country", form.country);
     if (form.height) fd.append("artist_height", String(form.height));
     if (form.weight) fd.append("artist_weight", String(form.weight));
+    if (form.bust) fd.append("artist_bust", String(form.bust));
+    if (form.waist) fd.append("artist_waist", String(form.waist));
+    if (form.hips) fd.append("artist_hips", String(form.hips));
     if (form.experience) fd.append("artist_experience", form.experience);
     if (form.biography) fd.append("artist_biography", form.biography);
     if (user?.pic_url) fd.append("artist_picture", user.pic_url);
@@ -513,6 +520,7 @@ function ApplyModal({ jobId, onClose, jobTitle }: { jobId: number; onClose: () =
 
     const data = await res.json();
     if (!res.ok || data?.ok === false) throw new Error(data?.error || "Failed");
+    
 
     setStatus("ok");
     setFinallyMsg("Done! Wish you luck and our team is waiting for your future job!");
