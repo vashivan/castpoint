@@ -50,7 +50,7 @@ function fmtIntLike(v: unknown): string {
   return s || "—";
 }
 
-function normalizeDateToYMD(dateStr: string): string {
+function normalizeDateToYMD(dateStr: unknown): string {
   const s = safeStr(dateStr).trim();
   if (!s) return "—";
   const d = new Date(s);
@@ -368,7 +368,7 @@ export async function buildArtistProfilePdf(opts: {
 
   const rows: TableRow[] = [
     ["Nationality:", safeText(artist.country)],
-    ["Date of Birth:", safeText(artist.date_of_birth)],
+    ["Date of Birth:", safeText(normalizeDateToYMD(artist.date_of_birth))],
 
     ["Height (cm):", fmtIntLike(artist.height)],
     ["Weight (kg):", fmtIntLike(artist.weight)],

@@ -46,8 +46,6 @@ type FormState = {
   second_name: string;
   date_of_birth: string | null;
   sex: string;
-  country_of_birth: string;
-  nationality: string;
   country: string;
   phone: string;
 
@@ -58,6 +56,9 @@ type FormState = {
   role: string;
   height: string; // як текст у формі (зручно для input)
   weight: string;
+  bust: string;
+  waist: string;
+  hips: string;
   skills: string;
   video_url: string;
   resume_url: string;
@@ -136,8 +137,6 @@ export default function UserProfileMobile() {
     second_name: user?.second_name ?? '',
     date_of_birth: user?.date_of_birth ?? null,
     sex: user?.sex ?? '',
-    country_of_birth: user?.country_of_birth ?? '',
-    nationality: user?.nationality ?? '',
     country: user?.country ?? '',
     phone: user?.phone ?? '',
 
@@ -148,6 +147,9 @@ export default function UserProfileMobile() {
     role: user?.role ?? '',
     height: String(user?.height ?? ''),
     weight: String(user?.weight ?? ''),
+    bust: String(user?.bust),
+    waist: String(user?.waist),
+    hips: String(user?.hips),
     skills: user?.skills ?? '',
     video_url: user?.video_url ?? '',
     resume_url: user?.resume_url ?? '',
@@ -199,8 +201,6 @@ export default function UserProfileMobile() {
           'second_name',
           'date_of_birth',
           'sex',
-          'country_of_birth',
-          'nationality',
           'country',
         ] as const);
         if (Object.keys(payload).length) await postUpdate(payload);
@@ -222,6 +222,9 @@ export default function UserProfileMobile() {
           'height',
           'weight',
           'skills',
+          'bust',
+          'waist',
+          'hips',
           'video_url',
           'resume_url',
           'biography',
@@ -308,8 +311,6 @@ export default function UserProfileMobile() {
             <p><b>Second name:</b> {user.second_name || '—'}</p>
             <p><b>Date of birth:</b> {formatDatePretty(user.date_of_birth) || '—'}</p>
             <p><b>Gender:</b> {user.sex || '—'}</p>
-            <p><b>Country of birth:</b> {user.country_of_birth || '—'}</p>
-            <p><b>Nationality:</b> {user.nationality || '—'}</p>
             <p><b>Country:</b> {user.country || '—'}</p>
           </>
         }
@@ -374,6 +375,9 @@ export default function UserProfileMobile() {
             <p><b>Role:</b> {user.role || '—'}</p>
             <p><b>Height:</b> {user.height ? `${user.height} cm` : '—'}</p>
             <p><b>Weight:</b> {user.weight ? `${user.weight} kg` : '—'}</p>
+            <p><b>Bust:</b> {user.bust ? `${user.bust} cm` : '-'}</p>
+            <p><b>Waist:</b> {user.waist ? `${user.waist} cm` : '-'}</p>
+            <p><b>Hips:</b> {user.hips ? `${user.hips} cm` : '-'}</p>
             <p><b>Skills:</b> {user.skills || '—'}</p>
             <p><b>Promo video:</b> {user.video_url ? <a className="text-pink-700 underline" href={user.video_url} target="_blank">open</a> : '—'}</p>
             <p><b>Resume:</b> {user.resume_url ? <a className="text-pink-700 underline" href={user.resume_url} target="_blank">open</a> : '—'}</p>
@@ -392,6 +396,9 @@ export default function UserProfileMobile() {
           onChange={(v: string) => setForm((f) => ({ ...f, role: v }))} />
         <TextInput type="number" label="Height (cm)" value={form.height} onChange={(v) => setForm((f) => ({ ...f, height: v }))} />
         <TextInput type="number" label="Weight (kg)" value={form.weight} onChange={(v) => setForm((f) => ({ ...f, weight: v }))} />
+        <TextInput type="number" label="Bust (cm)" value={form.bust} onChange={(v) => setForm((f) => ({ ...f, bust: v }))} />
+        <TextInput type="number" label="Waist (cm)" value={form.waist} onChange={(v) => setForm((f) => ({ ...f, waist: v }))} />
+        <TextInput type="number" label="Hips (cm)" value={form.hips} onChange={(v) => setForm((f) => ({ ...f, hips: v }))} />
         <TextInput label="Skills (comma separated)" value={form.skills} onChange={(v) => setForm((f) => ({ ...f, skills: v }))} />
         <TextInput label="Promo video link" value={form.video_url} onChange={(v) => setForm((f) => ({ ...f, video_url: v }))} />
         <TextInput label="Resume (pdf/link)" value={form.resume_url} onChange={(v) => setForm((f) => ({ ...f, resume_url: v }))} />
