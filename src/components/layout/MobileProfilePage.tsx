@@ -267,7 +267,6 @@ export default function UserProfileMobile() {
         /> */}
         <div className="text-center">
           <p className="text-2xl font-semibold">{user.first_name} {user.second_name}</p>
-          <p className="text-m text-gray-600">{user.role} from {user.nationality}</p>
         </div>
       </div>
 
