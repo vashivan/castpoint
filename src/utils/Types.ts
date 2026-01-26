@@ -57,4 +57,5 @@ export type Job = {
   salary_to?: number | null;
   currency?: string;
   description?: string;
+  is_active: number;
 };

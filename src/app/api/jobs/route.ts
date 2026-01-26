@@ -14,48 +14,46 @@ export async function GET(req: NextRequest) {
   const offset = (page - 1) * pageSize;
 
   const where: string[] = [];
-  const paramsCount: any[] = [];
-  const paramsData: any[] = [];
+  const params: any[] = [];
+
+  // ✅ always show only active jobs
+  where.push("j.is_active = 1");
 
   if (q) {
     where.push("(j.title LIKE ? OR j.description LIKE ? OR j.location LIKE ? OR j.company_name LIKE ?)");
     const like = `%${q}%`;
-    paramsCount.push(like, like, like, like);
-    paramsData.push(like, like, like, like);
+    params.push(like, like, like, like);
   }
 
   if (contract && ["short", "medium", "long"].includes(contract)) {
     where.push("j.contract_type = ?");
-    paramsCount.push(contract);
-    paramsData.push(contract);
+    params.push(contract);
   }
 
   if (location) {
     where.push("j.location LIKE ?");
-    const likeLoc = `%${location}%`;
-    paramsCount.push(likeLoc);
-    paramsData.push(likeLoc);
+    params.push(`%${location}%`);
   }
 
-  const whereSql = where.length ? `WHERE ${where.join(" AND ")}` : "";
+  const whereSql = `WHERE ${where.join(" AND ")}`;
 
   try {
     const [cntRows] = await db.query<any[]>(
       `SELECT COUNT(*) AS total
        FROM jobs j
        ${whereSql}`,
-      paramsCount
+      params
     );
     const total = cntRows[0]?.total || 0;
 
     const [rows] = await db.query<any[]>(
       `SELECT j.id, j.title, j.location, j.contract_type, j.salary_from, j.salary_to, j.currency,
-              j.description, j.company_name
+              j.description, j.company_name, j.is_active
        FROM jobs j
        ${whereSql}
        ORDER BY j.id DESC
        LIMIT ? OFFSET ?`,
-      [...paramsData, pageSize, offset]
+      [...params, pageSize, offset]
     );
 
     return NextResponse.json({ ok: true, total, page, pageSize, jobs: rows });

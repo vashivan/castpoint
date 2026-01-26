@@ -81,6 +81,8 @@ export default function VacanciesPage() {
 
   const filtered = useMemo(() => {
     let list = jobs;
+    
+    list = list.filter((j) => Number(j.is_active) === 1);
 
     // Client-side filter as a fallback (in case API ignores query params)
     if (search.trim()) {
