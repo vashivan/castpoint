@@ -5,7 +5,8 @@ type MyAppRow = {
   id: number;
   job_id: number;
   application_code: string | null;
-  sent_email_status: "pending" | "under review" | "error" | "approved" | "rejected";
+  sent_email_status: string;
+  status: string;
   created_at: string;
   application_title: string;
 };
@@ -43,21 +44,11 @@ export default function MyApplication() {
               <div className="flex justify-between items-center">
                 <div className="text-sm">
                   <div className="font-sm">
-                    Appplication code: <br/> {a.application_code}
+                    Appplication code: <br /> {a.application_code}
                   </div>
                 </div>
-                <span 
-                  className={`text-xs px-2 py-1 rounded-full border border-black/10
-                    ${a.sent_email_status === "pending" && "bg-yellow-100 text-yellow-800"}
-                    ${a.sent_email_status === "under review" && "bg-blue-100 text-blue-800"}
-                    ${a.sent_email_status === "error" && "bg-orange-100 text-orange-800"}
-                    ${a.sent_email_status === "approved" && "bg-green-100 text-green-800"}
-                    ${a.sent_email_status === "rejected" && "bg-red-100 text-red-800"}`}
-              >
-                  {a.sent_email_status}
-                </span>
               </div>
-
+              <div>Status: {a.status}</div>
               <div className="mt-2 text-xs text-black/50">
                 {new Date(a.created_at).toLocaleString()}
               </div>

@@ -14,6 +14,7 @@ const navItems = [
   { path: "/vacancies", label: "Vacancies", icon: Briefcase },
   { path: "/reviews", label: "Reviews", icon: MessageSquare },
   { path: "/blog", label: "Blog", icon: Edit3 },
+  { path: "/new-vacancy", label: "For employers"},
 ];
 
 

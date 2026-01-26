@@ -12,8 +12,9 @@ export async function sendEmployerEmail(params: {
   artist_public: { full_name: string };
   artist_promo_url?: string;
   cover_message?: string;
+  urls: { approveUrl: string, rejectUrl: string };
   pdf: { filename: string; content: Buffer };
-  attachments?: MailAttachment[]; // ✅ додали
+  attachments?: MailAttachment[];
 }) {
   const transporter = nodemailer.createTransport({
     host: process.env.EMAIL_HOST,
@@ -22,7 +23,7 @@ export async function sendEmployerEmail(params: {
     auth: { user: process.env.EMAIL_USER, pass: process.env.EMAIL_PASS },
   });
 
-  const { to, job, artist_public, artist_promo_url, pdf, attachments } = params;
+  const { to, job, artist_public, artist_promo_url, pdf, attachments, urls } = params;
 
   const subject = `CASTPOINT · Application — ${job.title}`;
   const from = process.env.EMAIL_USER;
@@ -34,6 +35,14 @@ export async function sendEmployerEmail(params: {
       .replace(/>/g, "&gt;")
       .replace(/"/g, "&quot;")
       .replace(/'/g, "&#039;");
+
+  const btn = (href: string, label: string, bg: string, color = "#ffffff") => `
+  <a href="${safe(href)}"
+     style="display:inline-block;padding:12px 16px;border-radius:12px;background:${bg};color:${color};
+            text-decoration:none;font-weight:800;font-family:Arial,sans-serif;font-size:14px;">
+    ${safe(label)}
+  </a>
+`;
 
   const html = `
   <div style="margin:0;padding:0;background:#fff;">
@@ -83,6 +92,20 @@ export async function sendEmployerEmail(params: {
             </div>
           </td></tr>
 
+          <div style="margin-top:16px;padding:14px;background:#fff;border:1px solid rgba(17,24,39,0.08);border-radius:14px;">
+            <div style="font-size:12px;letter-spacing:0.12em;text-transform:uppercase;color:#6b7280;font-weight:800;margin-bottom:10px;">
+              Quick decision
+            </div>
+
+             ${btn(urls.approveUrl, "Approved", "#16a34a")}
+             <span style="display:inline-block;width:8px;"></span>
+             ${btn(urls.rejectUrl, "Rejected", "#dc2626")}
+
+            <div style="margin-top:10px;font-size:12px;color:#6b7280;line-height:1.5;">
+              Click a button to update the application status. The candidate will be notified automatically.
+            </div>
+         </div>
+
           <tr><td style="padding:14px 22px 22px 22px;font-family:Arial,sans-serif;">
             <div style="height:1px;background:rgba(17,24,39,0.08);"></div>
             <p style="margin:12px 0 0 0;font-size:12px;color:#6b7280;line-height:1.5;">
@@ -95,7 +118,7 @@ export async function sendEmployerEmail(params: {
   </div>
   `;
 
-    await transporter.sendMail({
+  await transporter.sendMail({
     from: from,
     to: to,
     subject: subject,

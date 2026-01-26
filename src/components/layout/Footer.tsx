@@ -60,7 +60,7 @@ const Footer = () => {
         <Link href="/vacancies" className={`${styles.footer_links_link} text-black hover:text-orange-500 transition-colors text-2xl`}>Vacancies</Link>
         <Link href="/reviews" className={`${styles.footer_links_link} text-black hover:text-orange-500 transition-colors text-2xl`}>Reviews</Link>
         <Link href="/blog" className={` ${styles.footer_links_link} text-black hover:text-orange-500 transition-colors text-2xl`}>Blog</Link>
-        {/* <Link href="/contact" className={`${styles.footer_links_link} text-black hover:text-orange-500 transition-colors text-2xl`}>Contact us</Link> */}
+        <Link href="/new-vacancy" className={`${styles.footer_links_link} text-black hover:text-orange-500 transition-colors text-2xl`}>For employers</Link>
       </div>
 
 
@@ -98,7 +98,7 @@ const Footer = () => {
       <div className={styles.footer_copyright}>
         <h1 className="text-bold uppercase text-4xl text-black mb-5">Castpoint</h1>
         <p>&copy; {new Date().getFullYear()} Castpoint team. All rights reserved to shine.</p>
-        <p>Designed by <a className='underline' href="https://www.instagram.com/a_little_surprise/">Kira Pryz</a>, crafted with 💖 and 🤖 by <a className='underline' target='_blank' href="https://ndgg.space/">ndgg.lab</a> for the world&apos;s artists.</p>
+        <p>Designed by <a className='underline' href="https://www.instagram.com/a_little_surprise/">Kira Pryz</a>, crafted with 💖 and 🤖 by <a className='underline' target='_blank' href="https://ndgg.space/">ndgg.space</a> for the world&apos;s artists.</p>
       </div>
     </footer>
   );

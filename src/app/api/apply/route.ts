@@ -4,6 +4,7 @@ import { z, ZodError } from "zod";
 import db from "@/lib/db";
 import { sendEmployerEmail } from "@/lib/mailer";
 import { buildArtistProfilePdf } from "@/lib/pdf/ArtistProfilePdf";
+import crypto from "crypto";
 
 export const runtime = "nodejs";
 
@@ -124,6 +125,10 @@ async function fetchAsAttachment(url: string, filenameBase: string): Promise<Mai
   };
 }
 
+export function createStatusToken() {
+  return crypto.randomBytes(32).toString("hex"); // 64 chars
+}
+
 export async function POST(req: NextRequest) {
   const rawIp = req.headers.get("x-forwarded-for") || "";
   const ip = rawIp.split(",")[0]?.trim() || "unknown";
@@ -183,20 +188,34 @@ export async function POST(req: NextRequest) {
     const job = rows[0];
 
     const toApplicationCode = (id: number) => `CP-${String(id).padStart(6, "0")}`;
+    const token = createStatusToken();
 
-    const [res] = await db.execute(
+    const [res]: any = await db.execute(
       `INSERT INTO applications 
-        (job_id, artist_email, sent_email_status, sent_email_error, created_at, application_title)
-       VALUES (?, ?, 'pending', NULL, NOW(), ?)`,
-      [job_id, artist.email, job.title]
+    (job_id, artist_email, sent_email_status, sent_email_error, created_at, application_title, status_token, status_token_expires_at)
+   VALUES
+    (?, ?, 'pending', NULL, NOW(), ?, ?, DATE_ADD(NOW(), INTERVAL 14 DAY))`,
+      [job_id, artist.email, job.title, token]
     );
+
 
     const numericId = (res as any).insertId as number;
     const applicationCode = toApplicationCode(numericId);
 
+    await db.execute(
+      `UPDATE applications SET application_code = ? WHERE id = ?`,
+      [applicationCode, numericId]
+    );
+
     // 3) normalize promo_url to absolute if it’s "/path"
     const origin = req.nextUrl.origin;
     const promoFinal = promo_url?.startsWith("/") ? `${origin}${promo_url}` : promo_url;
+
+    const base = process.env.APP_URL; // https://castpoint.art
+
+    const approveUrl = `${base}/decision?action=approved&token=${token}`;
+    const rejectUrl = `${base}/decision?action=rejected&token=${token}`;
+
 
     // 4) PDF (NO CONTACTS)
     const pdfBuffer = await buildArtistProfilePdf({
@@ -240,6 +259,10 @@ export async function POST(req: NextRequest) {
       artist_public: { full_name: artist.full_name },
       artist_promo_url: promoFinal,
       cover_message,
+      urls: {
+        approveUrl: approveUrl,
+        rejectUrl: rejectUrl,
+      },
       pdf: {
         filename: pdfFilename,
         content: pdfBuffer,
@@ -259,16 +282,16 @@ export async function POST(req: NextRequest) {
     // ✅ тут можна видалити з Cloudinary після успіху
     // await deleteCloudinaryPublicIds(imgList.map(i => i.public_id));
 
-    console.log("[apply.sent]", {
-      job_id,
-      to: job.apply_email,
-      ip,
-      ua,
-      artist_email: artist.email,
-      images: imgList.length,
-    });
+    // console.log("[apply.sent]", {
+    //   job_id,
+    //   to: job.apply_email,
+    //   ip,
+    //   ua,
+    //   artist_email: artist.email,
+    //   images: imgList.length,
+    // });
 
-      const captions = [
+    const captions = [
       "New Artist Application",
       `Name: ${artist.full_name || "—"}`,
       `Email: ${artist.email || "—"}`,

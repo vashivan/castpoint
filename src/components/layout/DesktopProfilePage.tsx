@@ -223,7 +223,7 @@ export default function DesktopProfilePage() {
   }
 
   return (
-    <section className="block min-h-screen px-10 py-2 pt-20">
+    <section className="block min-h-screen px-10 py-2 pt-30">
       <h1 className="w-full text-center text-4xl md:text-4xl font-bol text-black uppercase bg-clip-text mb-10">
         Profile
       </h1>

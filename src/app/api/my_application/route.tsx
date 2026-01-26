@@ -15,7 +15,7 @@ export async function GET(req: NextRequest) {
     const { email: artistEmail } = querySchema.parse({ email });
 
     const [rows] = await db.query(
-      `SELECT id, job_id, application_code, sent_email_status, created_at, application_title
+      `SELECT id, job_id, application_code, sent_email_status, created_at, application_title, status
        FROM applications
        WHERE artist_email = ?
        ORDER BY created_at DESC`,
