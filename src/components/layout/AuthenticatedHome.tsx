@@ -78,6 +78,7 @@ useEffect(() => {
         currency: j.currency,
         contract_type: j.contract_type,
         created_at: j.created_at,
+        is_active: j.is_active,
       }));
 
       normalized.sort((a, b) =>

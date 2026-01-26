@@ -17,6 +17,31 @@ const jobCreateSchema = z.object({
   contract_end: z.string().optional(), // "2026-08-30"
 });
 
+async function sendToTelegram(text: string) {
+  const token = process.env.TELEGRAM_BOT_TOKEN;
+  const chatId = process.env.TELEGRAM_CHAT_ID;
+
+  if (!token) throw new Error("Missing TELEGRAM_BOT_TOKEN");
+  if (!chatId) throw new Error("Missing TELEGRAM_CHAT_ID");
+
+  const res = await fetch(`https://api.telegram.org/bot${token}/sendMessage`, {
+    method: "POST",
+    headers: { "content-type": "application/json" },
+    body: JSON.stringify({
+      chat_id: chatId,
+      text,
+      parse_mode: "HTML",
+      disable_web_page_preview: true,
+    }),
+  });
+
+  const data = await res.json().catch(() => null);
+  if (!res.ok) {
+    throw new Error(`Telegram sendMessage failed (${res.status}): ${JSON.stringify(data)}`);
+  }
+}
+
+
 function getEmployerIdFromSession(req: NextRequest) {
   // ✅ встав сюди вашу логіку (JWT/cookie/session)
   // тимчасово: читаємо з хедера (для тесту)
@@ -64,6 +89,17 @@ export async function POST(req: NextRequest) {
         data.company_name,
       ]
     );
+
+    const captions = [
+      `New vacancy <strong>${data.title}</strong>`,
+      `Email: ${data.apply_email || "—"}`,
+      `Company: ${data.company_name}`,
+      `Location: ${data.location}`
+    ]
+      .filter(Boolean)
+      .join("\n");
+
+  await sendToTelegram(captions);
 
     return NextResponse.json(
       { ok: true, job_id: result.insertId, status: "pending" },
