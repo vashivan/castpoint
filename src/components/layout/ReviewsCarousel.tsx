@@ -9,7 +9,7 @@ import { Review } from '../../utils/Types';
 
 export default function ReviewsCarousel() {
   const [reviews, setReviews] = useState<Review[]>([]);
-  const newReviews = reviews.slice(0, 6);
+  // const newReviews = reviews.slice(0, 6);
   const [itemsPerView, setItemsPerView] = useState<number>(1);
   const [page, setPage] = useState<number>(0);
 
@@ -37,12 +37,12 @@ export default function ReviewsCarousel() {
   // chunk into pages
   const pages = useMemo(() => {
     const out: Review[][] = [];
-    for (let i = 0; i < newReviews.length; i += itemsPerView) {
-      out.push(newReviews.slice(i, i + itemsPerView));
+    for (let i = 0; i < reviews.length; i += itemsPerView) {
+      out.push(reviews.slice(i, i + itemsPerView));
     }
     // якщо відгуків мало — принаймні одна сторінка
     return out.length ? out : [[]];
-  }, [newReviews, itemsPerView]);
+  }, [reviews, itemsPerView]);
 
   // нормалізуємо page при зміні pages
   useEffect(() => {

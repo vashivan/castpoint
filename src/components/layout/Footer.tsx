@@ -98,7 +98,7 @@ const Footer = () => {
       <div className={styles.footer_copyright}>
         <h1 className="text-bold uppercase text-4xl text-black mb-5">Castpoint</h1>
         <p>&copy; {new Date().getFullYear()} Castpoint team. All rights reserved to shine.</p>
-        <p>Designed by <a className='underline' href="https://www.instagram.com/a_little_surprise/">Kira Pryz</a>, crafted with 💖 and 🤖 by <a className='underline' target='_blank' href="https://ndgg.space/">ndgg.space</a> for the world&apos;s artists.</p>
+        <p>Designed by <a className='underline' href="https://www.instagram.com/a_little_surprise/">Kira Pryz</a>, crafted with 💖 and 🤖 by <a className='underline' target='_blank' href="https://www.instagram.com/vash_ivan">Ivan Vashchuk</a> for the world&apos;s artists.</p>
       </div>
     </footer>
   );
