@@ -34,7 +34,6 @@ export default function MainLayout({ children }: { children: React.ReactNode }) 
       <Navbar
         onToggleSidebar={() => setSidebarOpen(!sidebarOpen)}
         isOpen={sidebarOpen}
-        handlerLogOut={handlerLogOut}
         isScrolled={isScrolled}
         sidebarOpen={sidebarOpen}
       />
