@@ -29,11 +29,7 @@ import { useEmployerAuth } from "@/context/EmployerAuthContext";
 type SidebarProps = {
   isOpen: boolean;
   onClose: () => void;
-
-  handlerLogOut: () => void;
-
-  handlerEmployerLogOut?: () => void;
-
+  handlerLogOut: () => void | Promise<void>;
   isScrolled?: boolean;
 };
 
@@ -114,7 +110,6 @@ export default function Sidebar({
   isOpen,
   onClose,
   handlerLogOut,
-  handlerEmployerLogOut,
 }: SidebarProps) {
   const pathname = usePathname();
 
@@ -122,6 +117,7 @@ export default function Sidebar({
 
   const {
     employer,
+    logoutEmployer,
   } = useEmployerAuth();
 
   const isEmployer = Boolean(employer);
@@ -146,21 +142,21 @@ export default function Sidebar({
       return pathname === "/";
     }
 
-    if (path === "/employer") {
-      return pathname === "/employer";
-    }
-
     return pathname?.startsWith(path);
   }
 
-  function handleLogout() {
-    if (isEmployer) {
-      handlerEmployerLogOut?.();
-    } else if (isArtist) {
-      handlerLogOut();
+  async function handleLogout() {
+    try {
+      if (isEmployer) {
+        await logoutEmployer();
+      } else if (isArtist) {
+        await handlerLogOut();
+      }
+    } catch (error) {
+      console.error("[sidebar.logout.error]", error);
+    } finally {
+      onClose();
     }
-
-    onClose();
   }
 
   return (
@@ -175,7 +171,6 @@ export default function Sidebar({
         shadow-md
         transition-transform
         duration-300
-
         ${
           isOpen
             ? "translate-x-0 overflow-hidden"
@@ -213,9 +208,7 @@ export default function Sidebar({
                     "
                   >
                     {Icon && (
-                      <Icon
-                        className="mr-3 h-5 w-5"
-                      />
+                      <Icon className="mr-3 h-5 w-5" />
                     )}
 
                     <p
@@ -247,6 +240,7 @@ export default function Sidebar({
 
           {!isArtist && !isEmployer && (
             <div className="mb-10 flex flex-col items-center text-center">
+
               <Link
                 href="/login"
                 className="
@@ -305,12 +299,13 @@ export default function Sidebar({
 
                 Employer sign in
               </Link>
+
             </div>
           )}
 
-          {/* USER INFO */}
+          {/* ARTIST INFO */}
 
-          {isArtist && (
+          {isArtist && !isEmployer && (
             <div className="mb-8 text-center">
               <p className="text-xs uppercase tracking-widest text-neutral-400">
                 Artist account
@@ -352,6 +347,7 @@ export default function Sidebar({
             <div className="mb-10 flex flex-col items-center text-center">
               <button
                 type="button"
+                onClick={handleLogout}
                 className="
                   flex
                   cursor-pointer
@@ -362,7 +358,6 @@ export default function Sidebar({
                   font-semibold
                   text-black
                 "
-                onClick={handleLogout}
               >
                 <LogOutIcon className="mr-2 h-5 w-5" />
 
@@ -420,6 +415,7 @@ export default function Sidebar({
               for the world&apos;s artists.
             </p>
           </div>
+
         </div>
       </nav>
     </div>
