@@ -155,7 +155,7 @@ const Navbar: React.FC<NavbarProps> = ({
             ({ path, label }) => {
               const isActive =
                 pathname === path ||
-                pathname.startsWith(`${path}/`);
+                pathname?.startsWith(`${path}/`);
 
               return (
                 <Link
