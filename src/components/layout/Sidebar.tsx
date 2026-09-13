@@ -150,7 +150,7 @@ export default function Sidebar({
       return pathname === "/employer";
     }
 
-    return pathname.startsWith(path);
+    return pathname?.startsWith(path);
   }
 
   function handleLogout() {
