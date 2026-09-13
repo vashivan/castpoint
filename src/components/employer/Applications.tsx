@@ -71,7 +71,7 @@ export default function EmployerApplicationsPage() {
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
 
-  const statusFromUrl = searchParams.get("status") ?? "all";
+  const statusFromUrl = searchParams?.get("status") ?? "all";
 
   const currentStatus: ApplicationFilter = isApplicationFilter(statusFromUrl)
     ? statusFromUrl
