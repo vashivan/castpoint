@@ -9,6 +9,8 @@ import React, {
   useState,
 } from "react";
 
+import { useRouter } from "next/navigation";
+
 export type Employer = {
   id: number;
   email: string;
@@ -57,6 +59,7 @@ export function EmployerAuthProvider({
 }: {
   children: React.ReactNode;
 }) {
+  const router = useRouter();
   const [employer, setEmployer] =
     useState<Employer | null>(null);
 
