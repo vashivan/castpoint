@@ -2,7 +2,7 @@
 
 import React, { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { useEmployerSession } from "./useEmployerSession";
+import { useEmployerAuth } from "../../context/EmployerAuthContext";
 
 type ContractType = "short" | "medium" | "long";
 
@@ -12,7 +12,7 @@ type Props = {
 
 export default function EmployerJobForm({ jobId }: Props) {
   const router = useRouter();
-  const { isLoading, isLogged } = useEmployerSession();
+  const { isLoading, isLogged } = useEmployerAuth();
   const [loadingJob, setLoadingJob] = useState(!!jobId);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -68,9 +68,23 @@ export default function EmployerJobForm({ jobId }: Props) {
 
     const payload = {
       ...form,
-      salary_from: form.salary_from ? Number(form.salary_from) : undefined,
-      salary_to: form.salary_to ? Number(form.salary_to) : undefined,
-      apply_email: form.apply_email?.trim() ? form.apply_email.trim() : undefined,
+
+      title: form.title.trim(),
+      location: form.location.trim(),
+      description: form.description.trim(),
+      currency: form.currency.trim(),
+
+      salary_from: form.salary_from
+        ? Number(form.salary_from)
+        : undefined,
+
+      salary_to: form.salary_to
+        ? Number(form.salary_to)
+        : undefined,
+
+      apply_email: form.apply_email.trim()
+        ? form.apply_email.trim()
+        : null,
     };
 
     try {
@@ -123,9 +137,17 @@ export default function EmployerJobForm({ jobId }: Props) {
     }
   }
 
-  if (isLoading || !isLogged || loadingJob) {
-    return <div className="max-w-2xl mx-auto p-6 pt-30">Loading…</div>;
-  }
+  if (isLoading || loadingJob) {
+  return (
+    <div className="max-w-2xl mx-auto p-6 pt-30">
+      Loading…
+    </div>
+  );
+}
+
+if (!isLogged) {
+  return null;
+}
 
   if (done) {
     return (

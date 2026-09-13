@@ -1,11 +1,14 @@
 'use client';
 
 import { AuthProvider } from './AuthContext';
+import { EmployerAuthProvider } from './EmployerAuthContext';
 
 export default function AuthContextProvider({ children }: { children: React.ReactNode }) {
   return (
     <AuthProvider>
-      {children}
+      <EmployerAuthProvider>
+        {children}
+      </EmployerAuthProvider>
     </AuthProvider>
   );
 }

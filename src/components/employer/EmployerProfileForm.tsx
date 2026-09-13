@@ -11,11 +11,12 @@ export default function EmployerProfileForm() {
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
-  const [uploadingLogo, setUploadingLogo] = useState(false);
+  // const [uploadingLogo, setUploadingLogo] = useState(false);
 
   const [form, setForm] = useState({
     contact_name: "",
     company_name: "",
+    phone: "",
     country: "",
     website: "",
     instagram: "",
@@ -34,6 +35,7 @@ export default function EmployerProfileForm() {
       contact_name: employer.contact_name || "",
       company_name: employer.company_name || "",
       country: employer.country || "",
+      phone: employer.phone || "",
       website: employer.website || "",
       instagram: employer.instagram || "",
       description: employer.description || "",
@@ -42,20 +44,20 @@ export default function EmployerProfileForm() {
     });
   }, [employer]);
 
-  async function onLogoChange(e: React.ChangeEvent<HTMLInputElement>) {
-    const file = e.target.files?.[0];
-    if (!file) return;
-    setUploadingLogo(true);
-    setError(null);
-    try {
-      const uploaded = await uploadToCloudinary(file);
-      setForm((s) => ({ ...s, logo_url: uploaded.secure_url, logo_public_id: uploaded.public_id }));
-    } catch (err: any) {
-      setError(err.message || "Logo upload failed");
-    } finally {
-      setUploadingLogo(false);
-    }
-  }
+  // async function onLogoChange(e: React.ChangeEvent<HTMLInputElement>) {
+  //   const file = e.target.files?.[0];
+  //   if (!file) return;
+  //   setUploadingLogo(true);
+  //   setError(null);
+  //   try {
+  //     const uploaded = await uploadToCloudinary(file);
+  //     setForm((s) => ({ ...s, logo_url: uploaded.secure_url, logo_public_id: uploaded.public_id }));
+  //   } catch (err: any) {
+  //     setError(err.message || "Logo upload failed");
+  //   } finally {
+  //     setUploadingLogo(false);
+  //   }
+  // }
 
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -98,7 +100,7 @@ export default function EmployerProfileForm() {
           </div>
         )}
 
-        <div className="grid gap-3">
+        {/* <div className="grid gap-3">
           <label className="text-sm">Logo</label>
           {form.logo_url && (
             // eslint-disable-next-line @next/next/no-img-element
@@ -106,7 +108,7 @@ export default function EmployerProfileForm() {
           )}
           <input type="file" accept="image/*" onChange={onLogoChange} disabled={uploadingLogo} />
           {uploadingLogo && <p className="text-xs text-neutral-500">Uploading…</p>}
-        </div>
+        </div> */}
 
         <div className="grid gap-3">
           <label className="text-sm">Contact name</label>
@@ -132,6 +134,15 @@ export default function EmployerProfileForm() {
             className="rounded-2xl border p-3 bg-white"
             value={form.country}
             onChange={(e) => setForm((s) => ({ ...s, country: e.target.value }))}
+          />
+        </div>
+
+        <div className="grid gap-3">
+          <label className="text-sm">Phone</label>
+          <input
+            className="rounded-2xl border p-3 bg-white"
+            value={form.phone}
+            onChange={(e) => setForm((s) => ({ ...s, phone: e.target.value }))}
           />
         </div>
 

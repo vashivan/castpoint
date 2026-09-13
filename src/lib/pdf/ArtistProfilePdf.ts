@@ -277,6 +277,8 @@ export async function buildArtistProfilePdf(opts: {
 
     country?: string | null;
     date_of_birth?: string;
+    phone?: string | null;
+    email?: string | null;
 
     height?: string | number | null;
     weight?: string | number | null;
@@ -364,11 +366,13 @@ export async function buildArtistProfilePdf(opts: {
   });
 
   // IMPORTANT: don't use huge magic numbers; keep it tight
-  cursorLeftY -= H2 + 185;
+  cursorLeftY -= H2 + 225;
 
   const rows: TableRow[] = [
     ["Nationality:", safeText(artist.country)],
     ["Date of Birth:", safeText(normalizeDateToYMD(artist.date_of_birth))],
+    ["Phone:", safeText(artist.phone)],
+    ["Email:", safeText(artist.email)],
 
     ["Height (cm):", fmtIntLike(artist.height)],
     ["Weight (kg):", fmtIntLike(artist.weight)],

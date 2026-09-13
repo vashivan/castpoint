@@ -4,6 +4,7 @@ import React from 'react';
 import { Montserrat } from 'next/font/google';
 import AuthContextProvider from '../context/AuthContextProvider';
 import RouteLoader from '../components/ui/RouterLoader';
+import { SpeedInsights } from "@vercel/speed-insights/next"
 
 const space = Montserrat({ subsets: ['latin'], weight: ['400', '700'] });
 

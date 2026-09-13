@@ -1,5 +1,6 @@
 import styles from '../../styles/Footer.module.scss';
-import { useAuth } from '../../context/AuthContext';
+import { useAuth } from "../../context/AuthContext";
+import { useEmployerAuth } from "../../context/EmployerAuthContext";
 import Image from 'next/image'
 import React, { useState } from "react";
 import Link from "next/link";
@@ -11,6 +12,11 @@ const Footer = () => {
   const [formEmail, setFormEmail] = useState('');
   const [msg, setMsg] = useState('');
   const [loading, setLoading] = useState(false);
+
+  const {
+    employer,
+    isLogged: isEmployerLogged,
+  } = useEmployerAuth();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -56,15 +62,21 @@ const Footer = () => {
         </a>
       </div>
 
-      <div className={styles.footer_links}>
-        <Link href="/vacancies" className={`${styles.footer_links_link} text-black hover:text-orange-500 transition-colors text-2xl`}>Vacancies</Link>
-        <Link href="/reviews" className={`${styles.footer_links_link} text-black hover:text-orange-500 transition-colors text-2xl`}>Reviews</Link>
-        <Link href="/blog" className={` ${styles.footer_links_link} text-black hover:text-orange-500 transition-colors text-2xl`}>Blog</Link>
-        <Link href="/new-vacancy" className={`${styles.footer_links_link} text-black hover:text-orange-500 transition-colors text-2xl`}>For employers</Link>
-      </div>
+      {employer ? (
+        ""
+      ) :
+        (
+          <div className={styles.footer_links}>
+            <Link href="/vacancies" className={`${styles.footer_links_link} text-black hover:text-orange-500 transition-colors text-2xl`}>Vacancies</Link>
+            <Link href="/reviews" className={`${styles.footer_links_link} text-black hover:text-orange-500 transition-colors text-2xl`}>Reviews</Link>
+            <Link href="/blog" className={` ${styles.footer_links_link} text-black hover:text-orange-500 transition-colors text-2xl`}>Blog</Link>
+            {!employer ? <Link href="/employer/login" className={`${styles.footer_links_link} text-black hover:text-orange-500 transition-colors text-2xl`}>For employers</Link> : null}
+          </div>
+        )}
 
 
-      {user ? ('') : (
+
+      {user || employer ? ('') : (
         <div className={styles.footer_subscribe}>
           <p className="text-sm text-gray-600">One click and you are closer to your dream job!</p>
           <form className={styles.footer_subscribe_form}>

@@ -13,7 +13,7 @@ type Application = {
   status: string;
   created_at: string;
   artist_email: string;
-  artist_full_name: string | null;
+  artist_name: string | null;
   artist_phone: string | null;
   artist_instagram: string | null;
   artist_country: string | null;
@@ -31,7 +31,7 @@ type Application = {
   images: ImageItem[];
 };
 
-const STATUS_OPTIONS = ["pending", "under review", "approved", "rejected"];
+const STATUS_OPTIONS = ["pending", "under_review", "approved", "rejected"];
 
 export default function EmployerApplicationsList({ jobId }: { jobId: number }) {
   const router = useRouter();
@@ -115,27 +115,49 @@ export default function EmployerApplicationsList({ jobId }: { jobId: number }) {
           const expanded = expandedId === app.id;
           const applicantAge = age(app.artist_date_of_birth);
           return (
-            <div key={app.id} className="rounded-2xl border p-4">
+            <div key={app.id} className={`${app.status === "approved" && "border-green-200"} ${app.status === "rejected" &&  "border-red-600"}
+              border-b-3 border p-4 rounded-2xl bg-white/80 shadow-none hover:shadow-lg transition-shadow duration-300`}>
               <div className="flex items-center justify-between gap-4">
                 <button
-                  className="flex items-center gap-4 text-left flex-1"
+                  className="hover:cursor-pointer flex items-center gap-4 text-left flex-1"
                   onClick={() => setExpandedId(expanded ? null : app.id)}
                 >
                   {app.artist_picture && (
                     // eslint-disable-next-line @next/next/no-img-element
                     <img
                       src={app.artist_picture}
-                      alt={app.artist_full_name || "Applicant"}
+                      alt={app.artist_name || "Applicant"}
                       className="w-12 h-12 rounded-full object-cover border"
                     />
                   )}
                   <div>
-                    <div className="font-medium">{app.artist_full_name || app.artist_email}</div>
+                    <div className="font-medium">{app.artist_name}</div>
                     <div className="text-xs text-neutral-500">
                       {app.application_code} · {new Date(app.created_at).toLocaleDateString()}
                     </div>
+                    <div className="text-xs text-neutral-500">
+                      From {app.artist_country}
+                    </div>
+                    <div>
+                      {!expanded ? (
+                        <p className="text-sm text-neutral-500">
+                          Click to see more
+                        </p>
+                      ) : (
+                        <p className="text-sm text-neutral-500">
+                          Click to hide
+                        </p>
+                      )}
+                    </div>
                   </div>
                 </button>
+
+                <a
+                  href={`/api/employer/jobs/${jobId}/applications/${app.id}/pdf`}
+                  className="rounded-xl border px-3 py-2 text-sm transition hover:bg-neutral-100"
+                >
+                  Download PDF
+                </a>
 
                 <select
                   className="rounded-xl border p-2 text-sm bg-white"
@@ -160,7 +182,10 @@ export default function EmployerApplicationsList({ jobId }: { jobId: number }) {
                   <Row label="Bust / Waist / Hips" value={[app.artist_bust, app.artist_waist, app.artist_hips].filter(Boolean).join(" / ") || null} />
                   <Row label="Experience" value={app.artist_experience} />
                   <Row label="Biography" value={app.artist_biography} />
-                  <Row label="Phone" value={app.artist_phone} />
+                  <Row label="Phone" value={<a href={`tel:${app.artist_phone}`}>
+                    <p className="hover:underline underline">{app.artist_phone}</p></a>} />
+                  <Row label="Email" value={<a href={`mailto:${app.artist_email}`}>
+                    <p className="hover:underline underline">{app.artist_email}</p></a>} />
                   {app.artist_instagram && (
                     <Row
                       label="Instagram"
