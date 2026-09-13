@@ -53,20 +53,32 @@ const STATUS_OPTIONS: ApplicationStatus[] = [
 ];
 
 export default function EmployerApplicationPage() {
-  const params = useParams();
+  const params = useParams<{
+    id: string;
+    appId: string;
+  }>();
+
   const router = useRouter();
 
   const { isLoading, isLogged } = useEmployerAuth();
 
-  const jobId = Number(params.id);
-  const appId = Number(params.appId);
+  const jobId = Number(params?.id);
+  const appId = Number(params?.appId);
+
+  const invalidParams =
+    !Number.isInteger(jobId) ||
+    !Number.isInteger(appId) ||
+    jobId <= 0 ||
+    appId <= 0;
 
   const [application, setApplication] =
     useState<Application | null>(null);
 
   const [loading, setLoading] = useState(true);
   const [updating, setUpdating] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(
+    null
+  );
 
   useEffect(() => {
     if (!isLoading && !isLogged) {
@@ -77,11 +89,18 @@ export default function EmployerApplicationPage() {
   useEffect(() => {
     if (!isLogged) return;
 
+    if (invalidParams) {
+      setLoading(false);
+      setError("Invalid application URL");
+      return;
+    }
+
     let cancelled = false;
 
     async function loadApplication() {
       try {
         setLoading(true);
+        setError(null);
 
         const res = await fetch(
           `/api/employer/jobs/${jobId}/applications/${appId}`,
@@ -95,7 +114,7 @@ export default function EmployerApplicationPage() {
         if (!res.ok) {
           throw new Error(
             data?.error ||
-            "Failed to load application"
+              "Failed to load application"
           );
         }
 
@@ -104,6 +123,8 @@ export default function EmployerApplicationPage() {
         }
       } catch (error) {
         if (!cancelled) {
+          setApplication(null);
+
           setError(
             error instanceof Error
               ? error.message
@@ -122,12 +143,23 @@ export default function EmployerApplicationPage() {
     return () => {
       cancelled = true;
     };
-  }, [isLogged, jobId, appId]);
+  }, [
+    isLogged,
+    jobId,
+    appId,
+    invalidParams,
+  ]);
 
   async function changeStatus(
     status: ApplicationStatus
   ) {
-    if (!application) return;
+    if (
+      !application ||
+      invalidParams ||
+      updating
+    ) {
+      return;
+    }
 
     setUpdating(true);
     setError(null);
@@ -137,10 +169,14 @@ export default function EmployerApplicationPage() {
         `/api/employer/jobs/${jobId}/applications/${appId}`,
         {
           method: "PATCH",
+
           headers: {
-            "Content-Type": "application/json",
+            "Content-Type":
+              "application/json",
           },
+
           credentials: "include",
+
           body: JSON.stringify({
             status,
           }),
@@ -152,16 +188,16 @@ export default function EmployerApplicationPage() {
       if (!res.ok) {
         throw new Error(
           data?.error ||
-          "Failed to update status"
+            "Failed to update status"
         );
       }
 
       setApplication((prev) =>
         prev
           ? {
-            ...prev,
-            status,
-          }
+              ...prev,
+              status,
+            }
           : prev
       );
     } catch (error) {
@@ -177,23 +213,64 @@ export default function EmployerApplicationPage() {
 
   if (isLoading || loading) {
     return (
-      <div className="mx-auto max-w-4xl px-6 py-30">
-        Loading…
-      </div>
+      <MainLayout>
+        <div className="mx-auto max-w-4xl px-6 py-30">
+          Loading…
+        </div>
+      </MainLayout>
+    );
+  }
+
+  if (invalidParams) {
+    return (
+      <MainLayout>
+        <div className="mx-auto max-w-4xl px-6 py-30">
+          <h1 className="text-2xl font-semibold">
+            Invalid application URL
+          </h1>
+
+          <Link
+            href="/employer/applications"
+            className="mt-4 inline-block underline"
+          >
+            Back to applications
+          </Link>
+        </div>
+      </MainLayout>
     );
   }
 
   if (!application) {
     return (
-      <div className="mx-auto max-w-4xl px-6 py-30">
-        <p>Application not found.</p>
-      </div>
+      <MainLayout>
+        <div className="mx-auto max-w-4xl px-6 py-30">
+          <h1 className="text-2xl font-semibold">
+            Application not found
+          </h1>
+
+          {error && (
+            <p className="mt-3 text-sm text-red-600">
+              {error}
+            </p>
+          )}
+
+          <Link
+            href="/employer/applications"
+            className="mt-4 inline-block underline"
+          >
+            Back to applications
+          </Link>
+        </div>
+      </MainLayout>
     );
   }
 
   return (
     <MainLayout>
       <div className="mx-auto max-w-4xl px-6 py-30">
+
+        {/* HEADER */}
+
         <div className="mb-8 flex flex-wrap items-start justify-between gap-4">
           <div>
             <Link
@@ -210,6 +287,7 @@ export default function EmployerApplicationPage() {
 
             <p className="mt-2 text-neutral-500">
               Applied for{" "}
+
               <span className="font-medium text-black">
                 {application.job_title ||
                   application.application_title ||
@@ -219,12 +297,17 @@ export default function EmployerApplicationPage() {
 
             {application.application_code && (
               <p className="mt-1 text-sm text-neutral-400">
-                {application.application_code}
+                {
+                  application.application_code
+                }
               </p>
             )}
           </div>
 
-          <div className="flex items-center gap-2">
+          {/* ACTIONS */}
+
+          <div className="flex flex-wrap items-center gap-2">
+
             <a
               href={`/api/employer/jobs/${jobId}/applications/${appId}/pdf`}
               className="rounded-2xl border px-4 py-2 text-sm transition hover:bg-neutral-50"
@@ -237,25 +320,33 @@ export default function EmployerApplicationPage() {
               disabled={updating}
               onChange={(event) =>
                 changeStatus(
-                  event.target.value as ApplicationStatus
+                  event.target
+                    .value as ApplicationStatus
                 )
               }
-              className="rounded-2xl border bg-white px-4 py-2 text-sm"
+              className="rounded-2xl border bg-white px-4 py-2 text-sm disabled:opacity-50"
             >
-              {STATUS_OPTIONS.map((status) => (
-                <option
-                  key={status}
-                  value={status}
-                >
-                  {status === "under_review"
-                    ? "Under review"
-                    : status.charAt(0).toUpperCase() +
-                    status.slice(1)}
-                </option>
-              ))}
+              {STATUS_OPTIONS.map(
+                (status) => (
+                  <option
+                    key={status}
+                    value={status}
+                  >
+                    {status ===
+                    "under_review"
+                      ? "Under review"
+                      : status
+                          .charAt(0)
+                          .toUpperCase() +
+                        status.slice(1)}
+                  </option>
+                )
+              )}
             </select>
           </div>
         </div>
+
+        {/* ERROR */}
 
         {error && (
           <div className="mb-6 rounded-2xl border border-red-200 bg-red-50 p-4 text-sm text-red-700">
@@ -263,18 +354,28 @@ export default function EmployerApplicationPage() {
           </div>
         )}
 
+        {/* APPLICATION */}
+
         <div className="rounded-3xl border bg-white p-6">
+
           <div className="flex flex-col gap-6 md:flex-row">
+
+            {/* PHOTO */}
+
             {application.artist_picture && (
               <img
-                src={application.artist_picture}
+                src={
+                  application.artist_picture
+                }
                 alt={
                   application.artist_name ||
                   "Applicant"
                 }
-                className="h-48 w-48 rounded-2xl object-cover"
+                className="h-48 w-48 shrink-0 rounded-2xl object-cover"
               />
             )}
+
+            {/* PERSONAL INFO */}
 
             <div className="flex-1">
               <SectionTitle>
@@ -284,7 +385,9 @@ export default function EmployerApplicationPage() {
               <div className="mt-4 space-y-2">
                 <Row
                   label="Country"
-                  value={application.artist_country}
+                  value={
+                    application.artist_country
+                  }
                 />
 
                 <Row
@@ -296,52 +399,86 @@ export default function EmployerApplicationPage() {
 
                 <Row
                   label="Height"
-                  value={application.artist_height}
+                  value={
+                    application.artist_height
+                  }
                 />
 
                 <Row
                   label="Weight"
-                  value={application.artist_weight}
+                  value={
+                    application.artist_weight
+                  }
                 />
 
                 <Row
                   label="Bust"
-                  value={application.artist_bust}
+                  value={
+                    application.artist_bust
+                  }
                 />
 
                 <Row
                   label="Waist"
-                  value={application.artist_waist}
+                  value={
+                    application.artist_waist
+                  }
                 />
 
                 <Row
                   label="Hips"
-                  value={application.artist_hips}
+                  value={
+                    application.artist_hips
+                  }
+                />
+
+                <Row
+                  label="Status"
+                  value={
+                    application.status ===
+                    "under_review"
+                      ? "Under review"
+                      : application.status
+                  }
                 />
               </div>
             </div>
           </div>
 
+          {/* EXPERIENCE */}
+
           {application.artist_experience && (
             <Section
               title="Experience"
-              text={application.artist_experience}
+              text={
+                application.artist_experience
+              }
             />
           )}
+
+          {/* BIO */}
 
           {application.artist_biography && (
             <Section
               title="Biography"
-              text={application.artist_biography}
+              text={
+                application.artist_biography
+              }
             />
           )}
+
+          {/* COVER MESSAGE */}
 
           {application.cover_message && (
             <Section
               title="Cover message"
-              text={application.cover_message}
+              text={
+                application.cover_message
+              }
             />
           )}
+
+          {/* PORTFOLIO */}
 
           {application.promo_url && (
             <div className="mt-8 border-t pt-6">
@@ -350,12 +487,16 @@ export default function EmployerApplicationPage() {
               </SectionTitle>
 
               <a
-                href={application.promo_url}
+                href={
+                  application.promo_url
+                }
                 target="_blank"
                 rel="noreferrer"
                 className="mt-3 block break-all underline"
               >
-                {application.promo_url}
+                {
+                  application.promo_url
+                }
               </a>
             </div>
           )}
@@ -386,7 +527,9 @@ function Section({
 }) {
   return (
     <div className="mt-8 border-t pt-6">
-      <SectionTitle>{title}</SectionTitle>
+      <SectionTitle>
+        {title}
+      </SectionTitle>
 
       <p className="mt-3 whitespace-pre-wrap text-sm leading-7 text-neutral-700">
         {text}
