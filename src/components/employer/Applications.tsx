@@ -9,7 +9,7 @@ import { useEmployerAuth } from "../../context/EmployerAuthContext";
 
 type ApplicationStatus =
   | "pending"
-  | "under review"
+  | "under_review"
   | "approved"
   | "rejected";
 
