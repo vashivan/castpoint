@@ -1,9 +1,8 @@
-// src/context/EmployerAuthContext.tsx
-
 "use client";
 
-import React, {
+import {
   createContext,
+  useCallback,
   useContext,
   useEffect,
   useState,
@@ -23,12 +22,16 @@ export type Employer = {
 
   website: string | null;
   instagram: string | null;
+
   description: string | null;
 
   logo_url: string | null;
   logo_public_id: string | null;
 
-  status: "pending" | "verified" | "blocked";
+  status:
+    | "pending"
+    | "verified"
+    | "blocked";
 
   created_at: string;
   updated_at: string | null;
@@ -36,7 +39,6 @@ export type Employer = {
 
 interface EmployerAuthContextType {
   employer: Employer | null;
-
   isLoading: boolean;
   isLogged: boolean;
 
@@ -45,14 +47,13 @@ interface EmployerAuthContextType {
   ) => void;
 
   refreshEmployer: () => Promise<void>;
-
   logoutEmployer: () => Promise<void>;
 }
 
 const EmployerAuthContext =
-  createContext<EmployerAuthContextType | undefined>(
-    undefined
-  );
+  createContext<
+    EmployerAuthContextType | undefined
+  >(undefined);
 
 export function EmployerAuthProvider({
   children,
@@ -60,81 +61,126 @@ export function EmployerAuthProvider({
   children: React.ReactNode;
 }) {
   const router = useRouter();
+
   const [employer, setEmployer] =
     useState<Employer | null>(null);
 
   const [isLoading, setIsLoading] =
     useState(true);
 
-  const [isLogged, setIsLogged] =
-    useState(false);
+  // Одне джерело правди.
+  const isLogged = employer !== null;
 
-  async function refreshEmployer() {
-    setIsLoading(true);
+  const fetchEmployer =
+    useCallback(async () => {
+      try {
+        const res = await fetch(
+          "/api/employer/me",
+          {
+            credentials: "include",
+            cache: "no-store",
+          }
+        );
 
+        // Немає employer cookie / token
+        if (res.status === 401) {
+          setEmployer(null);
+          return;
+        }
+
+        // Blocked employer
+        if (res.status === 403) {
+          setEmployer(null);
+          return;
+        }
+
+        // 500 / DB timeout / server error
+        // НЕ означає logout.
+        if (!res.ok) {
+          throw new Error(
+            `Failed to fetch employer: ${res.status}`
+          );
+        }
+
+        const data = await res.json();
+
+        setEmployer(
+          data.employer ?? null
+        );
+      } catch (error) {
+        console.error(
+          "[employer.auth.fetch.error]",
+          error
+        );
+
+        // Тут спеціально НЕ:
+        //
+        // setEmployer(null)
+        //
+        // бо помилка сервера не означає,
+        // що cookie стала невалідною.
+      }
+    }, []);
+
+  const refreshEmployer =
+    useCallback(async () => {
+      setIsLoading(true);
+
+      try {
+        await fetchEmployer();
+      } finally {
+        setIsLoading(false);
+      }
+    }, [fetchEmployer]);
+
+  useEffect(() => {
+    void refreshEmployer();
+  }, [refreshEmployer]);
+
+  const updateEmployer = (
+    updatedEmployerData: Partial<Employer>
+  ) => {
+    setEmployer((prev) => {
+      if (!prev) {
+        return null;
+      }
+
+      return {
+        ...prev,
+        ...updatedEmployerData,
+      };
+    });
+  };
+
+  const logoutEmployer = async () => {
     try {
       const res = await fetch(
-        "/api/employer/me",
+        "/api/employer/logout",
         {
+          method: "POST",
           credentials: "include",
-          cache: "no-store",
         }
       );
 
       if (!res.ok) {
-        setEmployer(null);
-        setIsLogged(false);
-        return;
+        throw new Error(
+          `Failed to logout employer: ${res.status}`
+        );
       }
 
-      const data = await res.json();
+      setEmployer(null);
 
-      const employerData =
-        data.employer ?? null;
-
-      setEmployer(employerData);
-      setIsLogged(Boolean(employerData));
+      router.replace("/");
+      router.refresh();
     } catch (error) {
       console.error(
-        "[employer.auth]",
+        "[employer.logout.error]",
         error
       );
 
-      setEmployer(null);
-      setIsLogged(false);
-    } finally {
-      setIsLoading(false);
+      throw error;
     }
-  }
-
-  function updateEmployer(
-    updatedEmployerData: Partial<Employer>
-  ) {
-    setEmployer((prev) =>
-      prev
-        ? {
-            ...prev,
-            ...updatedEmployerData,
-          }
-        : null
-    );
-  }
-
-  const logoutEmployer = async () => {
-  await fetch("/api/employer/logout", {
-    method: "POST",
-    credentials: "include",
-  });
-
-  setEmployer(null);
-
-  router.push("/");
-  router.refresh();
-};
-
-  useEffect(() => {
-    refreshEmployer();
-  }, []);
+  };
 
   return (
     <EmployerAuthContext.Provider

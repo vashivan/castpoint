@@ -2,6 +2,7 @@
 
 import {
   createContext,
+  useCallback,
   useContext,
   useEffect,
   useState,
@@ -19,7 +20,6 @@ interface AuthContextType {
   ) => void;
 
   refreshUser: () => Promise<void>;
-
   logoutArtist: () => Promise<void>;
 }
 
@@ -28,125 +28,100 @@ const AuthContext =
     undefined
   );
 
-export const AuthProvider: React.FC<{
+export function AuthProvider({
+  children,
+}: {
   children: React.ReactNode;
-}> = ({ children }) => {
+}) {
   const [user, setUser] =
     useState<User | null>(null);
 
   const [isLoading, setIsLoading] =
     useState(true);
 
-  const [isLogged, setIsLogged] =
-    useState(false);
+  // Є user = авторизований артист.
+  // Окремий state для isLogged не потрібен.
+  const isLogged = user !== null;
 
-  // const fetchUser = async () => {
-  //   try {
-  //     const res = await fetch(
-  //       "/api/auth",
-  //       {
-  //         credentials: "include",
-  //       }
-  //     );
+  const fetchUser = useCallback(async () => {
+    try {
+      const res = await fetch("/api/auth", {
+        credentials: "include",
+        cache: "no-store",
+      });
 
-  //     if (!res.ok) {
-  //       throw new Error(
-  //         "Not authenticated"
-  //       );
-  //     }
+      // 401 — це нормальний стан:
+      // артист просто не авторизований.
+      if (res.status === 401) {
+        setUser(null);
+        return;
+      }
 
-  //     const data = await res.json();
+      // 500 / 503 / DB error тощо
+      // не трактуємо як logout.
+      if (!res.ok) {
+        throw new Error(
+          `Failed to fetch artist: ${res.status}`
+        );
+      }
 
-  //     setUser(data.user);
-  //     setIsLogged(true);
-  //   } catch (error) {
-  //     console.error(
-  //       "Error fetching user:",
-  //       error
-  //     );
+      const data = await res.json();
 
-  //     setUser(null);
-  //     setIsLogged(false);
-  //   } finally {
-  //     setIsLoading(false);
-  //   }
-  // };
-const fetchUser = async () => {
-  try {
-    const res = await fetch("/api/auth", {
-      credentials: "include",
-    });
-
-    if (res.status === 401) {
-      setUser(null);
-      setIsLogged(false);
-      return;
-    }
-
-    if (!res.ok) {
-      throw new Error(
-        `Failed to fetch user: ${res.status}`
+      setUser(data.user ?? null);
+    } catch (error) {
+      console.error(
+        "[artist.auth.fetch.error]",
+        error
       );
+
+      // Не очищаємо user через тимчасову
+      // серверну / DB помилку.
     }
+  }, []);
 
-    const data = await res.json();
+  const refreshUser = useCallback(async () => {
+    setIsLoading(true);
 
-    setUser(data.user);
-    setIsLogged(true);
-  } catch (error) {
-    console.error(
-      "[auth.fetch.error]",
-      error
-    );
-
-    setUser(null);
-    setIsLogged(false);
-  } finally {
-    setIsLoading(false);
-  }
-};
+    try {
+      await fetchUser();
+    } finally {
+      setIsLoading(false);
+    }
+  }, [fetchUser]);
 
   useEffect(() => {
-    fetchUser();
-  }, []);
+    void refreshUser();
+  }, [refreshUser]);
 
   const updateUser = (
     updatedUserData: Partial<User>
   ) => {
-    setUser((prev) =>
-      prev
-        ? {
-            ...prev,
-            ...updatedUserData,
-          }
-        : null
-    );
-  };
+    setUser((prev) => {
+      if (!prev) {
+        return null;
+      }
 
-  const refreshUser = async () => {
-    setIsLoading(true);
-
-    await fetchUser();
+      return {
+        ...prev,
+        ...updatedUserData,
+      };
+    });
   };
 
   const logoutArtist = async () => {
     try {
-      const res = await fetch(
-        "/api/logout",
-        {
-          method: "POST",
-          credentials: "include",
-        }
-      );
+      const res = await fetch("/api/logout", {
+        method: "POST",
+        credentials: "include",
+      });
 
       if (!res.ok) {
         throw new Error(
-          "Failed to log out"
+          `Failed to logout artist: ${res.status}`
         );
       }
 
       setUser(null);
-      setIsLogged(false);
     } catch (error) {
       console.error(
         "[artist.logout.error]",
@@ -171,17 +146,16 @@ const fetchUser = async () => {
       {children}
     </AuthContext.Provider>
   );
-};
+}
 
-export const useAuth = () => {
-  const context =
-    useContext(AuthContext);
+export function useAuth() {
+  const context = useContext(AuthContext);
 
   if (!context) {
     throw new Error(
-      "useAuth must be used within an AuthProvider"
+      "useAuth must be used within AuthProvider"
     );
   }
 
   return context;
-};
+}
