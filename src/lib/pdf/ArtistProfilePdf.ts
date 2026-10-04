@@ -1,7 +1,7 @@
 import fs from "fs";
 import path from "path";
 import sharp from "sharp";
-import { PDFDocument, rgb, PDFFont, PDFPage } from "pdf-lib";
+import { PDFDocument, rgb, PDFFont, PDFPage, type RGB } from "pdf-lib";
 import { createRequire } from "module";
 
 const require = createRequire(import.meta.url);
@@ -103,7 +103,7 @@ async function normalizeToJpeg(bytes: Uint8Array): Promise<Uint8Array | null> {
 
 /* ---------- WRAP + TABLE ---------- */
 
-function wrapText(text: string, maxWidth: number, font: any, fontSize: number) {
+function wrapText(text: string, maxWidth: number, font: PDFFont, fontSize: number) {
   const t = (text || "—").replace(/\s+/g, " ").trim();
   const words = t ? t.split(" ") : ["—"];
   const lines: string[] = [];
@@ -183,7 +183,7 @@ function wrapWords(text: string) {
     .filter(Boolean);
 }
 
-function wrapLinesByWidth(words: string[], maxWidth: number, font: any, fontSize: number) {
+function wrapLinesByWidth(words: string[], maxWidth: number, font: PDFFont, fontSize: number) {
   const lines: string[][] = [];
   let line: string[] = [];
 
@@ -211,7 +211,7 @@ function drawJustifiedParagraph(opts: {
   font: PDFFont;
   fontSize: number;
   lineHeight?: number;
-  color?: any;
+  color?: RGB;
 }) {
   const {
     page,

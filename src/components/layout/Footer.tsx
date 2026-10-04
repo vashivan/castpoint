@@ -1,116 +1,164 @@
-import styles from '../../styles/Footer.module.scss';
-import { useAuth } from "../../context/AuthContext";
-import { useEmployerAuth } from "../../context/EmployerAuthContext";
-import Image from 'next/image'
+"use client";
+
 import React, { useState } from "react";
 import Link from "next/link";
-import TextInput from '../ui/input';
+import { useAuth } from "../../context/AuthContext";
+import { useEmployerAuth } from "../../context/EmployerAuthContext";
 
+// Who sees a link: guests, signed-in artists, signed-in employers. No `show` = everyone.
+type Audience = "guest" | "artist" | "employer";
+type FooterLink = { href: string; label: string; show?: Audience[] };
+type FooterColumn = { title: string; links: FooterLink[]; show?: Audience[] };
+
+const columns: FooterColumn[] = [
+  {
+    title: "Artists",
+    show: ["guest", "artist"],
+    links: [
+      { href: "/vacancies", label: "Contracts" },
+      { href: "/reviews", label: "Reviews" },
+      { href: "/signup", label: "Create profile", show: ["guest"] },
+      { href: "/login", label: "Sign in", show: ["guest"] },
+      { href: "/profile", label: "My profile", show: ["artist"] },
+      { href: "/pricing", label: "Pricing" },
+      { href: "/blog", label: "Blog" },
+    ],
+  },
+  {
+    title: "Employers",
+    show: ["guest", "employer"],
+    links: [
+      { href: "/employer/register", label: "Register company", show: ["guest"] },
+      { href: "/employer/login", label: "Employer sign in", show: ["guest"] },
+      { href: "/employer/dashboard", label: "Dashboard", show: ["employer"] },
+      { href: "/employer/jobs/new", label: "Post a contract", show: ["employer"] },
+      { href: "/employer/artists", label: "Find artists", show: ["employer"] },
+      { href: "/pricing", label: "Pricing", show: ["employer"] },
+    ],
+  },
+  {
+    title: "Follow",
+    links: [
+      { href: "https://www.instagram.com/castpoint", label: "Instagram" },
+      { href: "https://www.facebook.com/profile.php?id=61581139737398", label: "Facebook" },
+    ],
+  },
+];
+
+const visibleTo = (audience: Audience) => (item: { show?: Audience[] }) => !item.show || item.show.includes(audience);
+
+/** CASTPOINT spelled out in tilted colour tiles. */
+function LetterTiles() {
+  return (
+    <div className="mx-auto flex max-w-7xl justify-between gap-1 overflow-hidden px-4 pb-12 pt-4 sm:gap-2" aria-label="Castpoint">
+      {"CASTPOINT".split("").map((ch, i) => (
+        <span
+          key={i}
+          aria-hidden
+          className={`font-display grid flex-1 place-items-center text-[clamp(28px,9vw,140px)]`}
+      >
+          {ch}
+        </span>
+      ))}
+    </div>
+  );
+}
 
 const Footer = () => {
   const { user } = useAuth();
-  const [formEmail, setFormEmail] = useState('');
-  const [msg, setMsg] = useState('');
+  const { employer } = useEmployerAuth();
+  const [formEmail, setFormEmail] = useState("");
+  const [msg, setMsg] = useState("");
   const [loading, setLoading] = useState(false);
+  const audience: Audience = employer ? "employer" : user ? "artist" : "guest";
 
-  const {
-    employer,
-    isLogged: isEmployerLogged,
-  } = useEmployerAuth();
+  const flash = (text: string) => {
+    setMsg(text);
+    setTimeout(() => setMsg(""), 3000);
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!formEmail) {
-      setMsg('Please enter a valid email address.');
-      setTimeout((() => setMsg('')), 3000);
-    }
+    if (!formEmail) return flash("Please enter a valid email address.");
 
     setLoading(true);
     try {
-      const response = await fetch('api/subscribe', {
-        method: 'POST',
-        headers: {
-          'content-type': 'application/json',
-        },
+      const response = await fetch("/api/subscribe", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
         body: JSON.stringify({ email: formEmail }),
       });
       if (response.ok) {
-        setFormEmail('');
-        setMsg('Thank you for subscribing!');
+        setFormEmail("");
+        setMsg("Thank you for subscribing!");
       } else {
-        setMsg('E-mail is already subscribed or an error occurred.');
-        setTimeout((() => setMsg('')), 3000);
+        flash("E-mail is already subscribed or an error occurred.");
       }
     } catch (error) {
-      console.error('Error submitting form:', error);
-      setMsg('An error occurred. Please try again later.');
-    };
-
-    setLoading(false);
+      console.error("Error submitting form:", error);
+      flash("An error occurred. Please try again later.");
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
-    <footer className={`${styles.footer} bg-transparent text-black px-4 sm:px-6 lg:px-8 mt-5`}>
-      <div className={styles.footer_border} />
+    <footer className="bg-ink text-paper">
+      <div className="mx-auto grid max-w-7xl gap-10 px-4 py-14 md:grid-cols-[1.4fr_1fr_1fr_1fr]">
+        <div>
+          <p className="max-w-sm text-[17px] leading-relaxed text-paper/90">
+            A platform for artists to find international jobs and share experience.
+          </p>
 
-      <div className={styles.footer_social}>
-        <a href="https://www.facebook.com/profile.php?id=61581139737398" aria-label="Facebook">
-          <Image width={0} height={0} className="w-10 h-10 transition-transform duration-300 hover:scale-110" src="/images/icons/facebook.svg" alt="Facebook" />
-        </a>
-        <a href="https://www.instagram.com/castpoint" aria-label="Instagram">
-          <Image width={0} height={0} className="w-10 h-10 transition-transform duration-300 hover:scale-110" src="/images/icons/instagram.svg" alt="Instagram" />
-        </a>
+          {!user && !employer && (
+            <form onSubmit={handleSubmit} className="mt-6 max-w-sm">
+              <label htmlFor="footer-email" className="label text-paper/60">Get new contracts by e-mail</label>
+              <div className="mt-2 flex border border-paper/40">
+                <input
+                  id="footer-email"
+                  type="email"
+                  value={formEmail}
+                  onChange={(e) => setFormEmail(e.target.value)}
+                  placeholder="you@example.com"
+                  className="min-w-0 flex-1 bg-transparent px-3 py-2.5 text-sm outline-none placeholder:text-paper/40"
+                />
+                <button
+                  type="submit"
+                  disabled={loading}
+                  className="bg-lime px-4 text-[11px] font-bold uppercase tracking-widest text-ink disabled:opacity-50 cursor-pointer"
+                >
+                  →
+                </button>
+              </div>
+              <p className="mt-2 h-4 text-xs text-lime">{msg}</p>
+            </form>
+          )}
+        </div>
+
+        {columns.filter(visibleTo(audience)).map((col) => (
+          <div key={col.title}>
+            <p className="label text-paper/60">{col.title}</p>
+            <ul className="mt-4 space-y-2">
+              {col.links.filter(visibleTo(audience)).map((l) => (
+                <li key={l.href}>
+                  <Link href={l.href} className="text-sm hover:text-lime">{l.label}</Link>
+                </li>
+              ))}
+            </ul>
+          </div>
+        ))}
       </div>
 
-      {employer ? (
-        ""
-      ) :
-        (
-          <div className={styles.footer_links}>
-            <Link href="/vacancies" className={`${styles.footer_links_link} text-black hover:text-orange-500 transition-colors text-2xl`}>Vacancies</Link>
-            <Link href="/reviews" className={`${styles.footer_links_link} text-black hover:text-orange-500 transition-colors text-2xl`}>Reviews</Link>
-            <Link href="/blog" className={` ${styles.footer_links_link} text-black hover:text-orange-500 transition-colors text-2xl`}>Blog</Link>
-            {!employer ? <Link href="/employer/login" className={`${styles.footer_links_link} text-black hover:text-orange-500 transition-colors text-2xl`}>For employers</Link> : null}
-          </div>
-        )}
+      <LetterTiles />
 
-
-
-      {user || employer ? ('') : (
-        <div className={styles.footer_subscribe}>
-          <p className="text-sm text-gray-600">One click and you are closer to your dream job!</p>
-          <form className={styles.footer_subscribe_form}>
-            <label className='relative border-rounded-3xl w-full' htmlFor="">
-              <TextInput
-                classname="text-left bg-white/100 border border-orange-400 mb-4 placeholder:text-black/50"
-                type='email'
-                name="email"
-                placeholder="e-mail here"
-                value={formEmail}
-                onChange={(val: string) => setFormEmail(val)}
-              />
-              <p className='text-red text-xs mt-0 p-0 h-10'>
-                {msg ? `${msg}` : ""}</p>
-              <button
-                type="submit"
-                onClick={handleSubmit}
-                className="text-black/30 text-sm font-semibold px-4 py-2 cursor-pointer absolute right-1 top-4.5 flex items-center justify-center"
-                disabled={loading}
-              >
-                <svg width="9" height="15" viewBox="0 0 9 15" fill="none" xmlns="http://www.w3.org/2000/svg">
-                  <path d="M8.07112 8.07088C8.46164 7.68035 8.46164 7.04719 8.07112 6.65666L1.70716 0.292702C1.31664 -0.0978227 0.68347 -0.0978227 0.292946 0.292702C-0.0975785 0.683226 -0.0975785 1.31639 0.292946 1.70692L5.9498 7.36377L0.292946 13.0206C-0.0975785 13.4111 -0.0975785 14.0443 0.292946 14.4348C0.68347 14.8254 1.31664 14.8254 1.70716 14.4348L8.07112 8.07088ZM6.36401 7.36377V8.36377H7.36401V7.36377V6.36377H6.36401V7.36377Z" fill="gray" />
-                </svg>
-              </button>
-            </label>
-          </form>
+      <div className="border-t border-paper/15">
+        <div className="mx-auto flex max-w-7xl flex-col gap-2 px-4 py-5 text-xs text-paper/50 md:flex-row md:justify-between">
+          <p>&copy; {new Date().getFullYear()} Castpoint team. All rights reserved to shine.</p>
+          <p>
+            Designed by <a className="underline" href="https://www.instagram.com/a_little_surprise/">Kira Pryz</a>, crafted by{" "}
+            <a className="underline" target="_blank" href="https://www.instagram.com/vash_ivan">Ivan Vashchuk</a> for the world&apos;s artists.
+          </p>
         </div>
-      )}
-
-
-      <div className={styles.footer_copyright}>
-        <h1 className="text-bold uppercase text-4xl text-black mb-5">Castpoint</h1>
-        <p>&copy; {new Date().getFullYear()} Castpoint team. All rights reserved to shine.</p>
-        <p>Designed by <a className='underline' href="https://www.instagram.com/a_little_surprise/">Kira Pryz</a>, crafted with 💖 and 🤖 by <a className='underline' target='_blank' href="https://www.instagram.com/vash_ivan">Ivan Vashchuk</a> for the world&apos;s artists.</p>
       </div>
     </footer>
   );

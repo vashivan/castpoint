@@ -1,25 +1,19 @@
-import "mysql2";
 import bcrypt from "bcryptjs";
 import { db } from "../../../lib/db";
-import jwt from "jsonwebtoken";
 import { RowDataPacket } from "mysql2";
 import { NextRequest, NextResponse } from "next/server";
-import { cookies } from "next/headers";
+import { getArtistFromCookies, setArtistCookie } from "@/lib/artistAuth";
 
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
     const { first_name, second_name, name, sex, country, role, skills, date_of_birth, height, weight, bust, waist, hips, video_url, pic_url, pic_public_id, biography, experience, email, phone, password, instagram, facebook } = body;
 
-    const cookieStore = await cookies();
-    const token = cookieStore.get("auth")?.value;
-
-    if (!token) {
+    const artist = await getArtistFromCookies();
+    if (!artist) {
       return NextResponse.json({ error: "Неавторизований доступ" }, { status: 401 });
     }
-
-    const decoded = jwt.verify(token, process.env.JWT_SECRET as string) as { id: number };
-    const userId = decoded.id;
+    const userId = artist.id;
 
     const [users] = await db.query<RowDataPacket[]>("SELECT * FROM profiles WHERE id = ?", [userId]);
     if (users.length === 0) return NextResponse.json({ error: "Користувача не знайдено" }, { status: 404 });
@@ -70,19 +64,8 @@ export async function POST(req: NextRequest) {
 
     const { password: _, ...userWithoutPassword } = updatedUser;
 
-    const newToken = jwt.sign(userWithoutPassword, process.env.JWT_SECRET as string, { expiresIn: "7d" });
-
     const response = NextResponse.json({ message: "Дані успішно оновлено", user: userWithoutPassword }, { status: 200 });
-
-    response.cookies.set("auth", newToken, {
-      httpOnly: true,
-      path: "/",
-      maxAge: 60 * 60 * 24 * 7,
-      secure: process.env.NODE_ENV === "production",
-      sameSite: "lax",
-    });
-
-    return response;
+    return setArtistCookie(response, userWithoutPassword);
 
   } catch (error) {
     console.error("Помилка при оновленні користувача:", error);

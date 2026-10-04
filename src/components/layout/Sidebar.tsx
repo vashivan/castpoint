@@ -1,30 +1,12 @@
 "use client";
 
-import styles from "../../styles/Sidebar.module.scss";
-
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
-import {
-  Briefcase,
-  MessageSquare,
-  Edit3,
-  UserCircle,
-  LogIn,
-  LogOutIcon,
-  User,
-  Menu,
-  CircleX,
-  LayoutDashboard,
-  Building2,
-  FileText,
-  PlusCircle,
-} from "lucide-react";
-
-import { motion } from "framer-motion";
-
 import { useAuth } from "@/context/AuthContext";
 import { useEmployerAuth } from "@/context/EmployerAuthContext";
+import { Button } from "../ds/Button";
+import { cn } from "@/lib/utils";
 
 type SidebarProps = {
   isOpen: boolean;
@@ -34,124 +16,42 @@ type SidebarProps = {
 };
 
 const publicNavItems = [
-  {
-    path: "/",
-    label: "CASTPOINT",
-  },
-  {
-    path: "/vacancies",
-    label: "Vacancies",
-    icon: Briefcase,
-  },
-  {
-    path: "/reviews",
-    label: "Reviews",
-    icon: MessageSquare,
-  },
-  {
-    path: "/blog",
-    label: "Blog",
-    icon: Edit3,
-  },
+  { path: "/vacancies", label: "Contracts" },
+  { path: "/reviews", label: "Reviews" },
+  { path: "/pricing", label: "Pricing" },
+  { path: "/blog", label: "Blog" },
 ];
 
 const artistNavItems = [
-  {
-    path: "/profile",
-    label: "My profile",
-    icon: User,
-  },
-  {
-    path: "/vacancies",
-    label: "Vacancies",
-    icon: Briefcase,
-  },
-  {
-    path: "/reviews",
-    label: "Reviews",
-    icon: MessageSquare,
-  },
-  {
-    path: "/blog",
-    label: "Blog",
-    icon: Edit3,
-  },
+  { path: "/profile", label: "My profile" },
+  ...publicNavItems,
 ];
 
 const employerNavItems = [
-  {
-    path: "/",
-    label: "Dashboard",
-    icon: LayoutDashboard,
-  },
-  {
-    path: "/employer/profile",
-    label: "Company profile",
-    icon: Building2,
-  },
-  {
-    path: "/employer/jobs",
-    label: "My jobs",
-    icon: Briefcase,
-  },
-  {
-    path: "/employer/jobs/new",
-    label: "Post a job",
-    icon: PlusCircle,
-  },
-  {
-    path: "/employer/applications",
-    label: "Applications",
-    icon: FileText,
-  },
+  { path: "/employer/dashboard", label: "Dashboard" },
+  { path: "/employer/jobs", label: "Job offers" },
+  { path: "/employer/jobs/new", label: "Post a job" },
+  { path: "/employer/applications", label: "Applications" },
+  { path: "/employer/artists", label: "Find artists" },
+  { path: "/employer/profile", label: "Company" },
 ];
 
-export default function Sidebar({
-  isOpen,
-  onClose,
-  handlerLogOut,
-}: SidebarProps) {
+/** Mobile menu: full-screen panel below the navbar. */
+export default function Sidebar({ isOpen, onClose, handlerLogOut }: SidebarProps) {
   const pathname = usePathname();
-
   const { user } = useAuth();
-
-  const {
-    employer,
-    logoutEmployer,
-  } = useEmployerAuth();
+  const { employer, logoutEmployer } = useEmployerAuth();
 
   const isEmployer = Boolean(employer);
   const isArtist = Boolean(user);
+  const navItems = isEmployer ? employerNavItems : isArtist ? artistNavItems : publicNavItems;
 
-  let navItems = publicNavItems;
-
-  if (isEmployer) {
-    navItems = employerNavItems;
-  } else if (isArtist) {
-    navItems = [
-      {
-        path: "/",
-        label: "CASTPOINT",
-      },
-      ...artistNavItems,
-    ];
-  }
-
-  function isActivePath(path: string) {
-    if (path === "/") {
-      return pathname === "/";
-    }
-
-    return pathname?.startsWith(path);
-  }
+  const isActive = (path: string) => pathname === path || pathname?.startsWith(`${path}/`);
 
   async function handleLogout() {
     try {
-      if (isEmployer) {
-        await logoutEmployer();
-      } else if (isArtist) {
-        await handlerLogOut();
-      }
+      if (isEmployer) await logoutEmployer();
+      else if (isArtist) await handlerLogOut();
     } catch (error) {
       console.error("[sidebar.logout.error]", error);
     } finally {
@@ -161,263 +61,52 @@ export default function Sidebar({
 
   return (
     <div
-      className={`
-        fixed left-0 top-0 z-[999]
-        h-full w-full
-        transform
-        bg-white/90
-        text-black
-        backdrop-blur-md
-        shadow-md
-        transition-transform
-        duration-300
-        ${
-          isOpen
-            ? "translate-x-0 overflow-hidden"
-            : "-translate-x-full"
-        }
-      `}
+      className={cn(
+        "fixed inset-x-0 bottom-0 top-13 z-40 flex flex-col overflow-y-auto bg-panel px-4 py-8 text-paper transition-[opacity,transform,visibility] duration-200 md:hidden",
+        // Fade/slide vertically so the closed menu never widens the page
+        isOpen ? "visible translate-y-0 opacity-100" : "invisible -translate-y-3 opacity-0"
+      )}
+      aria-hidden={!isOpen}
     >
-      <nav className="p-4">
-        <div className="space-x-5 md:hidden">
-
-          {/* NAVIGATION */}
-
-          <div className="mb-10 flex flex-col items-center text-center">
-            {navItems.map(
-              ({
-                path,
-                label,
-                icon: Icon,
-              }) => {
-                const active =
-                  isActivePath(path);
-
-                return (
-                  <Link
-                    key={path}
-                    href={path}
-                    onClick={onClose}
-                    className="
-                      mb-2.5
-                      flex
-                      items-center
-                      rounded-md
-                      px-3
-                      py-2
-                    "
-                  >
-                    {Icon && (
-                      <Icon className="mr-3 h-5 w-5" />
-                    )}
-
-                    <p
-                      className={`
-                        text-2xl
-
-                        ${
-                          active
-                            ? "underline"
-                            : ""
-                        }
-
-                        ${
-                          path === "/"
-                            ? styles.sidebar_link_logo
-                            : ""
-                        }
-                      `}
-                    >
-                      {label}
-                    </p>
-                  </Link>
-                );
-              }
+      <nav className="flex flex-col">
+        {navItems.map(({ path, label }) => (
+          <Link
+            key={path}
+            href={path}
+            onClick={onClose}
+            className={cn(
+              "font-display border-b border-paper/15 py-4 text-[32px]",
+              isActive(path) ? "text-lime" : "hover:text-lime"
             )}
-          </div>
-
-          {/* NOT LOGGED */}
-
-          {!isArtist && !isEmployer && (
-            <div className="mb-10 flex flex-col items-center text-center">
-
-              <Link
-                href="/login"
-                className="
-                  mb-2.5
-                  flex
-                  items-center
-                  rounded-md
-                  px-3
-                  py-2
-                  text-2xl
-                  font-semibold
-                "
-                onClick={onClose}
-              >
-                <LogIn className="mr-3 h-5 w-5" />
-
-                Sign in
-              </Link>
-
-              <Link
-                href="/signup"
-                className="
-                  mb-2.5
-                  flex
-                  items-center
-                  rounded-md
-                  px-3
-                  py-2
-                  text-2xl
-                  font-semibold
-                "
-                onClick={onClose}
-              >
-                <UserCircle className="mr-3 h-5 w-5" />
-
-                Sign up
-              </Link>
-
-              <Link
-                href="/employer/login"
-                className="
-                  mt-4
-                  flex
-                  items-center
-                  rounded-md
-                  px-3
-                  py-2
-                  text-sm
-                  text-neutral-500
-                  transition
-                  hover:text-black
-                "
-                onClick={onClose}
-              >
-                <Building2 className="mr-2 h-4 w-4" />
-
-                Employer sign in
-              </Link>
-
-            </div>
-          )}
-
-          {/* ARTIST INFO */}
-
-          {isArtist && !isEmployer && (
-            <div className="mb-8 text-center">
-              <p className="text-xs uppercase tracking-widest text-neutral-400">
-                Artist account
-              </p>
-
-              {user?.email && (
-                <p className="mt-1 text-sm text-neutral-600">
-                  {user.email}
-                </p>
-              )}
-            </div>
-          )}
-
-          {/* EMPLOYER INFO */}
-
-          {isEmployer && (
-            <div className="mb-8 text-center">
-              <p className="text-xs uppercase tracking-widest text-neutral-400">
-                Employer account
-              </p>
-
-              {employer?.company_name && (
-                <p className="mt-1 text-lg font-medium">
-                  {employer.company_name}
-                </p>
-              )}
-
-              {employer?.email && (
-                <p className="mt-1 text-sm text-neutral-500">
-                  {employer.email}
-                </p>
-              )}
-            </div>
-          )}
-
-          {/* LOGOUT */}
-
-          {(isArtist || isEmployer) && (
-            <div className="mb-10 flex flex-col items-center text-center">
-              <button
-                type="button"
-                onClick={handleLogout}
-                className="
-                  flex
-                  cursor-pointer
-                  items-center
-                  rounded-md
-                  px-3
-                  py-2
-                  font-semibold
-                  text-black
-                "
-              >
-                <LogOutIcon className="mr-2 h-5 w-5" />
-
-                Log out
-              </button>
-            </div>
-          )}
-
-          {/* CLOSE */}
-
-          <div className="mb-10 flex flex-col items-center text-center">
-            <motion.button
-              type="button"
-              whileTap={{
-                scale: 0.7,
-              }}
-              onClick={onClose}
-            >
-              {!isOpen ? (
-                <Menu
-                  size={45}
-                  className="cursor-pointer text-black"
-                />
-              ) : (
-                <CircleX
-                  size={45}
-                  className="cursor-pointer text-black"
-                />
-              )}
-            </motion.button>
-          </div>
-
-          {/* FOOTER */}
-
-          <div
-            className="
-              relative
-              z-10
-              mt-12
-              border-t
-              border-gray-200
-              pt-10
-              text-center
-              text-sm
-              text-black
-            "
           >
-            <p>
-              &copy; {new Date().getFullYear()} Castpoint team.
-              All rights reserved to shine.
-            </p>
-
-            <p className="mt-2">
-              Crafted with 💖 and 🤖 by Castpoint team
-              for the world&apos;s artists.
-            </p>
-          </div>
-
-        </div>
+            {label}
+          </Link>
+        ))}
       </nav>
+
+      <div className="mt-10 flex flex-col gap-3">
+        {!isArtist && !isEmployer ? (
+          <div className="flex flex-col gap-3" onClick={onClose}>
+            <Button href="/signup" variant="lime" arrow className="w-full">Create profile</Button>
+            <Button href="/login" variant="secondary" className="w-full border-paper text-paper">Sign in</Button>
+            <Link href="/employer/login" className="label mt-4 text-center text-paper/60">
+              Employer sign in →
+            </Link>
+          </div>
+        ) : (
+          <>
+            <p className="label text-paper/50">{isEmployer ? "Employer account" : "Artist account"}</p>
+            <p className="text-sm">{isEmployer ? employer?.company_name : user?.email}</p>
+            <button
+              type="button"
+              onClick={handleLogout}
+              className="label mt-4 self-start border-b-2 border-lime pb-1 cursor-pointer"
+            >
+              Log out
+            </button>
+          </>
+        )}
+      </div>
     </div>
   );
 }

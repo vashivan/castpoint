@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import db from "@/lib/db";
 import { sendArtistStatusEmail } from "@/lib/mailerStatus";
 
+import type { RowDataPacket } from "mysql2";
 async function sendToTelegram(text: string) {
   const token = process.env.TELEGRAM_BOT_TOKEN;
   const chatId = process.env.TELEGRAM_CHAT_ID;
@@ -33,7 +34,7 @@ export async function POST(req: Request) {
     return NextResponse.json({ ok: false }, { status: 400 });
   }
 
-  const [rows]: any = await db.execute(
+  const [rows] = await db.execute<RowDataPacket[]>(
     `SELECT id, status, artist_email, application_title, application_code
        FROM applications
       WHERE status_token = ?

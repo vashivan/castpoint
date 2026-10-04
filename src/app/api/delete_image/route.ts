@@ -1,93 +1,70 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { v2 as cloudinary } from 'cloudinary';
 import { db } from '../../../lib/db';
-import jwt from 'jsonwebtoken';
 import { RowDataPacket } from 'mysql2';
-import { cookies } from "next/headers";
-
+import { getArtistFromCookies, setArtistCookie } from '@/lib/artistAuth';
 
 cloudinary.config({
-  cloud_name: "dkchysebn",
-  api_key: "145289783927229",
-  api_secret: "7qoYAYHu6Pq__ssQSR7YoZt8goA",
+  cloud_name: process.env.CLOUD_NAME,
+  api_key: process.env.CLOUDINARY_API_KEY,
+  api_secret: process.env.CLOUDINARY_API_SECRET,
 });
-
 
 export async function POST(req: NextRequest) {
   try {
+    // Авторизація перед будь-якими діями
+    const artist = await getArtistFromCookies();
+    if (!artist) {
+      return NextResponse.json({ error: 'Неавторизований доступ' }, { status: 401 });
+    }
+
     const { public_id } = await req.json();
     if (!public_id) {
       return NextResponse.json({ error: 'public_id is required' }, { status: 400 });
     }
 
-    const trimmedPublicId = public_id.trim();
+    const trimmedPublicId = String(public_id).trim();
 
-    // Видаляємо зображення з Cloudinary
-    const result = await cloudinary.uploader.destroy(trimmedPublicId);
-    console.log('Cloudinary delete result:', result);
-
-    if (result.result !== 'ok' && result.result !== 'not found') {
-      return NextResponse.json({ error: 'Failed to delete from Cloudinary' }, { status: 500 });
-    }
-
-    // Авторизація
-    const cookieStore = await cookies();
-    const token = cookieStore.get("auth")?.value;
-
-
-    if (!token) {
-      return NextResponse.json({ error: 'Неавторизований доступ' }, { status: 401 });
-    }
-
-    const decoded = jwt.verify(token, process.env.JWT_SECRET as string) as { id: number };
-    const userId = decoded.id;
-
-    // Перевірка користувача
+    // Перевірка користувача і що фото належить йому
     const [users] = await db.query<RowDataPacket[]>(
-      'SELECT * FROM profiles WHERE id = ?',
-      [userId]
+      'SELECT pic_public_id FROM profiles WHERE id = ?',
+      [artist.id]
     );
     if (users.length === 0) {
       return NextResponse.json({ error: 'Користувача не знайдено' }, { status: 404 });
+    }
+    // Фото ще не збережене в профілі (щойно завантажене): нічого не видаляємо,
+    // щоб ніхто не міг видалити чуже зображення за public_id.
+    if (users[0].pic_public_id !== trimmedPublicId) {
+      return NextResponse.json({ message: 'Фото не збережене в профілі', user: artist }, { status: 200 });
+    }
+
+    // Видаляємо зображення з Cloudinary
+    const result = await cloudinary.uploader.destroy(trimmedPublicId);
+    if (result.result !== 'ok' && result.result !== 'not found') {
+      return NextResponse.json({ error: 'Failed to delete from Cloudinary' }, { status: 500 });
     }
 
     // Очищення полів
     await db.query(
       'UPDATE profiles SET pic_url = NULL, pic_public_id = NULL WHERE id = ?',
-      [userId]
+      [artist.id]
     );
 
     // Отримуємо оновленого користувача
     const [updatedUsers] = await db.query<RowDataPacket[]>(
       'SELECT * FROM profiles WHERE id = ?',
-      [userId]
+      [artist.id]
     );
+    const { password: _, ...userWithoutPassword } = updatedUsers[0];
 
-    const updatedUser = updatedUsers[0];
-    const { password, ...userWithoutPassword } = updatedUser;
-
-    // Створюємо новий JWT
-    const newToken = jwt.sign(userWithoutPassword, process.env.JWT_SECRET as string, {
-      expiresIn: '7d',
-    });
-
-    // Відповідь з оновленим користувачем + оновлена кука
     const response = NextResponse.json(
       { message: 'Фото видалено', user: userWithoutPassword },
       { status: 200 }
     );
-
-    response.cookies.set('auth', newToken, {
-      httpOnly: true,
-      path: '/',
-      maxAge: 60 * 60 * 24 * 7,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'lax',
-    });
-
-    return response;
+    return setArtistCookie(response, userWithoutPassword);
   } catch (error) {
     console.error('Помилка при видаленні фото:', error);
     return NextResponse.json({ error: 'Внутрішня помилка сервера' }, { status: 500 });
   }
-};
+}

@@ -1,31 +1,18 @@
 "use client";
 
-import styles from "../../styles/Navbar.module.scss";
-
 import React, { useState } from "react";
-
 import Link from "next/link";
-
 import { usePathname } from "next/navigation";
-
-import { motion } from "framer-motion";
-
-import {
-  Briefcase,
-  MessageSquare,
-  Edit3,
-  Menu,
-  CircleX,
-  LogOutIcon,
-  User,
-  Building2,
-} from "lucide-react";
+import { Menu, X } from "lucide-react";
 
 import { useAuth } from "../../context/AuthContext";
 import { useEmployerAuth } from "../../context/EmployerAuthContext";
 
 import Modal from "../ui/Modal";
-import DesktopLogin from "./DesktopLogin";
+import ArtistLoginForm from "../auth/ArtistLoginForm";
+import { Button } from "../ds/Button";
+import { Logo } from "../ds/primitives";
+import { cn } from "@/lib/utils";
 
 interface NavbarProps {
   onToggleSidebar: () => void;
@@ -35,251 +22,105 @@ interface NavbarProps {
 }
 
 const artistNavItems = [
-  {
-    path: "/vacancies",
-    label: "Vacancies",
-    icon: Briefcase,
-  },
-  {
-    path: "/reviews",
-    label: "Reviews",
-    icon: MessageSquare,
-  },
-  {
-    path: "/blog",
-    label: "Blog",
-    icon: Edit3,
-  },
+  { path: "/vacancies", label: "Contracts" },
+  { path: "/reviews", label: "Reviews" },
+  { path: "/employer/login", label: "For employers" },
+  { path: "/pricing", label: "Pricing" },
 ];
 
 const employerNavItems = [
-  {
-    path: "/employer/jobs",
-    label: "My Jobs",
-    icon: Briefcase,
-  },
-  {
-    path: "/employer/dashboard",
-    label: "Application dashboard",
-    icon: Building2,
-  },
+  { path: "/employer/dashboard", label: "Dashboard" },
+  { path: "/employer/jobs", label: "Job offers" },
+  { path: "/employer/applications", label: "Applications" },
+  { path: "/employer/artists", label: "Find artists" },
 ];
 
-const Navbar: React.FC<NavbarProps> = ({
-  onToggleSidebar,
-  isOpen,
-  isScrolled,
-  sidebarOpen,
-}) => {
+const Navbar: React.FC<NavbarProps> = ({ onToggleSidebar, isOpen }) => {
   const pathname = usePathname();
+  const { user, logoutArtist } = useAuth();
+  const { employer, isLogged: isEmployerLogged, logoutEmployer } = useEmployerAuth();
+  const [loginOpen, setLoginOpen] = useState(false);
 
-  const {
-    user,
-    logoutArtist,
-  } = useAuth();
-
-  const {
-    employer,
-    isLogged: isEmployerLogged,
-    logoutEmployer,
-  } = useEmployerAuth();
-
-  const [open, setOpen] = useState(false);
-  const isHome = pathname === "/";
-
-  const isAuthenticated =
-    Boolean(user) || Boolean(employer);
-
-  const textColor =
-    !isHome || isAuthenticated || isScrolled
-      ? "black"
-      : "white";
-
-  const baseColor = isScrolled
-    ? "text-black"
-    : textColor === "black"
-      ? "text-black"
-      : "text-white";
-
-  const activeColor = "underline";
-
-  const currentNavItems =
+  // "For employers" is a sign-in link, so signed-in artists don't need it
+  const navItems =
     isEmployerLogged && employer
       ? employerNavItems
-      : artistNavItems;
+      : user
+        ? artistNavItems.filter((i) => i.path !== "/employer/login")
+        : artistNavItems;
 
   async function handleLogout() {
     try {
-      if (employer) {
-        await logoutEmployer();
-        return;
-      }
-
-      if (user) {
-        await logoutArtist();
-      }
+      if (employer) return await logoutEmployer();
+      if (user) await logoutArtist();
     } catch (error) {
       console.error("[navbar.logout.error]", error);
     }
   }
 
-  return (
-    <nav
-      className={`
-        ${styles.navbar}
-        fixed top-0 left-0 w-full z-10
-        transition-all duration-300
-        ${isScrolled
-          ? "bg-white/5 backdrop-blur z-999 shadow-sm"
-          : "bg-transparent"
-        }
-        ${sidebarOpen ? "hidden" : ""}
-      `}
-    >
-      <div className="container mx-auto flex space-x-1 justify-between items-center h-16 px-3">
+  const authLink = "label text-[11px] hover:underline underline-offset-4 decoration-2 cursor-pointer";
 
-        <Link
-          href="/"
-          className={`
-            ${styles.navbar_div_logo}
-            text-2xl uppercase font-extrabold
-            flex items-center creative-gradient-text
-          `}
-          style={{ color: textColor }}
-        >
-          Castpoint
+  return (
+    <nav className="sticky top-0 z-50 h-13 w-full border-b border-ink bg-paper">
+      <div className="mx-auto flex h-full max-w-7xl items-center justify-between gap-4 px-4">
+        <Link href="/" aria-label="Castpoint home">
+          <Logo />
         </Link>
 
-        <div className="hidden md:flex gap-5 space-x-2">
-          {currentNavItems.map(
-            ({ path, label }) => {
-              const isActive =
-                pathname === path ||
-                pathname?.startsWith(`${path}/`);
+        <div className="hidden h-full items-center gap-6 md:flex">
+          {navItems.map(({ path, label }) => {
+            const active = pathname === path || pathname?.startsWith(`${path}/`);
+            return (
+              <Link
+                key={path}
+                href={path}
+                className={cn(
+                  "label flex items-center border-b-2 py-1 text-[11px]",
+                  active ? "border-ink" : "border-transparent hover:border-ink/30"
+                )}
+              >
+                {label}
+              </Link>
+            );
+          })}
+        </div>
 
-              return (
-                <Link
-                  key={path}
-                  href={path}
-                  className="flex items-center px-3 py-2 rounded-md text-sm font-semibold"
-                >
-                  <p
-                    className={`
-                      ${isActive
-                        ? activeColor
-                        : baseColor
-                      }
-                      ${styles.link}
-                    `}
-                  >
-                    {label}
-                  </p>
-                </Link>
-              );
-            }
+        <div className="hidden items-center gap-4 md:flex">
+          {employer ? (
+            <>
+              <Link href="/pricing" className="label border-[1.5px] border-ink px-2.5 py-1">Free plan</Link>
+              <Link
+                href="/employer/profile"
+                title={employer.company_name}
+                className="grid h-9 w-9 place-items-center bg-ink text-[13px] font-bold text-paper"
+              >
+                {employer.company_name?.[0]?.toUpperCase() ?? "E"}
+              </Link>
+              <button className={authLink} onClick={handleLogout}>Log out</button>
+            </>
+          ) : user ? (
+            <>
+              <Link href="/profile" className={authLink}>Profile</Link>
+              <button className={authLink} onClick={handleLogout}>Log out</button>
+            </>
+          ) : (
+            <>
+              <button className={authLink} onClick={() => setLoginOpen(true)}>Sign in</button>
+              <Button href="/signup" variant="ink" className="px-5 py-2.5 text-[11px]">
+                Create profile
+              </Button>
+            </>
           )}
         </div>
 
-        {/* DESKTOP AUTH */}
-
-        {user || employer ? (
-          <div className="hidden md:flex items-center gap-4">
-
-            {/* Employer profile shortcut */}
-
-            {employer && (
-              <Link
-                href="/employer/profile"
-                className="flex flex-col items-center text-primary/80 hover:text-primary transition"
-              >
-                <Building2 className="h-5 w-5 mb-1" />
-
-                <p className="text-xs">
-                  {employer.company_name}
-                </p>
-              </Link>
-            )}
-
-            {/* Artist profile shortcut */}
-
-            {user && !employer && (
-              <Link
-                href="/profile"
-                className="flex flex-col items-center text-primary/80 hover:text-primary transition"
-              >
-                <User className="h-5 w-5 mb-1" />
-
-                <p className="text-xs">
-                  Profile
-                </p>
-              </Link>
-            )}
-
-            <button
-              className="flex flex-col items-center text-primary/80 hover:text-primary transition cursor-pointer"
-              onClick={handleLogout}
-            >
-              <LogOutIcon className="h-5 w-5 mb-1" />
-
-              <p className="text-xs">
-                Log out
-              </p>
-            </button>
-
-          </div>
-        ) : (
-          <div className="hidden md:flex items-center">
-            <button
-              className="flex flex-col items-center text-primary/80 hover:text-primary transition cursor-pointer"
-              onClick={() =>
-                setOpen(true)
-              }
-            >
-              <User
-                color={textColor}
-                width={45}
-                height={30}
-              />
-            </button>
-          </div>
-        )}
-
-        <Modal
-          open={open}
-          onClose={() => setOpen(false)}
-          widthClass="max-w-lg"
-        >
-          <DesktopLogin
-            onSuccess={() =>
-              setOpen(false)
-            }
-          />
-        </Modal>
-
-        {/* MOBILE */}
-
-        <div className="md:hidden flex">
-          <motion.button
-            whileTap={{ scale: 0.7 }}
-            onClick={onToggleSidebar}
-          >
-            {!isOpen ? (
-              <Menu
-                size={35}
-                className={`
-                  ${baseColor}
-                  cursor-pointer
-                `}
-              />
-            ) : (
-              <CircleX
-                size={35}
-                className="text-white cursor-pointer"
-              />
-            )}
-          </motion.button>
-        </div>
+        <button className="md:hidden" onClick={onToggleSidebar} aria-label={isOpen ? "Close menu" : "Open menu"}>
+          {isOpen ? <X size={24} /> : <Menu size={24} />}
+        </button>
       </div>
+
+      <Modal open={loginOpen} onClose={() => setLoginOpen(false)} widthClass="max-w-lg">
+        <ArtistLoginForm onSuccess={() => setLoginOpen(false)} />
+      </Modal>
     </nav>
   );
 };

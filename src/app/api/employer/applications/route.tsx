@@ -3,6 +3,7 @@ import { NextResponse } from "next/server";
 import db from "@/lib/db";
 import { getEmployerFromCookies } from "@/lib/employerAuth";
 
+import type { RowDataPacket } from "mysql2";
 export const runtime = "nodejs";
 
 export async function GET() {
@@ -21,7 +22,7 @@ export async function GET() {
       );
     }
 
-    const [rows]: any = await db.query(
+    const [rows] = await db.query<RowDataPacket[]>(
       `
       SELECT
         a.id,

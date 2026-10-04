@@ -5,12 +5,22 @@ import { z, ZodError } from "zod";
 
 import db from "@/lib/db";
 import { getEmployerFromCookies } from "@/lib/employerAuth";
+import { contractExtendableSchema, contractMonthsSchema, disciplineSchema } from "@/lib/jobSchema";
+import { contractLabel, contractTypeFromMonths, disciplineLabel } from "@/lib/jobFormat";
+import type { Job } from "@/utils/Types";
+import type { RowDataPacket } from "mysql2";
 import {
   sendTelegramMessage,
   escapeTelegramHtml,
 } from "@/lib/telegram";
 
 export const runtime = "nodejs";
+
+type JobRow = RowDataPacket & Job & {
+  employer_id: number;
+  status: string;
+  apply_email: string | null;
+};
 
 type RouteParams = {
   params: Promise<{ id: string }>;
@@ -20,7 +30,7 @@ async function loadOwnedJob(
   employerId: number,
   jobId: number
 ) {
-  const [rows]: any = await db.query(
+  const [rows] = await db.query<JobRow[]>(
     `
     SELECT *
     FROM jobs
@@ -59,13 +69,11 @@ const updateSchema = z.object({
     .max(120)
     .optional(),
 
-  contract_type: z
-    .enum([
-      "short",
-      "medium",
-      "long",
-    ])
-    .optional(),
+  discipline: disciplineSchema.optional(),
+
+  contract_months: contractMonthsSchema.optional(),
+
+  contract_extendable: contractExtendableSchema.optional(),
 
   salary_from: z.coerce
     .number()
@@ -274,6 +282,16 @@ export async function PUT(
 
     const updates: string[] = [];
 
+    // Clearing the apply e-mail falls back to the employer's account e-mail
+    if (fields.apply_email === null) {
+      fields.apply_email = employer.email;
+    }
+
+    // Keep the old contract_type column in step with the new month count
+    if (fields.contract_months !== undefined) {
+      (fields as Record<string, unknown>).contract_type = contractTypeFromMonths(fields.contract_months);
+    }
+
     const values: (
       | string
       | number
@@ -394,8 +412,12 @@ export async function PUT(
             updated.location
           )}`,
 
+          `<b>Discipline:</b> ${escapeTelegramHtml(
+            disciplineLabel(updated.discipline) ?? "—"
+          )}`,
+
           `<b>Contract:</b> ${escapeTelegramHtml(
-            updated.contract_type
+            contractLabel(updated)
           )}`,
 
           `<b>Salary:</b> ${
@@ -438,8 +460,9 @@ export async function PUT(
       return NextResponse.json(
         {
           ok: false,
-          error:
-            "Validation error",
+          error: error.issues
+            .map((i) => `${i.path.join(".") || "form"}: ${i.message}`)
+            .join("; "),
           issues: error.issues,
         },
         {

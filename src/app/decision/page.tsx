@@ -2,7 +2,9 @@
 import db from "@/lib/db";
 import { Confirm } from "./Confirm";
 import MainLayout from "@/layouts/MainLayout";
+import MessagePage from "@/components/ds/MessagePage";
 
+import type { RowDataPacket } from "mysql2";
 export default async function DecisionPage(props: {
   searchParams: Promise<{ token?: string; action?: string }>;
 }) {
@@ -19,7 +21,7 @@ export default async function DecisionPage(props: {
     return <ErrorBlock text="Unknown action." />;
   }
 
-  const [rows]: any = await db.execute(
+  const [rows] = await db.execute<RowDataPacket[]>(
     `SELECT application_title, status
        FROM applications
       WHERE status_token = ?
@@ -48,34 +50,24 @@ export default async function DecisionPage(props: {
   );
 }
 
-/* -------- same UI blocks as before -------- */
+/* -------- status blocks -------- */
 
 function ErrorBlock({ text }: { text: string }) {
   return (
-    <Layout>
-      <h1>Error</h1>
-      <p>{text}</p>
-    </Layout>
+    <MainLayout>
+      <MessagePage kicker="Decision link" title={<>Link<br />not valid.</>}>
+        <p>{text}</p>
+      </MessagePage>
+    </MainLayout>
   );
 }
 
 function InfoBlock({ title, text }: { title: string; text: string }) {
   return (
-    <Layout>
-      <h1>{title}</h1>
-      <p>{text}</p>
-    </Layout>
-  );
-}
-
-function Layout({ children }: { children: React.ReactNode }) {
-  return (
-     <MainLayout>
-      <div className="min-h-[70vh] w-full flex items-center justify-center px-4">
-        <div className="w-full max-w-130 flex flex-col items-center text-center gap-3">
-          {children}
-        </div>
-      </div>
+    <MainLayout>
+      <MessagePage kicker="Decision link" title={title}>
+        <p>{text}</p>
+      </MessagePage>
     </MainLayout>
   );
 }

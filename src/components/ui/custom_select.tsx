@@ -23,55 +23,39 @@ export default function CustomSelect({
 }: Props)  {
   return (
     <div className="relative">
-      <label className="block text-m text-black mb-2">{label}</label>
+      {label && <label className="label mb-2 block text-ink/60">{label}</label>}
       <Select
         options={options}
         menuPortalTarget={typeof window !== 'undefined' ? document.body : null}
         menuPosition="absolute"
         placeholder={placeholder}
         onChange={(selected) => selected && onChange(selected.value)}
-        className="rounded-3xl z-0 bg-white/20 text-black placeholder-black border-b border-black  text-center"
+        className="z-0 text-ink"
         styles={{
           control: (base, state) => ({
             ...base,
-            backgroundColor: "rgba(255, 255, 255, 0.2)",
-            borderRadius: "35px",
-            border: "none",
-            padding: "0.3rem 0.75rem",
-            boxShadow: state.isFocused ? "0 0 0 2px #fb923c" : "none",
-            color: "white",
+            backgroundColor: "#fff",
+            borderRadius: 0,
+            border: "1.5px solid var(--color-ink)",
+            padding: "0.35rem 0.5rem",
+            boxShadow: state.isFocused ? "4px 4px 0 0 var(--color-ink)" : "none",
+            "&:hover": { borderColor: "var(--color-ink)" },
           }),
-          placeholder: (base) => ({
-            ...base,
-            color: "black",
-          }),
-          singleValue: (base) => ({
-            ...base,
-            color: "black",
-          }),
-          input: (base) => ({
-            ...base,
-            color: "black",
-          }),
-          menuPortal: (base) => ({
-            ...base,
-            zIndex: 100,
-          }),
+          placeholder: (base) => ({ ...base, color: "rgb(17 17 17 / 0.4)" }),
+          singleValue: (base) => ({ ...base, color: "var(--color-ink)" }),
+          input: (base) => ({ ...base, color: "var(--color-ink)" }),
+          menuPortal: (base) => ({ ...base, zIndex: 10000 }),
           menu: (base) => ({
             ...base,
-            backgroundColor: "rgba(30,30,30, 0.95)",
-            borderRadius: "0.5rem",
-            color: "black",
-            textAlign: "center"
+            backgroundColor: "var(--color-paper)",
+            borderRadius: 0,
+            border: "1.5px solid var(--color-ink)",
+            boxShadow: "6px 6px 0 0 var(--color-ink)",
           }),
           option: (base, state) => ({
             ...base,
-            backgroundColor: state.isSelected
-              ? "#fb923c"
-              : state.isFocused
-              ? "rgba(251, 146, 60, 0.2)"
-              : "transparent",
-            color: state.isSelected ? "black" : "white",
+            backgroundColor: state.isSelected ? "var(--color-ink)" : state.isFocused ? "var(--color-lime)" : "transparent",
+            color: state.isSelected ? "var(--color-paper)" : "var(--color-ink)",
             cursor: "pointer",
           }),
         }}

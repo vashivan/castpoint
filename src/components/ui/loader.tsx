@@ -6,7 +6,7 @@ export default function CastpointLoader() {
   return (
     <div className="w-full flex items-center justify-center">
       <motion.div
-        className="w-6 h-6 border-4 border-black border-t-transparent rounded-full"
+        className="h-6 w-6 border-4 border-ink border-t-lime"
         animate={{ rotate: 360 }}
         transition={{ repeat: Infinity, duration: 1, ease: "linear" }}
         />

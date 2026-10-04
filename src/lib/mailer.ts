@@ -8,7 +8,7 @@ type MailAttachment = {
 
 export async function sendEmployerEmail(params: {
   to: string;
-  job: any;
+  job: { title: string; company_name?: string | null; location?: string | null };
   artist_public: { full_name: string };
   artist_promo_url?: string;
   cover_message?: string;
@@ -28,7 +28,7 @@ export async function sendEmployerEmail(params: {
   const subject = `CASTPOINT · Application — ${job.title}`;
   const from = process.env.EMAIL_USER;
 
-  const safe = (v: any) =>
+  const safe = (v: unknown) =>
     String(v ?? "")
       .replace(/&/g, "&amp;")
       .replace(/</g, "&lt;")

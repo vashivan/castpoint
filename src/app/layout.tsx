@@ -1,12 +1,12 @@
 import './globals.css';
 import { Metadata } from 'next';
 import React from 'react';
-import { Montserrat } from 'next/font/google';
+import { Archivo, Inter } from 'next/font/google';
 import AuthContextProvider from '../context/AuthContextProvider';
 import RouteLoader from '../components/ui/RouterLoader';
-import { SpeedInsights } from "@vercel/speed-insights/next"
 
-const space = Montserrat({ subsets: ['latin'], weight: ['400', '700'] });
+const archivo = Archivo({ subsets: ['latin'], axes: ['wdth'], variable: '--font-archivo' });
+const inter = Inter({ subsets: ['latin'], variable: '--font-inter' });
 
 export const metadata: Metadata = {
   title: 'Castpoint – Find Your Contract',
@@ -18,8 +18,8 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en">
-      <body className={`${space.className} border-primary/20`}>
+    <html lang="en" className={`${archivo.variable} ${inter.variable}`}>
+      <body className="bg-paper text-ink font-sans">
         <RouteLoader />
         <AuthContextProvider>
           {children}

@@ -3,6 +3,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import db from "@/lib/db";
 
+import type { ResultSetHeader } from "mysql2";
 export const runtime = "nodejs";
 
 type TelegramUpdate = {
@@ -196,8 +197,8 @@ export async function POST(req: NextRequest) {
       entity === "employer" &&
       action === "approve"
     ) {
-      const [result]: any =
-        await db.execute(
+      const [result] =
+        await db.execute<ResultSetHeader>(
           `
           UPDATE employers
           SET
@@ -261,8 +262,8 @@ export async function POST(req: NextRequest) {
       entity === "employer" &&
       action === "block"
     ) {
-      const [result]: any =
-        await db.execute(
+      const [result] =
+        await db.execute<ResultSetHeader>(
           `
           UPDATE employers
           SET
@@ -305,8 +306,8 @@ export async function POST(req: NextRequest) {
       entity === "job" &&
       action === "approve"
     ) {
-      const [result]: any =
-        await db.execute(
+      const [result] =
+        await db.execute<ResultSetHeader>(
           `
           UPDATE jobs
           SET
@@ -372,8 +373,8 @@ export async function POST(req: NextRequest) {
       entity === "job" &&
       action === "reject"
     ) {
-      const [result]: any =
-        await db.execute(
+      const [result] =
+        await db.execute<ResultSetHeader>(
           `
           UPDATE jobs
           SET

@@ -1,13 +1,6 @@
-'use client'
+import { redirect } from "next/navigation";
 
-import MainLayout from "../../layouts/MainLayout";
-import NewVacancy from "../../components/layout/NewVacancy";
-import React from 'react';
-
+// The old public job form moved into the employer area.
 export default function Page() {
-  return (
-    <MainLayout>
-      <NewVacancy />
-    </MainLayout>
-  )
-};
+  redirect("/employer/jobs/new");
+}

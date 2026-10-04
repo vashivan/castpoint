@@ -27,34 +27,35 @@ export default function EmployersLanding() {
   };
 
   return (
-    <main className="max-w-md h-[100vh] flex flex-col justify-center mx-auto p-6 pt-25">
-      <h1 className="text-2xl font-semibold">Castpoint for Employers</h1>
-      <p className="text-black/70 mt-2">Join the waitlist to get early access.</p>
+    <main className="mx-auto max-w-xl px-4 py-20">
+      <p className="label">Castpoint for employers</p>
+      <h1 className="font-display mt-6 text-[clamp(40px,8vw,96px)]">Join the<br />waitlist.</h1>
+      <p className="mt-4 text-[17px] text-ink/70">Get early access to new employer features.</p>
 
-      <div className="mt-6 grid gap-3">
+      <div className="mt-10 grid gap-4">
         <input
           value={company}
           onChange={e=>setCompany(e.target.value)}
           placeholder="Company name"
-          className="w-full rounded-xl border px-4 py-3"
+          className="w-full border-[1.5px] border-ink bg-white px-4 py-3 text-[15px] outline-none placeholder:text-ink/40 focus:shadow-[4px_4px_0_0_var(--color-ink)]"
         />
         <input
           value={email}
           onChange={e=>setEmail(e.target.value)}
           placeholder="Email"
           type="email"
-          className="w-full rounded-xl border px-4 py-3"
+          className="w-full border-[1.5px] border-ink bg-white px-4 py-3 text-[15px] outline-none placeholder:text-ink/40 focus:shadow-[4px_4px_0_0_var(--color-ink)]"
         />
         <button
           onClick={submit}
-          className="rounded-xl bg-black text-white py-3 font-medium"
+          className="bg-ink px-6 py-4 text-[12px] font-bold uppercase tracking-[0.1em] text-paper shadow-[6px_6px_0_0_var(--color-pink)] cursor-pointer"
         >
           Join Waitlist
         </button>
       </div>
 
-      {status === 'ok' && <p className="mt-3 text-green-600">{msg}</p>}
-      {status === 'err' && <p className="mt-3 text-red-600">{msg}</p>}
+      {status === 'ok' && <p className="mt-4 border-[1.5px] border-ink bg-lime px-4 py-3 font-semibold">{msg}</p>}
+      {status === 'err' && <p className="mt-4 border-[1.5px] border-ink bg-pink px-4 py-3 font-semibold">{msg}</p>}
     </main>
   );
 }

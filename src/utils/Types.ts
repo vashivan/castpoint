@@ -58,4 +58,9 @@ export type Job = {
   currency?: string;
   description?: string;
   is_active: number;
+  /** One of DISCIPLINES (lib/jobFormat); null on jobs created before it existed. */
+  discipline?: string | null;
+  contract_months?: number | null;
+  /** 1 when the contract can be extended ("12+ months"). */
+  contract_extendable?: number | boolean | null;
 };

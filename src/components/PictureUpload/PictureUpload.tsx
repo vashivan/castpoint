@@ -75,7 +75,7 @@ export default function PictureUploader({ onChange, pic_url, pic_public_id }: Pr
 
   return (
     <div className="flex flex-col items-center gap-4">
-      <p className="text-white text-l">Upload your profile picture here:</p>
+      <p className="label text-paper/70">Profile picture</p>
       <input
         type="file"
         accept="image/*"
@@ -87,21 +87,22 @@ export default function PictureUploader({ onChange, pic_url, pic_public_id }: Pr
       <button
         type="button"
         onClick={() => fileInputRef.current?.click()}
-        className="px-4 py-2 bg-gray-400/60 text-white rounded-md shadow hover:bg-gray-400/80 cursor-pointer transition"
+        className="border-[1.5px] border-paper bg-lime px-5 py-3 text-[12px] font-bold uppercase tracking-[0.1em] text-ink hover:shadow-[4px_4px_0_0_var(--color-paper)] cursor-pointer transition-shadow"
       >
         {isLoading ? <p>Uploading...</p> : <p>Upload Photo</p>}
       </button>
 
       {imageUrl && (
         <div className="text-center">
-          <p className="text-sm text-white mb-2">Uploaded image:</p>
+          <p className="label mb-2 text-paper/70">Uploaded image</p>
+          {/* eslint-disable-next-line @next/next/no-img-element -- Cloudinary URLs, no next/image domain config */}
           <img
             src={imageUrl}
             alt="Uploaded"
-            className="w-48 h-48 object-cover rounded-lg shadow"
+            className="h-48 w-48 border-[1.5px] border-paper object-cover"
           />
           <button
-            className="mt-3 px-3 py-1 text-red-500 bg-red-300 rounded-md cursor-pointer"
+            className="label mt-3 border-[1.5px] border-paper bg-pink px-3 py-2 text-ink cursor-pointer"
             onClick={() => deletePreviousImage(publicId)}
           >
             Delete

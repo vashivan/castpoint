@@ -1,13 +1,13 @@
 'use client'
 
 import MainLayout from "@/layouts/MainLayout";
-import EmployerDashboard from "@/components/employer/EmployerDashboard";
+import EmployerHome from "@/components/employer/EmployerHome";
 import React from 'react';
 
 export default function Page() {
   return (
     <MainLayout>
-      <EmployerDashboard />
+      <EmployerHome />
     </MainLayout>
   )
 };

@@ -1,23 +1,23 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { useRouter } from "next/navigation";
 import dynamic from "next/dynamic";
-import { getNames } from "country-list";
-import TextInput from "../ui/input";
-import { AnimatePresence, motion } from "framer-motion";
-import TextArea from "../ui/textarea";
-import PictureUploader from "../PictureUpload/PictureUpload";
 import Link from "next/link";
+import { getNames } from "country-list";
+
+import TextInput from "../ui/input";
+import TextArea from "../ui/textarea";
 import DateInput from "../ui/date_input";
-import CastpointLoader from "../ui/loader";
+import PictureUploader from "../PictureUpload/PictureUpload";
+import AuthShell from "../auth/AuthShell";
+import { Button } from "../ds/Button";
+import { normalizeFacebook, normalizeInstagram } from "@/lib/socials";
+import { cn } from "@/lib/utils";
 
 const NoSSRSelector = dynamic(() => import("../ui/custom_select"), { ssr: false });
 
-const countries = getNames().map((country) => ({
-  label: country,
-  value: country,
-}));
+const countries = getNames().map((country) => ({ label: country, value: country }));
 
 const roles = [
   { value: "dancer", label: "Dancer" },
@@ -42,93 +42,14 @@ const roles = [
   { value: "other", label: "Other" },
 ];
 
-// --------------------
-// Normalizers
-// --------------------
-function normalizeInstagram(input?: string) {
-  const raw = (input || "").trim();
-  if (!raw) return "";
+const STEPS = ["Basics", "Biography", "Experience", "Socials", "Photo & video"];
 
-  let s = raw.replace(/\s+/g, "");
-
-  // allow "www.instagram.com/..." without protocol
-  if (s.startsWith("www.")) s = `https://${s}`;
-
-  // @username
-  if (s.startsWith("@")) s = s.slice(1);
-
-  // url cases
-  const isUrl = /^https?:\/\//i.test(s);
-  if (isUrl) {
-    try {
-      const u = new URL(s);
-      const host = u.hostname.replace(/^m\./, "").toLowerCase();
-
-      if (!host.includes("instagram.com")) return ""; // not instagram
-      const parts = u.pathname.split("/").filter(Boolean);
-      const first = parts[0] || "";
-
-      // ignore post/reel/story links etc.
-      const banned = new Set(["p", "reel", "tv", "stories", "explore", "accounts", "about"]);
-      if (!first || banned.has(first.toLowerCase())) return "";
-
-      const username = first.replace(/^@/, "");
-      if (!/^[A-Za-z0-9._]{1,30}$/.test(username)) return "";
-      return `${username}`;
-    } catch {
-      return "";
-    }
-  }
-
-  // "instagram.com/username" without protocol
-  if (/^(?:m\.)?instagram\.com\//i.test(s)) {
-    return normalizeInstagram(`https://${s}`);
-  }
-
-  // username only
-  const username = s.replace(/^@/, "");
-  if (!/^[A-Za-z0-9._]{1,30}$/.test(username)) return "";
-  return `${username}`;
-}
-
-// optional, light facebook normalize
-function normalizeFacebook(input?: string) {
-  const raw = (input || "").trim();
-  if (!raw) return "";
-
-  let s = raw.replace(/\s+/g, "");
-  if (s.startsWith("www.")) s = `https://${s}`;
-
-  // already url
-  if (/^https?:\/\//i.test(s)) {
-    try {
-      const u = new URL(s);
-      const host = u.hostname.replace(/^m\./, "").toLowerCase();
-      if (!host.includes("facebook.com") && !host.includes("fb.com")) return "";
-      // keep clean canonical
-      const path = u.pathname.replace(/\/+$/, "");
-      return `https://facebook.com${path}`;
-    } catch {
-      return "";
-    }
-  }
-
-  // "facebook.com/xxx" without protocol
-  if (/^(?:m\.)?(?:facebook\.com|fb\.com)\//i.test(s)) {
-    return normalizeFacebook(`https://${s}`);
-  }
-
-  // username-ish => turn into url
-  // (fb usernames can be more permissive, keep it simple)
-  return `https://facebook.com/${s.replace(/^@/, "")}`;
-}
-
+/** Five-step artist sign-up wizard (same on mobile and desktop). */
 export default function RegisterPage() {
   const router = useRouter();
   const [step, setStep] = useState(0);
 
   const [form, setForm] = useState({
-    name: "",
     first_name: "",
     second_name: "",
     nationality: "",
@@ -139,7 +60,7 @@ export default function RegisterPage() {
     country_of_birth: "",
     sex: "",
     role: "",
-    date_of_birth: Date(), // leave as-is in your project (but ideally should be "" or new Date())
+    date_of_birth: "",
     height: "",
     weight: "",
     bust: "",
@@ -160,62 +81,32 @@ export default function RegisterPage() {
   const [message, setMessage] = useState("");
   const [loading, setLoading] = useState(false);
 
-  useEffect(() => {
-    console.log(form);
-  }, [form]);
-
-  const nextStep = () => setStep((prev) => Math.min(prev + 1, 4));
-  const prevStep = () => setStep((prev) => Math.max(prev - 1, 0));
-
-  const trimFunction = (val: string) => val.trim();
-
-  const stepVariants = {
-    initial: { opacity: 0, x: 50 },
-    animate: { opacity: 1, x: 0 },
-    exit: { opacity: 0, x: -50 },
-  };
+  const set = (key: keyof typeof form) => (val: string) => setForm((p) => ({ ...p, [key]: val }));
+  const onlyDigits = (key: keyof typeof form) => (val: string) => set(key)(val.replace(/[^\d]/g, ""));
+  const trimmed = (key: keyof typeof form) => (val: string) => set(key)(val.trim());
 
   const isStepValid = () => {
-    const hasValue = (v: string) => v.trim().length > 0;
-
+    const has = (v: string) => v.trim().length > 0;
     if (step === 0) {
       return (
-        hasValue(form.first_name) &&
-        hasValue(form.second_name) &&
-        hasValue(form.country) &&
-        hasValue(form.date_of_birth) &&
-        hasValue(form.sex) &&
-        hasValue(form.height) &&
-        hasValue(form.weight) &&
-        hasValue(form.bust) &&
-        hasValue(form.waist) &&
-        hasValue(form.hips) &&
-        hasValue(form.role) &&
-        hasValue(form.email) &&
-        hasValue(form.password)
-      );
+        ["first_name", "second_name", "country", "date_of_birth", "sex", "height", "weight", "bust", "waist", "hips", "role", "email", "password"] as const
+      ).every((k) => has(form[k])) && form.password.length >= 8 && form.password === form.password2;
     }
-    if (step === 1) return true;
-    if (step === 2) return true;
-    if (step === 3) return form.instagram || form.facebook;
-    if (step === 4) return form.video_url && form.pic_url;
-    return false;
+    if (step === 3) return Boolean(form.instagram || form.facebook);
+    if (step === 4) return Boolean(form.video_url && form.pic_url);
+    return true;
   };
 
-  const onlyDigits = (v: string) => v.replace(/[^\d]/g, "");
-
   const checkPassword = () => {
-    if (!form.password && !form.password2) {
-      setMessage("");
-      return;
-    }
+    if (!form.password && !form.password2) return setMessage("");
     if (form.password.length < 8) setMessage("Password must be at least 8 characters");
-    else if (form.password !== form.password2) setMessage("Passwords do not match");
+    else if (form.password2 && form.password !== form.password2) setMessage("Passwords do not match");
     else setMessage("");
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (step < STEPS.length - 1) return;
     setMessage("");
 
     if (form.password !== form.password2) {
@@ -223,41 +114,13 @@ export default function RegisterPage() {
       return;
     }
 
-    // Normalize socials one last time before sending
-    const ig = normalizeInstagram(form.instagram);
-    const fb = normalizeFacebook(form.facebook);
-
     setLoading(true);
-
+    const { password2: _p2, ...rest } = form;
     const payload = {
+      ...rest,
       name: `${form.first_name} ${form.second_name}`.trim(),
-      first_name: form.first_name,
-      second_name: form.second_name,
-      sex: form.sex,
-      country: form.country,
-      country_of_birth: form.country_of_birth,
-      nationality: form.nationality,
-      phone: form.phone,
-      role: form.role,
-      date_of_birth: form.date_of_birth,
-      height: form.height,
-      weight: form.weight,
-      bust: form.bust,
-      waist: form.waist,
-      hips: form.hips,
-      skills: form.skills,
-      video_url: form.video_url,
-      resume_url: form.resume_url,
-      pic_url: form.pic_url,
-      pic_public_id: form.pic_public_id,
-      biography: form.biography,
-      experience: form.experience,
-      email: form.email,
-      password: form.password,
-
-      // normalized
-      instagram: ig, // store as "@username"
-      facebook: fb,  // store as canonical url
+      instagram: normalizeInstagram(form.instagram),
+      facebook: normalizeFacebook(form.facebook),
     };
 
     try {
@@ -266,381 +129,172 @@ export default function RegisterPage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
       });
-
       const data = await res.json();
       if (!res.ok) throw new Error(data?.error || "Registration failed");
-
       router.push("/registration-success");
     } catch (err) {
       console.error(err);
-      setMessage("Registration failed");
+      setMessage(err instanceof Error ? err.message : "Registration failed");
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <section className="min-h-screen px-6 pt-20 flex flex-col items-center justify-center text-center bg-transparent">
-      <h1 className="text-3xl md:text-3xl font-bol text-black uppercase bg-clip-text mb-10">
-        Create Your Artist Account
-      </h1>
+    <AuthShell
+      tone="pink"
+      kicker="Free artist profile"
+      title={<>Create<br />your<br />profile.</>}
+      aside={
+        <span className="text-ink">
+          One profile for every application: photos, showreel, measurements and experience, in the format casting
+          directors ask for. Already have one? <Link href="/login" className="font-bold underline">Sign in</Link>.
+        </span>
+      }
+      wide
+    >
+      {/* Step indicator */}
+      <ol className="grid grid-cols-5 gap-1.5">
+        {STEPS.map((s, i) => (
+          <li key={s}>
+            <div className={cn("h-1.5", i <= step ? "bg-ink" : "bg-ink/15")} />
+            <p className={cn("label mt-2 hidden sm:block", i === step ? "text-ink" : "text-ink/40")}>{s}</p>
+          </li>
+        ))}
+      </ol>
+      <p className="label mt-6 text-ink/60">Step {step + 1} of {STEPS.length}</p>
+      <p className="font-display mt-2 text-[clamp(28px,3.4vw,44px)]">{STEPS[step]}</p>
 
-      <div className="w-full md:w-120 p-0.5 rounded-3xl">
-        <form
-          onSubmit={handleSubmit}
-          className="w-full bg-white rounded-3xl p-8 shadow-xl overflow-hidden relative"
-        >
-          <AnimatePresence mode="wait">
-            {/* Basic info */}
-            {step === 0 && (
-              <motion.div
-                key="step-0"
-                variants={stepVariants}
-                initial="initial"
-                animate="animate"
-                exit="exit"
-                transition={{ duration: 0.4 }}
-                className="space-y-6"
-              >
-                <TextInput
-                  type="text"
-                  label="First name"
-                  name="name"
-                  value={form.first_name}
-                  onChange={(val) => setForm({ ...form, first_name: val })}
-                  placeholder="Your name"
-                />
-
-                <TextInput
-                  type="text"
-                  label="Second name"
-                  name="name"
-                  value={form.second_name}
-                  onChange={(val) => setForm({ ...form, second_name: val })}
-                  placeholder="Your second name"
-                />
-
-                <DateInput
-                  label="Date of Birth"
-                  name="date_of_birth"
-                  placeholder="YYYY-MM-DD"
-                  value={form.date_of_birth}
-                  onChange={(val) => setForm({ ...form, date_of_birth: val })}
-                />
-
-                <TextInput
-                  type="email"
-                  label="Email"
-                  name="email"
-                  value={form.email}
-                  onChange={(val) => setForm({ ...form, email: trimFunction(val) })}
-                  placeholder="Your email"
-                />
-
-                <TextInput
-                  type="password"
-                  label="Password"
-                  name="password"
-                  value={form.password}
-                  onChange={(val) => setForm({ ...form, password: trimFunction(val) })}
-                  placeholder="Password"
-                  onBlur={checkPassword}
-                />
-
-                <TextInput
-                  type="password"
-                  label="Password"
-                  name="password2"
-                  value={form.password2}
-                  onChange={(val) => setForm({ ...form, password2: trimFunction(val) })}
-                  placeholder="Repeat password"
-                  onBlur={checkPassword}
-                />
-
-                {message && <p className="text-red-600 text-sm">{message}</p>}
-
-                <NoSSRSelector
-                  label="Sex"
-                  placeholder="Choose your gender"
-                  options={[
-                    { value: "m", label: "Male" },
-                    { value: "f", label: "Female" },
-                  ]}
-                  onChange={(val) => setForm({ ...form, sex: val })}
-                />
-
-                <NoSSRSelector
-                  label="Country"
-                  placeholder="Where are you from"
-                  options={countries}
-                  onChange={(val) => setForm({ ...form, country: val })}
-                />
-
-                <NoSSRSelector
-                  label="Role"
-                  placeholder="Choose your role"
-                  options={roles}
-                  onChange={(val) => setForm({ ...form, role: val })}
-                />
-
-                <TextInput
-                  type="number"
-                  label="Height"
-                  name="height"
-                  value={form.height}
-                  onChange={(val) => setForm({ ...form, height: onlyDigits(val)})}
-                  placeholder="cm"
-                />
-
-                <TextInput
-                  type="number"
-                  label="Weight"
-                  name="weight"
-                  value={form.weight}
-                  onChange={(val) => setForm({ ...form, weight: onlyDigits(val) })}
-                  placeholder="kg"
-                />
-
-                <TextInput
-                  type="number"
-                  label="Bust"
-                  name="bust"
-                  value={form.bust}
-                  onChange={(val) => setForm({ ...form, bust: onlyDigits(val) })}
-                  placeholder="cm"
-                />
-
-                <TextInput
-                  type="nubmer"
-                  label="Waist"
-                  name="waist"
-                  value={form.waist}
-                  onChange={(val) => setForm({ ...form, waist: onlyDigits(val) })}
-                  placeholder="cm"
-                />
-
-                <TextInput
-                  type="number"
-                  label="Hips"
-                  name="hips"
-                  value={form.hips}
-                  onChange={(val) => setForm({ ...form, hips: onlyDigits(val) })}
-                  placeholder="cm"
-                />
-              </motion.div>
-            )}
-
-            {/* Biography */}
-            {step === 1 && (
-              <motion.div
-                key="step-1"
-                variants={stepVariants}
-                initial="initial"
-                animate="animate"
-                exit="exit"
-                transition={{ duration: 0.4 }}
-                className="space-y-6"
-              >
-                <TextArea
-                  label="Biography"
-                  value={form.biography}
-                  rows={10}
-                  placeholder="Do not be shy, use all oportunities to tell about you."
-                  text={`🎯 It’s time to get to know you better!
-Tell us a bit more about yourself — not just the basics. Whether it's your favorite projects, hobbies you love, or what drives you every day — we’re all ears. Let’s go beyond the surface and see what makes you you. 💬`}
-                  onChange={(val) => setForm({ ...form, biography: val })}
-                />
-
-                <p className="text-white text-sm">* you can skip this step and add this info later</p>
-              </motion.div>
-            )}
-
-            {/* Experience */}
-            {step === 2 && (
-              <motion.div
-                key="step-2"
-                variants={stepVariants}
-                initial="initial"
-                animate="animate"
-                exit="exit"
-                transition={{ duration: 0.4 }}
-                className="space-y-6"
-              >
-                <TextArea
-                  label="Experience"
-                  rows={15}
-                  placeholder="Share your experience. For example: 'Cirque du Soleil (2019–2022)', 'Royal Caribbean (2017–2019)' etc."
-                  value={form.experience}
-                  text="Share a short summary of your work experience. Just a couple of sentences can give us a clear picture of your skills and background."
-                  onChange={(val) => setForm({ ...form, experience: val })}
-                />
-
-                <p className="text-white text-sm">* you can skip this step and add this info later</p>
-              </motion.div>
-            )}
-
-            {/* Keep in touch */}
-            {step === 3 && (
-              <motion.div
-                key="step-3"
-                variants={stepVariants}
-                initial="initial"
-                animate="animate"
-                exit="exit"
-                transition={{ duration: 0.4 }}
-                className="space-y-6"
-              >
-                <p className="text-black text-xl">
-                  Almost done &#128553; <br /> Just two steps left
-                </p>
-                <p className="text-black text-sm mb-3">
-                  Let’s keep in touch — drop your social media links here!
-                </p>
-
-                <TextInput
-                  label="Instagram"
-                  name="instagram"
-                  placeholder="@nickname or link"
-                  value={form.instagram}
-                  onChange={(val) => setForm({ ...form, instagram: val })}
-                  onBlur={() => {
-                    const normalized = normalizeInstagram(form.instagram);
-                    // якщо юзер вставив крінж-лінк на пост/рілс — краще показати message
-                    if (form.instagram.trim() && !normalized) {
-                      setMessage("Instagram: please paste your profile (@username or profile link)");
-                      return;
-                    }
-                    setMessage("");
-                    setForm((prev) => ({ ...prev, instagram: normalized }));
-                  }}
-                />
-                {!!form.instagram && (
-                  <p className="text-xs text-gray-500">
-                    Saved as: <span className="font-semibold">{form.instagram}</span>
-                  </p>
-                )}
-
-                <TextInput
-                  label="Facebook"
-                  name="facebook"
-                  placeholder="Facebook profile link"
-                  value={form.facebook}
-                  onChange={(val) => setForm({ ...form, facebook: val })}
-                  onBlur={() => {
-                    const normalized = normalizeFacebook(form.facebook);
-                    if (form.facebook.trim() && !normalized) {
-                      setMessage("Facebook: please paste your profile link or username");
-                      return;
-                    }
-                    setMessage("");
-                    setForm((prev) => ({ ...prev, facebook: normalized }));
-                  }}
-                />
-              </motion.div>
-            )}
-
-            {/* Photo/video */}
-            {step === 4 && (
-              <motion.div
-                key="step-4"
-                variants={stepVariants}
-                initial="initial"
-                animate="animate"
-                exit="exit"
-                transition={{ duration: 0.4 }}
-                className="space-y-6"
-              >
-                <p className="text-black text-xl">Last step &#128519;</p>
-                <p className="text-balck text-sm mb-3">
-                  Paste your promo video link (from any streaming service) and upload photo of yourself.
-                </p>
-
-                <TextInput
-                  label="Promo-video"
-                  name="video_url"
-                  placeholder="Put link here"
-                  value={form.video_url}
-                  onChange={(val) => setForm({ ...form, video_url: val })}
-                />
-
-                <TextInput
-                  label="Resume link"
-                  name="resume_url"
-                  placeholder="Put link here"
-                  value={form.resume_url}
-                  onChange={(val) => setForm({ ...form, resume_url: val })}
-                />
-
-                <div className="border rounded-2xl border-black pb-4 flex flex-col items-center min-h-100">
-                  <PictureUploader
-                    pic_url={form.pic_url}
-                    pic_public_id={form.pic_public_id}
-                    onChange={({ url, public_id }) => {
-                      setForm({
-                        ...form,
-                        pic_url: url,
-                        pic_public_id: public_id,
-                      });
-                    }}
-                  />
+      <form onSubmit={handleSubmit} className="mt-8">
+        {step === 0 && (
+          <div className="grid gap-5 sm:grid-cols-2">
+            <div><TextInput label="First name" name="first_name" value={form.first_name} onChange={set("first_name")} placeholder="Your name" /></div>
+            <div><TextInput label="Second name" name="second_name" value={form.second_name} onChange={set("second_name")} placeholder="Your second name" /></div>
+            <div><DateInput label="Date of birth" name="date_of_birth" value={form.date_of_birth} onChange={set("date_of_birth")} /></div>
+            <div><TextInput type="email" label="Email" name="email" autoComplete="email" value={form.email} onChange={trimmed("email")} placeholder="you@example.com" /></div>
+            <div><TextInput type="password" label="Password" name="password" autoComplete="new-password" value={form.password} onChange={trimmed("password")} placeholder="At least 8 characters" onBlur={checkPassword} /></div>
+            <div><TextInput type="password" label="Repeat password" name="password2" autoComplete="new-password" value={form.password2} onChange={trimmed("password2")} placeholder="Repeat password" onBlur={checkPassword} /></div>
+            <NoSSRSelector label="Sex" placeholder="Choose" options={[{ value: "m", label: "Male" }, { value: "f", label: "Female" }]} onChange={set("sex")} />
+            <NoSSRSelector label="Country" placeholder="Where are you from" options={countries} onChange={set("country")} />
+            <div className="sm:col-span-2"><NoSSRSelector label="Role" placeholder="Choose your role" options={roles} onChange={set("role")} /></div>
+            <div className="grid grid-cols-3 gap-3 sm:col-span-2 sm:grid-cols-5">
+              {(["height", "weight", "bust", "waist", "hips"] as const).map((k) => (
+                <div key={k}>
+                  <TextInput type="number" label={k} name={k} value={form[k]} onChange={onlyDigits(k)} placeholder={k === "weight" ? "kg" : "cm"} />
                 </div>
-
-                <div className="flex items-center gap-2 text-sm mt-4 w-100">
-                  <input type="checkbox" id="agreement" className="accent-pink-600 w-4 h-4" required />
-                  <label htmlFor="agreement" className="text-gray-700">
-                    I agree to the{" "}
-                    <Link href="/agreement" target="_blank" className="font-semibold text-pink-800 underline">
-                      terms and conditions
-                    </Link>
-                  </label>
-                </div>
-              </motion.div>
-            )}
-          </AnimatePresence>
-
-          {/* Buttons */}
-          <div className="flex justify-between gap-4 mt-8">
-            {step > 0 && (
-              <button
-                type="button"
-                onClick={prevStep}
-                className="w-full py-2 rounded-xl border text-black hover:bg-gray-300 cursor-pointer"
-              >
-                Back
-              </button>
-            )}
-
-            {step < 4 ? (
-              <button
-                type="button"
-                onClick={nextStep}
-                disabled={!isStepValid()}
-                className={`w-full py-2 text-white font-semibold rounded-xl transition
-                  ${!isStepValid()
-                    ? "bg-gray-500 cursor-not-allowed"
-                    : "bg-gradient-to-r from-orange-400 to-pink-500 hover:opacity-90 cursor-pointer"
-                  }`}
-              >
-                Next
-              </button>
-            ) : (
-              <button
-                type="submit"
-                disabled={!isStepValid()}
-                className={`w-full py-2 text-white font-semibold rounded-xl transition
-                  ${!isStepValid()
-                    ? "bg-gray-500 cursor-not-allowed"
-                    : "bg-gradient-to-r from-green-500 to-yellow-300 hover:opacity-90 cursor-pointer"
-                  }`}
-              >
-                {loading ? <CastpointLoader /> : <p>Finish</p>}
-              </button>
-            )}
+              ))}
+            </div>
           </div>
+        )}
 
-          {message && <p className="text-yellow-100 text-sm mt-4">{message}</p>}
-        </form>
-      </div>
-    </section>
+        {step === 1 && (
+          <>
+            <TextArea
+              label="Biography"
+              value={form.biography}
+              rows={10}
+              placeholder="Do not be shy, use every opportunity to tell about you."
+              text="It's time to get to know you better. Your favourite projects, the hobbies you love, what drives you every day. Go beyond the basics."
+              onChange={set("biography")}
+            />
+            <p className="label mt-3 text-ink/50">You can skip this step and add it later</p>
+          </>
+        )}
+
+        {step === 2 && (
+          <>
+            <TextArea
+              label="Experience"
+              rows={12}
+              placeholder="e.g. Cirque du Soleil (2019–2022), Royal Caribbean (2017–2019)"
+              value={form.experience}
+              text="A short summary of your work experience. A couple of sentences give a clear picture of your skills and background."
+              onChange={set("experience")}
+            />
+            <p className="label mt-3 text-ink/50">You can skip this step and add it later</p>
+          </>
+        )}
+
+        {step === 3 && (
+          <div className="space-y-5">
+            <p className="text-[15px] text-ink/70">Almost done. Drop at least one social link so employers can see your work.</p>
+            <div>
+              <TextInput
+                label="Instagram"
+                name="instagram"
+                placeholder="@nickname or profile link"
+                value={form.instagram}
+                onChange={set("instagram")}
+                onBlur={() => {
+                  const normalized = normalizeInstagram(form.instagram);
+                  if (form.instagram.trim() && !normalized) return setMessage("Instagram: please paste your profile (@username or profile link)");
+                  setMessage("");
+                  set("instagram")(normalized);
+                }}
+              />
+              {!!form.instagram && <p className="mt-2 text-xs text-ink/60">Saved as: <span className="font-semibold">{form.instagram}</span></p>}
+            </div>
+            <div>
+              <TextInput
+                label="Facebook"
+                name="facebook"
+                placeholder="Facebook profile link"
+                value={form.facebook}
+                onChange={set("facebook")}
+                onBlur={() => {
+                  const normalized = normalizeFacebook(form.facebook);
+                  if (form.facebook.trim() && !normalized) return setMessage("Facebook: please paste your profile link or username");
+                  setMessage("");
+                  set("facebook")(normalized);
+                }}
+              />
+            </div>
+          </div>
+        )}
+
+        {step === 4 && (
+          <div className="space-y-5">
+            <p className="text-[15px] text-ink/70">Last step. Paste your promo video link (any streaming service) and upload a photo of yourself.</p>
+            <div className="grid gap-5 sm:grid-cols-2">
+              <div><TextInput label="Promo video" name="video_url" placeholder="https://…" value={form.video_url} onChange={set("video_url")} /></div>
+              <div><TextInput label="Resume link (optional)" name="resume_url" placeholder="https://…" value={form.resume_url} onChange={set("resume_url")} /></div>
+            </div>
+            <div className="border-[1.5px] border-ink bg-panel p-6">
+              <PictureUploader
+                pic_url={form.pic_url}
+                pic_public_id={form.pic_public_id}
+                onChange={({ url, public_id }) => setForm((p) => ({ ...p, pic_url: url, pic_public_id: public_id }))}
+              />
+            </div>
+            <label className="flex cursor-pointer items-center gap-3 text-[14px]">
+              <input type="checkbox" id="agreement" className="h-4 w-4 accent-ink" required />
+              <span>
+                I agree to the{" "}
+                <Link href="/agreement" target="_blank" className="font-bold underline">terms and conditions</Link>
+              </span>
+            </label>
+          </div>
+        )}
+
+        {message && <p className="mt-6 border-[1.5px] border-ink bg-pink px-4 py-3 text-[14px] font-semibold">{message}</p>}
+
+        <div className="mt-10 flex gap-4">
+          {step > 0 && (
+            <Button variant="secondary" onClick={() => setStep((s) => s - 1)} className="flex-1 justify-center">
+              ← Back
+            </Button>
+          )}
+          {step < STEPS.length - 1 ? (
+            <Button onClick={() => setStep((s) => s + 1)} disabled={!isStepValid()} arrow className="flex-[2]">
+              Next
+            </Button>
+          ) : (
+            <Button type="submit" disabled={!isStepValid() || loading} arrow={!loading} className="flex-[2]">
+              {loading ? "Creating…" : "Create profile"}
+            </Button>
+          )}
+        </div>
+      </form>
+    </AuthShell>
   );
 }

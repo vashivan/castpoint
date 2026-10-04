@@ -9,7 +9,10 @@ import {
 
 import db from "@/lib/db";
 import { getEmployerFromCookies } from "@/lib/employerAuth";
+import { contractExtendableSchema, contractMonthsSchema, disciplineSchema } from "@/lib/jobSchema";
+import { contractLabel, contractTypeFromMonths, disciplineLabel } from "@/lib/jobFormat";
 
+import type { ResultSetHeader } from "mysql2";
 export const runtime = "nodejs";
 
 const jobCreateSchema = z.object({
@@ -17,11 +20,12 @@ const jobCreateSchema = z.object({
 
   location: z.string().min(2).max(120),
 
-  contract_type: z.enum([
-    "short",
-    "medium",
-    "long",
-  ]),
+  discipline: disciplineSchema,
+
+  // Contract length in months; contract_type is derived from it
+  contract_months: contractMonthsSchema,
+
+  contract_extendable: contractExtendableSchema.default(0),
 
   salary_from: z.coerce
     .number()
@@ -44,53 +48,12 @@ const jobCreateSchema = z.object({
     .min(20)
     .max(8000),
 
+  // The form sends null (or "") when the employer leaves it empty
   apply_email: z
-    .string()
-    .email()
-    .optional(),
+    .union([z.string().trim().email(), z.literal(""), z.null()])
+    .optional()
+    .transform((v) => v || null),
 });
-
-// async function sendToTelegram(
-//   text: string
-// ) {
-//   const token =
-//     process.env.TELEGRAM_BOT_TOKEN;
-
-//   const chatId =
-//     process.env.TELEGRAM_CHAT_ID;
-
-//   if (!token || !chatId) {
-//     return;
-//   }
-
-//   try {
-//     await fetch(
-//       `https://api.telegram.org/bot${token}/sendMessage`,
-//       {
-//         method: "POST",
-
-//         headers: {
-//           "content-type":
-//             "application/json",
-//         },
-
-//         body: JSON.stringify({
-//           chat_id: chatId,
-//           text,
-
-//           parse_mode: "HTML",
-
-//           disable_web_page_preview: true,
-//         }),
-//       }
-//     );
-//   } catch (err) {
-//     console.error(
-//       "[employer.jobs.telegram.error]",
-//       err
-//     );
-//   }
-// }
 
 /**
  * Employers list their own jobs
@@ -119,6 +82,9 @@ export async function GET() {
         title,
         location,
         contract_type,
+        discipline,
+        contract_months,
+        contract_extendable,
         salary_from,
         salary_to,
         currency,
@@ -203,14 +169,17 @@ export async function POST(
       );
     }
 
-    const [result]: any =
-      await db.execute(
+    const [result] =
+      await db.execute<ResultSetHeader>(
         `
     INSERT INTO jobs (
       employer_id,
       title,
       location,
       contract_type,
+      discipline,
+      contract_months,
+      contract_extendable,
       salary_from,
       salary_to,
       currency,
@@ -222,7 +191,7 @@ export async function POST(
       created_at
     )
     VALUES (
-      ?, ?, ?, ?, ?, ?, ?, ?, ?,
+      ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?,
       0,
       'pending',
       ?,
@@ -233,12 +202,16 @@ export async function POST(
           employer.id,
           data.title.trim(),
           data.location.trim(),
-          data.contract_type,
+          contractTypeFromMonths(data.contract_months),
+          data.discipline,
+          data.contract_months,
+          data.contract_extendable,
           data.salary_from ?? null,
           data.salary_to ?? null,
           data.currency.trim(),
           data.description.trim(),
-          data.apply_email ?? null,
+          // Empty field: applications go to the signed-in employer's account e-mail
+          data.apply_email ?? employer.email,
           employer.company_name,
         ]
       );
@@ -253,7 +226,8 @@ export async function POST(
         ``,
         `<b>Company:</b> ${escapeTelegramHtml(employer.company_name)}`,
         `<b>Location:</b> ${escapeTelegramHtml(data.location)}`,
-        `<b>Contract:</b> ${escapeTelegramHtml(data.contract_type)}`,
+        `<b>Discipline:</b> ${escapeTelegramHtml(disciplineLabel(data.discipline) ?? data.discipline)}`,
+        `<b>Contract:</b> ${escapeTelegramHtml(contractLabel(data))}`,
         `<b>Salary:</b> ${data.salary_from ?? "—"
         } – ${data.salary_to ?? "—"
         } ${escapeTelegramHtml(data.currency)}`,
@@ -291,8 +265,9 @@ export async function POST(
       return NextResponse.json(
         {
           ok: false,
-          error:
-            "Validation error",
+          error: e.issues
+            .map((i) => `${i.path.join(".") || "form"}: ${i.message}`)
+            .join("; "),
           issues: e.issues,
         },
         {

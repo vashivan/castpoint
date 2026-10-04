@@ -4,7 +4,6 @@
 import { useEffect, useState } from 'react';
 import { usePathname } from 'next/navigation';
 // import { useTransition } from 'react';
-import CastpointLoader from './loader';
 
 export default function RouteLoader() {
   const pathname = usePathname();
@@ -19,8 +18,7 @@ export default function RouteLoader() {
   }, [pathname]);
 
   return loading ? (
-    <div className="fixed inset-0 flex items-center justify-center bg-black/40 z-50">
-      <CastpointLoader />
+    <div className="fixed inset-x-0 top-0 z-[60] h-1 animate-pulse bg-pink">
     </div>
   ) : null;
 }

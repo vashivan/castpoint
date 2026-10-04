@@ -5,6 +5,7 @@ import db from "@/lib/db";
 import { getEmployerFromCookies } from "@/lib/employerAuth";
 import { sendArtistStatusEmail } from "@/lib/mailerStatus";
 
+import type { RowDataPacket } from "mysql2";
 export const runtime = "nodejs";
 
 type RouteParams = {
@@ -85,7 +86,7 @@ export async function GET(
 
     const { jobId, applicationId } = parsed;
 
-    const [rows]: any = await db.query(
+    const [rows] = await db.query<RowDataPacket[]>(
       `
       SELECT
         a.id,
@@ -227,7 +228,7 @@ export async function PATCH(
      * 2. application belongs to this job
      * 3. job belongs to current employer
      */
-    const [rows]: any = await db.query(
+    const [rows] = await db.query<RowDataPacket[]>(
       `
       SELECT
         a.id,

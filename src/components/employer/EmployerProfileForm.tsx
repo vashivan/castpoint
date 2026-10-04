@@ -2,12 +2,11 @@
 
 import React, { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { useEmployerSession } from "./useEmployerSession";
-import { uploadToCloudinary } from "@/lib/cloudinaryUpload";
+import { useEmployerAuth } from "@/context/EmployerAuthContext";
 
 export default function EmployerProfileForm() {
   const router = useRouter();
-  const { employer, isLoading, isLogged, refresh } = useEmployerSession();
+  const { employer, isLoading, isLogged, refreshEmployer: refresh } = useEmployerAuth();
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
@@ -75,81 +74,81 @@ export default function EmployerProfileForm() {
       if (!res.ok) throw new Error(data?.error || "Update failed");
       setSuccess(true);
       await refresh();
-    } catch (err: any) {
-      setError(err.message || "Error");
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Error");
     } finally {
       setSaving(false);
     }
   }
 
   if (isLoading || !isLogged) {
-    return <div className="max-w-2xl mx-auto p-6 pt-30">Loading…</div>;
+    return <div className="max-w-2xl mx-auto px-4 py-14">Loading…</div>;
   }
 
   return (
-    <div className="max-w-2xl mx-auto p-6 pt-30">
-      <h1 className="text-2xl font-semibold">Company profile</h1>
+    <div className="max-w-2xl mx-auto px-4 py-14">
+      <h1 className="font-display text-[clamp(34px,5vw,72px)]">Company profile</h1>
 
       <form onSubmit={onSubmit} className="mt-6 space-y-4">
         {error && (
-          <div className="rounded-2xl border border-red-300 bg-red-50 p-3 text-red-700">{error}</div>
+          <div className="border-[1.5px] border-ink bg-pink px-4 py-3 text-[14px] font-semibold">{error}</div>
         )}
         {success && (
-          <div className="rounded-2xl border border-green-300 bg-green-50 p-3 text-green-700">
+          <div className="border-[1.5px] border-ink bg-lime px-4 py-3 text-[14px] font-semibold">
             Profile updated
           </div>
         )}
 
         {/* <div className="grid gap-3">
-          <label className="text-sm">Logo</label>
+          <label className="label text-ink/60">Logo</label>
           {form.logo_url && (
             // eslint-disable-next-line @next/next/no-img-element
-            <img src={form.logo_url} alt="Company logo" className="w-20 h-20 rounded-2xl object-cover border" />
+            <img src={form.logo_url} alt="Company logo" className="w-20 h-20 object-cover border-[1.5px] border-ink" />
           )}
           <input type="file" accept="image/*" onChange={onLogoChange} disabled={uploadingLogo} />
-          {uploadingLogo && <p className="text-xs text-neutral-500">Uploading…</p>}
+          {uploadingLogo && <p className="text-xs text-ink/60">Uploading…</p>}
         </div> */}
 
         <div className="grid gap-3">
-          <label className="text-sm">Contact name</label>
+          <label className="label text-ink/60">Contact name</label>
           <input
-            className="rounded-2xl border p-3 bg-white"
+            className="w-full border-[1.5px] border-ink bg-white px-4 py-3 text-[15px] outline-none transition-shadow placeholder:text-ink/40 focus:shadow-[4px_4px_0_0_var(--color-ink)]"
             value={form.contact_name}
             onChange={(e) => setForm((s) => ({ ...s, contact_name: e.target.value }))}
           />
         </div>
 
         <div className="grid gap-3">
-          <label className="text-sm">Company name</label>
+          <label className="label text-ink/60">Company name</label>
           <input
-            className="rounded-2xl border p-3 bg-white"
+            className="w-full border-[1.5px] border-ink bg-white px-4 py-3 text-[15px] outline-none transition-shadow placeholder:text-ink/40 focus:shadow-[4px_4px_0_0_var(--color-ink)]"
             value={form.company_name}
             onChange={(e) => setForm((s) => ({ ...s, company_name: e.target.value }))}
           />
         </div>
 
         <div className="grid gap-3">
-          <label className="text-sm">Country</label>
+          <label className="label text-ink/60">Country</label>
           <input
-            className="rounded-2xl border p-3 bg-white"
+            className="w-full border-[1.5px] border-ink bg-white px-4 py-3 text-[15px] outline-none transition-shadow placeholder:text-ink/40 focus:shadow-[4px_4px_0_0_var(--color-ink)]"
             value={form.country}
             onChange={(e) => setForm((s) => ({ ...s, country: e.target.value }))}
           />
         </div>
 
         <div className="grid gap-3">
-          <label className="text-sm">Phone</label>
+          <label className="label text-ink/60">Phone</label>
           <input
-            className="rounded-2xl border p-3 bg-white"
+            className="w-full border-[1.5px] border-ink bg-white px-4 py-3 text-[15px] outline-none transition-shadow placeholder:text-ink/40 focus:shadow-[4px_4px_0_0_var(--color-ink)]"
             value={form.phone}
             onChange={(e) => setForm((s) => ({ ...s, phone: e.target.value }))}
           />
         </div>
 
         <div className="grid gap-3">
-          <label className="text-sm">Website</label>
+          <label className="label text-ink/60">Website</label>
           <input
-            className="rounded-2xl border p-3 bg-white"
+            className="w-full border-[1.5px] border-ink bg-white px-4 py-3 text-[15px] outline-none transition-shadow placeholder:text-ink/40 focus:shadow-[4px_4px_0_0_var(--color-ink)]"
             value={form.website}
             onChange={(e) => setForm((s) => ({ ...s, website: e.target.value }))}
             placeholder="https://"
@@ -157,18 +156,18 @@ export default function EmployerProfileForm() {
         </div>
 
         <div className="grid gap-3">
-          <label className="text-sm">Instagram</label>
+          <label className="label text-ink/60">Instagram</label>
           <input
-            className="rounded-2xl border p-3 bg-white"
+            className="w-full border-[1.5px] border-ink bg-white px-4 py-3 text-[15px] outline-none transition-shadow placeholder:text-ink/40 focus:shadow-[4px_4px_0_0_var(--color-ink)]"
             value={form.instagram}
             onChange={(e) => setForm((s) => ({ ...s, instagram: e.target.value }))}
           />
         </div>
 
         <div className="grid gap-3">
-          <label className="text-sm">Description</label>
+          <label className="label text-ink/60">Description</label>
           <textarea
-            className="rounded-2xl border p-3 min-h-32 bg-white"
+            className="w-full border-[1.5px] border-ink bg-white px-4 py-3 text-[15px] outline-none transition-shadow placeholder:text-ink/40 focus:shadow-[4px_4px_0_0_var(--color-ink)] min-h-32"
             value={form.description}
             onChange={(e) => setForm((s) => ({ ...s, description: e.target.value }))}
           />
@@ -176,7 +175,7 @@ export default function EmployerProfileForm() {
 
         <button
           disabled={saving}
-          className="rounded-2xl px-5 py-3 border font-medium hover:bg-neutral-50 disabled:opacity-60 cursor-pointer"
+          className="inline-flex items-center justify-center gap-2 bg-ink px-6 py-3.5 text-[12px] font-bold uppercase tracking-[0.1em] text-paper shadow-[6px_6px_0_0_var(--color-pink)] transition-transform hover:-translate-x-0.5 hover:-translate-y-0.5 disabled:opacity-50 cursor-pointer"
         >
           {saving ? "Saving…" : "Save changes"}
         </button>

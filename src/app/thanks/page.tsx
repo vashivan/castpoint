@@ -1,19 +1,16 @@
 import MainLayout from "@/layouts/MainLayout";
+import MessagePage from "@/components/ds/MessagePage";
 
-export default async function Thanks(props: {
-  searchParams: Promise<{ status?: string }>;
-}) {
-  const searchParams = await props.searchParams;
-  const status = searchParams.status
+export default async function Thanks(props: { searchParams: Promise<{ status?: string }> }) {
+  const { status } = await props.searchParams;
 
   return (
     <MainLayout>
-      <div className="min-h-[70vh] w-full flex gap-2.5 flex-col items-center justify-center px-4">
-        <h1>Decision confirmed.</h1>
+      <MessagePage kicker="Decision confirmed" title={<>Thank<br />you.</>}>
         <p>
-          Application has been <b>{status}</b>.
+          The application has been <b>{status ?? "updated"}</b>. The artist will get an e-mail about it.
         </p>
-      </div>
+      </MessagePage>
     </MainLayout>
   );
 }

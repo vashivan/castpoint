@@ -47,23 +47,22 @@ export default function Modal({ open, onClose, children, widthClass = 'max-w-md'
       onMouseDown={onBackdropClick}
     >
       {/* overlay */}
-      <div className="absolute inset-0 bg-black/50 backdrop-blur-[2px] transition-opacity flex items-center justify-center" />
+      <div className="absolute inset-0 bg-ink/60" />
 
       {/* dialog */}
       <div
         ref={dialogRef}
-        className={`relative z-[1000] ${widthClass} mx-4 
-                    transition-transform duration-200 ease-out animate-[modalIn_.2s_ease-out] justify-center flex items-center`}
+        className={`relative z-[1000] w-full ${widthClass} mx-4 animate-[modalIn_.2s_ease-out]`}
       >
         <button
           onClick={onClose}
           aria-label="Close modal"
-          className="absolute right-8 top-10 px-2 z-9999  bg-white/50 rounded-r-3xl rounded-l-3xl cursor-pointer h-10 w-10 flex items-center justify-center"
+          className="absolute right-3 top-3 z-[1001] grid h-9 w-9 cursor-pointer place-items-center bg-ink text-paper"
         >
           ✕
         </button>
 
-        <div className="p-6">{children}</div>
+        <div className="max-h-[90vh] w-full overflow-y-auto border-[1.5px] border-ink bg-paper p-6 shadow-hard-pink">{children}</div>
       </div>
 
       <style jsx>{`

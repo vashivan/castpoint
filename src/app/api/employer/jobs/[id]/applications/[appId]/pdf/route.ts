@@ -4,6 +4,7 @@ import db from "@/lib/db";
 import { getEmployerFromCookies } from "@/lib/employerAuth";
 import { buildArtistProfilePdf } from "@/lib/pdf/ArtistProfilePdf";
 
+import type { RowDataPacket } from "mysql2";
 export const runtime = "nodejs";
 
 type RouteParams = {
@@ -42,7 +43,7 @@ export async function GET(
       );
     }
 
-    const [rows]: any = await db.query(
+    const [rows] = await db.query<RowDataPacket[]>(
       `
       SELECT
         a.id,

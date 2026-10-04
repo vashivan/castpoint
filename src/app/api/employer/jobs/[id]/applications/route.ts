@@ -3,6 +3,7 @@ import { NextResponse } from "next/server";
 import db from "@/lib/db";
 import { getEmployerFromCookies } from "@/lib/employerAuth";
 
+import type { RowDataPacket } from "mysql2";
 export const runtime = "nodejs";
 
 type RouteParams = {
@@ -49,7 +50,7 @@ export async function GET(
     // Спочатку перевіряємо, що ця вакансія
     // належить поточному роботодавцю
 
-    const [jobRows]: any = await db.query(
+    const [jobRows] = await db.query<RowDataPacket[]>(
       `
       SELECT
         id,
@@ -85,7 +86,7 @@ export async function GET(
 
     // Завантажуємо заявки ТІЛЬКИ для цієї вакансії
 
-    const [applicationRows]: any = await db.query(
+    const [applicationRows] = await db.query<RowDataPacket[]>(
       `
       SELECT
         a.id,

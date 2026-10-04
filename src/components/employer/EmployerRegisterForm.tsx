@@ -3,6 +3,8 @@
 import React, { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import AuthShell from "../auth/AuthShell";
+import { Button } from "../ds/Button";
 
 type EmployerRegisterForm = {
   contact_name: string;
@@ -129,27 +131,20 @@ export default function EmployerRegisterForm() {
   }
 
   return (
-    <main className="mx-auto max-w-2xl px-5 pb-20 pt-28 sm:px-6 sm:pt-32">
-      <div>
-        <p className="text-sm uppercase tracking-[0.14em] text-neutral-500">
-          Castpoint for employers
-        </p>
-
-        <h1 className="mt-3 text-3xl font-semibold tracking-tight sm:text-4xl">
-          Create an employer account
-        </h1>
-
-        <p className="mt-3 max-w-xl text-neutral-600">
-          Create your company profile, post opportunities and manage
-          applications from artists.
-        </p>
-      </div>
-
-      <form onSubmit={onSubmit} className="mt-10 space-y-8">
+    <AuthShell
+      tone="blue"
+      kicker="Castpoint for employers"
+      title={<>Post a<br /><span className="text-lime">contract.</span></>}
+      aside={<span className="text-paper">Create your company profile, post opportunities and manage applications from artists.</span>}
+      wide
+    >
+      <p className="label text-ink/60">Employer account</p>
+      <p className="font-display mt-2 text-[clamp(30px,3.4vw,44px)]">Register company</p>
+      <form onSubmit={onSubmit} className="mt-10 space-y-10">
         {error && (
           <div
             role="alert"
-            className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700"
+            className="border-[1.5px] border-ink bg-pink px-4 py-3 text-[14px] font-semibold"
           >
             {error}
           </div>
@@ -159,8 +154,8 @@ export default function EmployerRegisterForm() {
 
         <section className="space-y-5">
           <div>
-            <h2 className="text-lg font-medium">Contact person</h2>
-            <p className="mt-1 text-sm text-neutral-500">
+            <h2 className="font-display text-[24px]">Contact person</h2>
+            <p className="mt-1 text-[14px] text-ink/60">
               Tell artists who represents the company.
             </p>
           </div>
@@ -203,14 +198,14 @@ export default function EmployerRegisterForm() {
           </Field>
         </section>
 
-        <div className="border-t" />
+        <div className="border-t-[1.5px] border-ink" />
 
         {/* COMPANY */}
 
         <section className="space-y-5">
           <div>
-            <h2 className="text-lg font-medium">Company</h2>
-            <p className="mt-1 text-sm text-neutral-500">
+            <h2 className="font-display text-[24px]">Company</h2>
+            <p className="mt-1 text-[14px] text-ink/60">
               Basic information about the company or organization you
               represent.
             </p>
@@ -275,20 +270,20 @@ export default function EmployerRegisterForm() {
               maxLength={2000}
             />
 
-            <div className="mt-2 text-right text-xs text-neutral-400">
+            <div className="mt-2 text-right text-xs text-ink/50">
               {form.description.length}/2000
             </div>
           </Field>
         </section>
 
-        <div className="border-t" />
+        <div className="border-t-[1.5px] border-ink" />
 
         {/* PASSWORD */}
 
         <section className="space-y-5">
           <div>
-            <h2 className="text-lg font-medium">Password</h2>
-            <p className="mt-1 text-sm text-neutral-500">
+            <h2 className="font-display text-[24px]">Password</h2>
+            <p className="mt-1 text-[14px] text-ink/60">
               Use at least 8 characters.
             </p>
           </div>
@@ -322,31 +317,21 @@ export default function EmployerRegisterForm() {
           </Field>
         </section>
 
-        <button
-          type="submit"
-          disabled={loading}
-          className="
-            w-full rounded-xl bg-black px-5 py-3.5
-            font-medium text-white transition
-            hover:bg-neutral-800
-            disabled:cursor-not-allowed disabled:opacity-50
-            sm:w-auto
-          "
-        >
+        <Button type="submit" disabled={loading} arrow={!loading} className="w-full sm:w-auto">
           {loading ? "Creating account…" : "Create employer account"}
-        </button>
+        </Button>
 
-        <p className="text-sm text-neutral-500">
+        <p className="text-[14px] text-ink/70">
           Already have an employer account?{" "}
           <Link
             href="/employer/login"
-            className="font-medium text-black underline underline-offset-4"
+            className="font-bold underline underline-offset-4"
           >
             Log in
           </Link>
         </p>
       </form>
-    </main>
+    </AuthShell>
   );
 }
 
@@ -361,9 +346,9 @@ function Field({
 }) {
   return (
     <div>
-      <label className="mb-2 block text-sm font-medium">
+      <label className="label mb-2 block text-ink/60">
         {label}
-        {required && <span className="ml-1 text-red-500">*</span>}
+        {required && <span className="ml-1 text-pink">*</span>}
       </label>
 
       {children}
@@ -372,4 +357,4 @@ function Field({
 }
 
 const inputClass =
-  "w-full rounded-xl border border-neutral-300 bg-white px-4 py-3 outline-none transition placeholder:text-neutral-400 focus:border-black focus:ring-1 focus:ring-black";
+  "w-full border-[1.5px] border-ink bg-white px-4 py-3 text-[15px] outline-none transition-shadow placeholder:text-ink/40 focus:shadow-[4px_4px_0_0_var(--color-ink)]";

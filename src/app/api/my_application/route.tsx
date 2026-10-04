@@ -1,32 +1,29 @@
-import { NextRequest, NextResponse } from "next/server";
+import { NextResponse } from "next/server";
 import db from "@/lib/db";
-import { z } from "zod";
+import { getArtistFromCookies } from "@/lib/artistAuth";
 
 export const runtime = "nodejs";
 
-const querySchema = z.object({
-  email: z.string().email(),
-});
+// Lists the signed-in artist's own applications. The email comes from the
+// session, never from the query string, so nobody can read someone else's list.
+export async function GET() {
+  const artist = await getArtistFromCookies();
+  if (!artist?.email) {
+    return NextResponse.json({ ok: false, error: "Unauthorized" }, { status: 401 });
+  }
 
-export async function GET(req: NextRequest) {
   try {
-    const { searchParams } = new URL(req.url);
-    const email = searchParams.get("email") || "";
-    const { email: artistEmail } = querySchema.parse({ email });
-
     const [rows] = await db.query(
       `SELECT id, job_id, application_code, sent_email_status, created_at, application_title, status
        FROM applications
        WHERE artist_email = ?
        ORDER BY created_at DESC`,
-      [artistEmail]
+      [artist.email]
     );
 
     return NextResponse.json({ ok: true, applications: rows });
-  } catch (err: any) {
-    return NextResponse.json(
-      { ok: false, error: err?.message || "Bad request" },
-      { status: 400 }
-    );
+  } catch (err) {
+    console.error("[my_application]", err);
+    return NextResponse.json({ ok: false, error: "Server error" }, { status: 500 });
   }
 }

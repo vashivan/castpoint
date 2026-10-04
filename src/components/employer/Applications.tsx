@@ -186,34 +186,34 @@ export default function EmployerApplicationsPage() {
 
   if (isLoading || !isLogged) {
     return (
-       <div className="mx-auto max-w-6xl px-6 py-30">
+       <div className="mx-auto max-w-7xl px-4 py-14">
         Loading…
       </div>
     );
   }
 
   return (
-    <div className="mx-auto max-w-6xl px-6 py-30">
+    <div className="mx-auto max-w-7xl px-4 py-14">
       {/* HEADER */}
 
       <div className="flex flex-wrap items-end justify-between gap-6">
         <div>
-          <p className="text-sm text-neutral-500">
+          <p className="text-sm text-ink/60">
             {employer?.company_name}
           </p>
 
-          <h1 className="mt-1 text-3xl font-semibold">
+          <h1 className="mt-1 font-display text-[clamp(34px,5vw,72px)]">
             Applications
           </h1>
 
-          <p className="mt-2 text-neutral-500">
+          <p className="mt-2 text-ink/60">
             Review artists who applied to your job offers.
           </p>
         </div>
 
         <Link
           href="/employer/dashboard"
-          className="rounded-2xl border px-5 py-2 text-sm  bg-white/70 font-medium shadow-none hover:shadow-lg transition-shadow duration-300"
+          className="inline-flex items-center justify-center gap-2 border-[1.5px] border-ink px-5 py-3 text-[12px] font-bold uppercase tracking-[0.1em] hover:bg-ink hover:text-paper disabled:opacity-50 cursor-pointer"
         >
           Back to dashboard
         </Link>
@@ -230,17 +230,15 @@ export default function EmployerApplicationsPage() {
               key={option.value}
               type="button"
               onClick={() => changeStatusFilter(option.value)}
-              className={`rounded-2xl border p-4 text-left transition ${
-                active
-                  ? "border-orange-500 bg-orange-50"
-                  : "hover:shadow-lg transition-shadow duration-300"
+              className={`border-[1.5px] border-ink p-4 text-left transition ${
+                active ? "bg-lime shadow-[4px_4px_0_0_var(--color-ink)]" : "bg-white hover:bg-lime/40"
               }`}
             >
-              <div className="text-sm text-neutral-500">
+              <div className="text-sm text-ink/60">
                 {option.label}
               </div>
 
-              <div className="mt-1 text-2xl font-semibold">
+              <div className="mt-1 font-display text-[clamp(28px,3.4vw,44px)]">
                 {statusCounts[option.value]}
               </div>
             </button>
@@ -256,7 +254,7 @@ export default function EmployerApplicationsPage() {
           value={search}
           onChange={(event) => setSearch(event.target.value)}
           placeholder="Search by artist, vacancy or application code…"
-          className="w-full rounded-2xl border px-5 py-3 outline-none transition focus:border-orange-500"
+          className="w-full border-[1.5px] border-ink bg-white px-4 py-3 text-[15px] outline-none transition-shadow placeholder:text-ink/40 focus:shadow-[4px_4px_0_0_var(--color-ink)]"
         />
       </div>
 
@@ -264,16 +262,16 @@ export default function EmployerApplicationsPage() {
 
       <div className="mt-6">
         {loading ? (
-          <div className="rounded-2xl border p-8 text-center text-neutral-500">
+          <div className="border-[1.5px] border-ink bg-white p-5 shadow-[4px_4px_0_0_var(--color-ink)] text-center text-ink/60">
             Loading applications…
           </div>
         ) : filteredApplications.length === 0 ? (
-          <div className="rounded-2xl border border-dashed p-10 text-center">
-            <p className="text-lg font-medium">
+          <div className="border-[1.5px] border-dashed border-ink p-10 text-center">
+            <p className="font-display text-[22px]">
               No applications
             </p>
 
-            <p className="mt-2 text-sm text-neutral-500">
+            <p className="mt-2 text-sm text-ink/60">
               No applications match the selected filters.
             </p>
           </div>
@@ -283,7 +281,7 @@ export default function EmployerApplicationsPage() {
               <Link
                 key={application.id}
                 href={`/employer/jobs/${application.job_id}/applications/${application.id}`}
-                className="block rounded-2xl border p-5 bg-white/70 px-5 py-3 font-medium shadow-none hover:shadow-lg transition-shadow duration-300"
+                className="block border-[1.5px] border-ink bg-white p-5 transition-shadow hover:shadow-[4px_4px_0_0_var(--color-ink)]"
               >
                 <div className="flex items-center gap-4">
                   <ArtistAvatar application={application} />
@@ -295,7 +293,7 @@ export default function EmployerApplicationsPage() {
                           {application.artist_name}
                         </h2>
 
-                        <p className="mt-1 truncate text-sm text-neutral-500">
+                        <p className="mt-1 truncate text-sm text-ink/60">
                           {application.job_title ||
                             application.application_title ||
                             "Job application"}
@@ -305,7 +303,7 @@ export default function EmployerApplicationsPage() {
                       <StatusBadge status={application.status} />
                     </div>
 
-                    <div className="mt-3 flex flex-wrap gap-x-4 gap-y-1 text-xs text-neutral-400">
+                    <div className="mt-3 flex flex-wrap gap-x-4 gap-y-1 text-xs text-ink/50">
                       {application.application_code && (
                         <span>{application.application_code}</span>
                       )}
@@ -330,7 +328,7 @@ export default function EmployerApplicationsPage() {
 
                   <span
                     aria-hidden="true"
-                    className="hidden text-xl text-neutral-300 md:block"
+                    className="hidden text-xl text-ink/30 md:block"
                   >
                     →
                   </span>
@@ -351,14 +349,14 @@ function ArtistAvatar({
 }) {
   if (!application.artist_picture) {
     return (
-      <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-full bg-neutral-100 text-xl">
+      <div className="flex h-14 w-14 shrink-0 items-center justify-center bg-stone text-xl">
         👤
       </div>
     );
   }
 
   return (
-    <div className="relative h-14 w-14 shrink-0 overflow-hidden rounded-full bg-neutral-100">
+    <div className="relative h-14 w-14 shrink-0 overflow-hidden bg-stone">
       <Image
         src={application.artist_picture}
         alt={application.artist_name}
@@ -383,15 +381,15 @@ function StatusBadge({
   };
 
   const colors: Record<ApplicationStatus, string> = {
-    pending: "bg-amber-100 text-amber-700",
-    under_review: "bg-blue-100 text-blue-700",
-    approved: "bg-green-100 text-green-700",
-    rejected: "bg-red-100 text-red-700",
+    pending: "border border-ink text-ink",
+    under_review: "bg-blue text-paper",
+    approved: "bg-lime text-ink",
+    rejected: "bg-pink text-ink",
   };
 
   return (
     <span
-      className={`shrink-0 rounded-full px-3 py-1 text-xs font-medium ${colors[status]}`}
+      className={`shrink-0 inline-block px-2 py-[3px] text-[9px] font-bold uppercase tracking-[0.12em] leading-none ${colors[status]}`}
     >
       {labels[status]}
     </span>

@@ -214,7 +214,7 @@ export default function EmployerApplicationPage() {
   if (isLoading || loading) {
     return (
       <MainLayout>
-        <div className="mx-auto max-w-4xl px-6 py-30">
+        <div className="mx-auto max-w-5xl px-4 py-14">
           Loading…
         </div>
       </MainLayout>
@@ -224,8 +224,8 @@ export default function EmployerApplicationPage() {
   if (invalidParams) {
     return (
       <MainLayout>
-        <div className="mx-auto max-w-4xl px-6 py-30">
-          <h1 className="text-2xl font-semibold">
+        <div className="mx-auto max-w-5xl px-4 py-14">
+          <h1 className="font-display text-[clamp(34px,5vw,72px)]">
             Invalid application URL
           </h1>
 
@@ -243,13 +243,13 @@ export default function EmployerApplicationPage() {
   if (!application) {
     return (
       <MainLayout>
-        <div className="mx-auto max-w-4xl px-6 py-30">
-          <h1 className="text-2xl font-semibold">
+        <div className="mx-auto max-w-5xl px-4 py-14">
+          <h1 className="font-display text-[clamp(34px,5vw,72px)]">
             Application not found
           </h1>
 
           {error && (
-            <p className="mt-3 text-sm text-red-600">
+            <p className="mt-3 border-[1.5px] border-ink bg-pink px-4 py-3 text-[14px] font-semibold">
               {error}
             </p>
           )}
@@ -267,7 +267,7 @@ export default function EmployerApplicationPage() {
 
   return (
     <MainLayout>
-      <div className="mx-auto max-w-4xl px-6 py-30">
+      <div className="mx-auto max-w-5xl px-4 py-14">
 
         {/* HEADER */}
 
@@ -275,17 +275,17 @@ export default function EmployerApplicationPage() {
           <div>
             <Link
               href={`/employer/jobs/${jobId}/applications`}
-              className="text-sm text-neutral-500 hover:underline"
+              className="text-sm text-ink/60 hover:underline"
             >
               ← Back to applications
             </Link>
 
-            <h1 className="mt-3 text-3xl font-semibold">
+            <h1 className="mt-3 font-display text-[clamp(34px,5vw,72px)]">
               {application.artist_name ||
                 "Artist application"}
             </h1>
 
-            <p className="mt-2 text-neutral-500">
+            <p className="mt-2 text-ink/60">
               Applied for{" "}
 
               <span className="font-medium text-black">
@@ -296,7 +296,7 @@ export default function EmployerApplicationPage() {
             </p>
 
             {application.application_code && (
-              <p className="mt-1 text-sm text-neutral-400">
+              <p className="mt-1 text-sm text-ink/50">
                 {
                   application.application_code
                 }
@@ -310,7 +310,7 @@ export default function EmployerApplicationPage() {
 
             <a
               href={`/api/employer/jobs/${jobId}/applications/${appId}/pdf`}
-              className="rounded-2xl border px-4 py-2 text-sm transition hover:bg-neutral-50"
+              className="inline-flex items-center justify-center gap-2 border-[1.5px] border-ink px-5 py-3 text-[12px] font-bold uppercase tracking-[0.1em] hover:bg-ink hover:text-paper disabled:opacity-50 cursor-pointer"
             >
               Download PDF
             </a>
@@ -324,7 +324,7 @@ export default function EmployerApplicationPage() {
                     .value as ApplicationStatus
                 )
               }
-              className="rounded-2xl border bg-white px-4 py-2 text-sm disabled:opacity-50"
+              className="inline-flex items-center justify-center gap-2 border-[1.5px] border-ink px-5 py-3 text-[12px] font-bold uppercase tracking-[0.1em] hover:bg-ink hover:text-paper disabled:opacity-50 cursor-pointer"
             >
               {STATUS_OPTIONS.map(
                 (status) => (
@@ -349,20 +349,21 @@ export default function EmployerApplicationPage() {
         {/* ERROR */}
 
         {error && (
-          <div className="mb-6 rounded-2xl border border-red-200 bg-red-50 p-4 text-sm text-red-700">
+          <div className="mb-6 border-[1.5px] border-ink bg-pink px-4 py-3 text-[14px] font-semibold">
             {error}
           </div>
         )}
 
         {/* APPLICATION */}
 
-        <div className="rounded-3xl border bg-white p-6">
+        <div className="border-[1.5px] border-ink bg-white p-7 shadow-[4px_4px_0_0_var(--color-ink)]">
 
           <div className="flex flex-col gap-6 md:flex-row">
 
             {/* PHOTO */}
 
             {application.artist_picture && (
+              // eslint-disable-next-line @next/next/no-img-element -- Cloudinary URLs, no next/image domain config
               <img
                 src={
                   application.artist_picture
@@ -371,7 +372,7 @@ export default function EmployerApplicationPage() {
                   application.artist_name ||
                   "Applicant"
                 }
-                className="h-48 w-48 shrink-0 rounded-2xl object-cover"
+                className="h-48 w-48 shrink-0 object-cover border-[1.5px] border-ink"
               />
             )}
 
@@ -481,7 +482,7 @@ export default function EmployerApplicationPage() {
           {/* PORTFOLIO */}
 
           {application.promo_url && (
-            <div className="mt-8 border-t pt-6">
+            <div className="mt-8 border-t-[1.5px] border-ink pt-6">
               <SectionTitle>
                 Video / Portfolio
               </SectionTitle>
@@ -512,7 +513,7 @@ function SectionTitle({
   children: React.ReactNode;
 }) {
   return (
-    <h2 className="text-lg font-semibold">
+    <h2 className="font-display text-[22px]">
       {children}
     </h2>
   );
@@ -526,12 +527,12 @@ function Section({
   text: string;
 }) {
   return (
-    <div className="mt-8 border-t pt-6">
+    <div className="mt-8 border-t-[1.5px] border-ink pt-6">
       <SectionTitle>
         {title}
       </SectionTitle>
 
-      <p className="mt-3 whitespace-pre-wrap text-sm leading-7 text-neutral-700">
+      <p className="mt-3 whitespace-pre-wrap text-sm leading-7 text-ink/80">
         {text}
       </p>
     </div>
@@ -549,7 +550,7 @@ function Row({
 
   return (
     <div className="grid grid-cols-[140px_1fr] gap-3 text-sm">
-      <span className="text-neutral-500">
+      <span className="text-ink/60">
         {label}
       </span>
 

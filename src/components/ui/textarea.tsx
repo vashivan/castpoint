@@ -10,10 +10,10 @@ type Props = {
 export default function TextArea({ label, value, placeholder, text, onChange, rows }: Props) {
   return (
     <>
-      <label htmlFor="bio" className="block text-xl text-black mb-2">{label}</label>
-      <div className="text-black mb-2 text-s text-center flex flex-col space-y-1.5">
+      {label && <label htmlFor="bio" className="label mb-2 block text-ink/60">{label}</label>}
+      <div className="mb-2 flex flex-col space-y-1.5 text-[14px] text-ink/70">
         {text ? (
-          <p className="text-justify mb-4">
+          <p className="mb-2">
             {text}
           </p>
         ) : (
@@ -21,7 +21,7 @@ export default function TextArea({ label, value, placeholder, text, onChange, ro
         )}
       </div>
       <textarea
-        className="w-full px-4 py-3 rounded-xl bg-white/5 border border-black text-black placeholder-gray/50 focus:outline-none focus:ring-2 focus:ring-orange-300 text-justify mb-0 backdrop-blur-sm"
+        className="w-full border-[1.5px] border-ink bg-white px-4 py-3 text-[15px] text-ink placeholder:text-ink/40 outline-none focus:shadow-[4px_4px_0_0_var(--color-ink)] transition-shadow"
         name="bio"
         id="bio"
         cols={10}

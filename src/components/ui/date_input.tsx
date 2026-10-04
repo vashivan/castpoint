@@ -66,7 +66,7 @@ export default function DateInput({
     <>
       <div className={`flex flex-col w-full ${className}`}>
         {label && (
-          <label htmlFor={name} className="block text-m text-black mb-2">
+          <label htmlFor={name} className="label mb-2 block text-ink/60">
             {label}
           </label>
         )}
@@ -81,7 +81,7 @@ export default function DateInput({
           dropdownMode="select"
           minDate={normalizeLimit(min)}
           maxDate={normalizeLimit(max)}
-          className="w-full border-b rounded-3xl py-2 px-4 bg-white/70 focus:outline-none focus:ring-2 focus:ring-orange-500 text-center"
+          className="w-full border-[1.5px] border-ink bg-white px-4 py-3 text-[15px] text-ink placeholder:text-ink/40 outline-none focus:shadow-[4px_4px_0_0_var(--color-ink)] transition-shadow"
         />
       </div>
     </>

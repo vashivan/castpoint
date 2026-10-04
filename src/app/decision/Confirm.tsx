@@ -1,7 +1,9 @@
 "use client";
 
-import MainLayout from "@/layouts/MainLayout";
 import { useState } from "react";
+import MainLayout from "@/layouts/MainLayout";
+import MessagePage from "@/components/ds/MessagePage";
+import { Button } from "@/components/ds/Button";
 
 export function Confirm({
   token,
@@ -16,54 +18,31 @@ export function Confirm({
 
   async function confirm() {
     setLoading(true);
-
     await fetch("/api/decision/confirm", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ token, action }),
     });
-
     window.location.href = `/thanks?status=${action}`;
   }
 
+  const approve = action === "approved";
+
   return (
     <MainLayout>
-      <div className="min-h-[70vh] w-full flex gap-2.5 flex-col items-center justify-center px-4">
-      <h1>
-        {action === "approved" ? "Approve application" : "Reject application"}
-      </h1>
-
-      <p style={{ marginTop: 12 }}>
-        You are about to <b>{action}</b> the application for:
-      </p>
-
-      <div>
-        <b>{title}</b>
-      </div>
-
-      <p>
-        Once confirmed:
-        <br />• the application status will be updated
-        <br />• the artist will be notified automatically
-      </p>
-
-      <button
-        onClick={confirm}
-        disabled={loading}
-        style={{
-          marginTop: 24,
-          padding: "12px 20px",
-          borderRadius: 10,
-          background: action === "approved" ? "#16a34a" : "#dc2626",
-          color: "#fff",
-          fontWeight: 700,
-          cursor: "pointer",
-          opacity: loading ? 0.6 : 1,
-        }}
-      >
-        {loading ? "Processing..." : "Confirm decision"}
-      </button>
-      </div>
+      <MessagePage kicker="Confirm decision" title={approve ? <>Approve<br />application?</> : <>Reject<br />application?</>}>
+        <p>
+          You are about to <b>{action === "approved" ? "approve" : "reject"}</b> the application for:
+        </p>
+        <p className="font-display mt-4 text-[28px]">{title}</p>
+        <ul className="mt-6 space-y-1 text-[16px]">
+          <li>• the application status will be updated</li>
+          <li>• the artist will be notified automatically</li>
+        </ul>
+        <Button onClick={confirm} disabled={loading} variant={approve ? "ink" : "primary"} arrow={!loading} className={`mt-8 ${approve ? "" : "bg-pink text-ink"}`}>
+          {loading ? "Processing…" : approve ? "Confirm approval" : "Confirm rejection"}
+        </Button>
+      </MessagePage>
     </MainLayout>
   );
 }

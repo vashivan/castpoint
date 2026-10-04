@@ -15,14 +15,14 @@ type Props = {
 export default function TextInput({ type, label, name, placeholder, value, onChange, width, autoComplete, onBlur, classname}: Props) {
   return (
     <>
-      <label className="block text-m text-black mb-2">{label}</label>
+      {label && <label className="label mb-2 block text-ink/60">{label}</label>}
       <input
         type={type}
         name={name}
         placeholder={placeholder}
         value={value}
         onChange={(e) => onChange(e.target.value)}
-        className={`${!width ? `w-full` : 'w-80'} px-4 py-3 rounded-3xl bg-white/10 text-black placeholder-black border-b border-black  focus:outline-none focus:ring-2 focus:ring-orange-300 text-center backdrop-blur-sm ${classname}`}
+        className={`w-full border-[1.5px] border-ink bg-white px-4 py-3 text-[15px] text-ink placeholder:text-ink/40 outline-none focus:shadow-[4px_4px_0_0_var(--color-ink)] transition-shadow ${width ? 'max-w-80' : ''} ${classname ?? ''}`}
         autoComplete={autoComplete}
         onBlur={onBlur}
         required

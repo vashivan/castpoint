@@ -2,7 +2,7 @@
 
 import React, { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { useEmployerSession } from "./useEmployerSession";
+import { useEmployerAuth } from "@/context/EmployerAuthContext";
 
 type ImageItem = { secure_url: string; public_id: string };
 
@@ -35,7 +35,7 @@ const STATUS_OPTIONS = ["pending", "under_review", "approved", "rejected"];
 
 export default function EmployerApplicationsList({ jobId }: { jobId: number }) {
   const router = useRouter();
-  const { isLoading, isLogged } = useEmployerSession();
+  const { isLoading, isLogged } = useEmployerAuth();
   const [jobTitle, setJobTitle] = useState("");
   const [applications, setApplications] = useState<Application[]>([]);
   const [loading, setLoading] = useState(true);
@@ -58,8 +58,8 @@ export default function EmployerApplicationsList({ jobId }: { jobId: number }) {
         if (!res.ok) throw new Error(data?.error || "Failed to load applications");
         setJobTitle(data.job?.title || "");
         setApplications(data.applications || []);
-      } catch (err: any) {
-        setError(err.message || "Error");
+      } catch (err) {
+        setError(err instanceof Error ? err.message : "Error");
       } finally {
         setLoading(false);
       }
@@ -79,8 +79,8 @@ export default function EmployerApplicationsList({ jobId }: { jobId: number }) {
       const data = await res.json();
       if (!res.ok) throw new Error(data?.error || "Failed to update status");
       setApplications((prev) => prev.map((a) => (a.id === appId ? { ...a, status } : a)));
-    } catch (err: any) {
-      setError(err.message || "Error");
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Error");
     } finally {
       setUpdatingId(null);
     }
@@ -95,29 +95,30 @@ export default function EmployerApplicationsList({ jobId }: { jobId: number }) {
   }
 
   if (isLoading || !isLogged || loading) {
-    return <div className="max-w-4xl mx-auto p-6 pt-30">Loading…</div>;
+    return <div className="max-w-5xl mx-auto px-4 py-14">Loading…</div>;
   }
 
   return (
-    <div className="max-w-4xl mx-auto p-6 pt-30">
-      <h1 className="text-2xl font-semibold">Applications{jobTitle ? ` — ${jobTitle}` : ""}</h1>
+    <div className="max-w-5xl mx-auto px-4 py-14">
+      <h1 className="font-display text-[clamp(34px,5vw,72px)]">Applications{jobTitle ? ` — ${jobTitle}` : ""}</h1>
 
       {error && (
-        <div className="mt-4 rounded-2xl border border-red-300 bg-red-50 p-3 text-red-700">{error}</div>
+        <div className="mt-4 border-[1.5px] border-ink bg-pink px-4 py-3 text-[14px] font-semibold">{error}</div>
       )}
 
       <div className="mt-6 space-y-3">
         {applications.length === 0 && (
-          <p className="text-sm text-neutral-500">No applications yet for this job.</p>
+          <p className="text-sm text-ink/60">No applications yet for this job.</p>
         )}
 
         {applications.map((app) => {
           const expanded = expandedId === app.id;
           const applicantAge = age(app.artist_date_of_birth);
           return (
-            <div key={app.id} className={`${app.status === "approved" && "border-green-200"} ${app.status === "rejected" &&  "border-red-600"}
-              border-b-3 border p-4 rounded-2xl bg-white/80 shadow-none hover:shadow-lg transition-shadow duration-300`}>
-              <div className="flex items-center justify-between gap-4">
+            <div key={app.id} className={`border-[1.5px] border-ink bg-white p-4 transition-shadow hover:shadow-[4px_4px_0_0_var(--color-ink)] ${
+                app.status === "approved" ? "border-l-8 border-l-lime" : app.status === "rejected" ? "border-l-8 border-l-pink" : ""
+              }`}>
+              <div className="flex items-left justify-between gap-4 flex-col">
                 <button
                   className="hover:cursor-pointer flex items-center gap-4 text-left flex-1"
                   onClick={() => setExpandedId(expanded ? null : app.id)}
@@ -127,24 +128,24 @@ export default function EmployerApplicationsList({ jobId }: { jobId: number }) {
                     <img
                       src={app.artist_picture}
                       alt={app.artist_name || "Applicant"}
-                      className="w-12 h-12 rounded-full object-cover border"
+                      className="w-12 h-12 object-cover border-[1.5px] border-ink"
                     />
                   )}
                   <div>
                     <div className="font-medium">{app.artist_name}</div>
-                    <div className="text-xs text-neutral-500">
+                    <div className="text-xs text-ink/60">
                       {app.application_code} · {new Date(app.created_at).toLocaleDateString()}
                     </div>
-                    <div className="text-xs text-neutral-500">
+                    <div className="text-xs text-ink/60">
                       From {app.artist_country}
                     </div>
                     <div>
                       {!expanded ? (
-                        <p className="text-sm text-neutral-500">
+                        <p className="text-sm text-ink/60">
                           Click to see more
                         </p>
                       ) : (
-                        <p className="text-sm text-neutral-500">
+                        <p className="text-sm text-ink/60">
                           Click to hide
                         </p>
                       )}
@@ -154,13 +155,13 @@ export default function EmployerApplicationsList({ jobId }: { jobId: number }) {
 
                 <a
                   href={`/api/employer/jobs/${jobId}/applications/${app.id}/pdf`}
-                  className="rounded-xl border px-3 py-2 text-sm transition hover:bg-neutral-100"
+                  className="inline-flex items-center justify-center gap-2 border-[1.5px] border-ink px-5 py-3 text-[12px] font-bold uppercase tracking-[0.1em] hover:bg-ink hover:text-paper disabled:opacity-50 cursor-pointer"
                 >
                   Download PDF
                 </a>
 
                 <select
-                  className="rounded-xl border p-2 text-sm bg-white"
+                  className="border-[1.5px] border-ink bg-white px-3 py-2 text-[15px] outline-none transition-shadow placeholder:text-ink/40 focus:shadow-[4px_4px_0_0_var(--color-ink)]"
                   value={app.status}
                   disabled={updatingId === app.id}
                   onChange={(e) => changeStatus(app.id, e.target.value)}
@@ -174,7 +175,7 @@ export default function EmployerApplicationsList({ jobId }: { jobId: number }) {
               </div>
 
               {expanded && (
-                <div className="mt-4 pt-4 border-t grid gap-2 text-sm">
+                <div className="mt-4 pt-4 border-t border-ink grid gap-2 text-[14px]">
                   {applicantAge != null && <Row label="Age" value={String(applicantAge)} />}
                   <Row label="Country" value={app.artist_country} />
                   <Row label="Height" value={app.artist_height} />
@@ -210,7 +211,7 @@ export default function EmployerApplicationsList({ jobId }: { jobId: number }) {
                       label="Video / Portfolio"
                       value={
                         <a className="underline" href={app.promo_url} target="_blank" rel="noreferrer">
-                          {app.promo_url}
+                          link to promo
                         </a>
                       }
                     />
@@ -219,7 +220,7 @@ export default function EmployerApplicationsList({ jobId }: { jobId: number }) {
 
                   {app.images?.length > 0 && (
                     <div className="mt-2">
-                      <div className="text-neutral-500 mb-2">Photos</div>
+                      <div className="text-ink/60 mb-2">Photos</div>
                       <div className="flex gap-2 flex-wrap">
                         {app.images.map((img) => (
                           // eslint-disable-next-line @next/next/no-img-element
@@ -227,7 +228,7 @@ export default function EmployerApplicationsList({ jobId }: { jobId: number }) {
                             key={img.public_id}
                             src={img.secure_url}
                             alt=""
-                            className="w-24 h-24 object-cover rounded-xl border"
+                            className="w-24 h-24 object-cover border-[1.5px] border-ink"
                           />
                         ))}
                       </div>
@@ -247,7 +248,7 @@ function Row({ label, value }: { label: string; value: React.ReactNode | null })
   if (!value) return null;
   return (
     <div className="grid grid-cols-[140px_1fr] gap-2">
-      <div className="text-neutral-500">{label}</div>
+      <div className="text-ink/60">{label}</div>
       <div>{value}</div>
     </div>
   );
